@@ -30,7 +30,7 @@ void BaseLevel::Render()
 {
 	//build the frame
 	gfx->BeginDraw(gfx->GetCompatibleTarget());
-	gfx->ClearScreen(gfx->GetCompatibleTarget(), D2D1::ColorF(1, 0, 0));
+	gfx->ClearScreen(gfx->GetCompatibleTarget(), D2D1::ColorF(0.75f, 0.75f, 0.75f));	
 	gfx->DrawCircle(gfx->GetCompatibleTarget(), D2D1::Point2F(500, 500), 40, D2D1::ColorF(0,0,0));
 	gfx->OutputTextSmall(gfx->GetCompatibleTarget(), L"Test Small", D2D1::RectF(0, 200, 500, 400));
 	gfx->OutputText(gfx->GetCompatibleTarget(), std::to_wstring(static_cast<long>(TranslatedCoordinates.x)).c_str(), D2D1::RectF(0, 0, 500, 500));
@@ -38,6 +38,8 @@ void BaseLevel::Render()
 	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), D2D1::RectF(1050, 100, 1900, 500), D2D1::ColorF(0,0,0), 25,25);
 	gfx->FillRoundedRect(gfx->GetCompatibleTarget(), D2D1::RectF(1050, 505, 1900, 905));
 	gfx->DrawRect(gfx->GetCompatibleTarget(), D2D1::RectF(500, 100, 1045, 500));
+	//if grid-on-top apply last, otherwise apply first
+	gfx->DrawDefaultGrid(gfx->GetCompatibleTarget(), GridSquareSize, D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.9f), 3.0f);
 	gfx->EndDraw(gfx->GetCompatibleTarget());
 
 	//render the frame
@@ -88,16 +90,32 @@ void BaseLevel::ProcessEvents(double dDelta)
 		//this is for character entry; at first will use for zoom probably; most likely make it a setting in the keys.ini once thats implemented
 		switch (pKeyboard->ReadChar())
 		{
+		case L'*':
+			Scale.height += ScaleSpeed.height;
+			Scale.width += ScaleSpeed.width;
+			break;
+		case L'/':
+			Scale.height -= ScaleSpeed.height;
+			Scale.width -= ScaleSpeed.width;
+			if (Scale.height <= 0) Scale.height = ScaleSpeed.height;
+			if (Scale.width <= 0) Scale.width = ScaleSpeed.width;
+			break;
 		case L'+':
-			Scale.height += 0.05f;
-			Scale.width += 0.05f;
+		{
+			D2D1_SIZE_F temp = gfx->GetCompatibleTargetSize();
+			temp.height += GridSquareSize.height;
+			temp.width += GridSquareSize.width;
+			gfx->ResizeCompatibleRenderTarget(temp);
 			break;
+		}
 		case L'-':
-			Scale.height -= 0.05f;
-			Scale.width -= 0.05f;
-			if (Scale.height <= 0) Scale.height = 0.05f;
-			if (Scale.width <= 0) Scale.width = 0.05f;
+		{
+			D2D1_SIZE_F temp = gfx->GetCompatibleTargetSize();
+			temp.height -= GridSquareSize.height;
+			temp.width -= GridSquareSize.width;
+			gfx->ResizeCompatibleRenderTarget(temp);
 			break;
+		}
 		}
 	}
 	if (!pKeyboard->KeyIsEmpty())
@@ -126,6 +144,10 @@ void BaseLevel::ProcessEvents(double dDelta)
 			case 'D':
 				Movement.bMove = true;
 				Movement.vDirection.push_back(Move::Direction::Right);
+				break;
+			case VK_END:
+				Scale = D2D1::SizeF(1.0f, 1.0f);
+				Offset = D2D1::SizeF(0.0f, 0.0f);
 				break;
 			}
 		}

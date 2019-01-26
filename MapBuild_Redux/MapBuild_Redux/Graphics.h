@@ -174,4 +174,16 @@ public:
 		transform.Invert();
 		return transform.TransformPoint(p);
 	}
+	template<typename T> void DrawDefaultGrid(T target, D2D1_SIZE_F size, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), float thickness = 1.0f)
+	{
+		for (float x = 0; x <= static_cast<float>(m_CompatibleTargetSize.width); x += size.width)
+		{
+			DrawLine(target, D2D1::Point2F(x, 0.0f), D2D1::Point2F(x, static_cast<float>(m_CompatibleTargetSize.height)), color, thickness);
+		}
+		for (float y = 0; y <= static_cast<float>(m_CompatibleTargetSize.height); y += size.height)
+		{
+			DrawLine(target, D2D1::Point2F(0.0f, y), D2D1::Point2F(static_cast<float>(m_CompatibleTargetSize.width), y), color, thickness);			
+		}
+		DrawRect(target, D2D1::RectF(0.0f, 0.0f, m_CompatibleTargetSize.width, m_CompatibleTargetSize.height), color, thickness);
+	}
 };

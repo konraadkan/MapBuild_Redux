@@ -1,4 +1,5 @@
 #include "window.h"
+#include "resource.h"
 
 Window::WindowClass Window::WindowClass::wndClass;
 
@@ -43,7 +44,7 @@ Window::Window(int width, int height, const wchar_t* name) noexcept
 	AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, false);
 	hWnd = CreateWindowW(WindowClass::GetName(), name, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top, NULL, NULL, WindowClass::GetInstance(), this);
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
-	//hAccel = LoadAcceleratorsW(WindowClass::GetInstance(), MAKEINTRESOURCEW(IDR_ACCELERATOR1));
+	hAccel = LoadAcceleratorsW(WindowClass::GetInstance(), MAKEINTRESOURCEW(IDR_ACCELERATOR1));
 
 	gfx = new Graphics;
 	if (!gfx->Init(hWnd))
@@ -144,6 +145,24 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		break;
 	case WM_COMMAND:
 		//accelerator interaction here
+		switch (LOWORD(wParam))
+		{
+		case ID_COPY_CMD:
+			//may not use
+			break;
+		case ID_OPEN_CMD:
+			//load a saved map
+			break;
+		case ID_NEW_CMD:
+			//new map
+			break;
+		case ID_SAVE_CMD:
+			//save the map
+			break;
+		case ID_RESIZE_CMD:
+			//take input from user for exact resolution for the backbuffer
+			break;
+		}
 		break;
 	case WM_CLOSE:
 		PostQuitMessage(0);
