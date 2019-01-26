@@ -1,0 +1,35 @@
+#pragma once
+#include "Graphics.h"
+#include "keyboard.h"
+#include <queue>
+
+class Level
+{
+protected:
+	static Graphics* gfx;
+	Keyboard* pKeyboard = nullptr;
+public:	
+	virtual void Load(Keyboard* const keyboard) = 0;
+	virtual void Unload() = 0;
+	virtual void Render() = 0;
+	virtual void Update(double dDelta) = 0;
+	virtual void ProcessEvents(double dDelta) = 0;
+	virtual bool Open(const wchar_t* sFilePath)
+	{
+		return false;
+	}
+public:
+	struct Move
+	{
+		bool bMove = false;
+		enum class Direction
+		{
+			Up,
+			Down,
+			Left,
+			Right,
+			Error
+		};
+		std::vector<Direction> vDirection;
+	} Movement;
+};

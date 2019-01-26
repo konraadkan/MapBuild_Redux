@@ -50,6 +50,13 @@ Window::Window(int width, int height, const wchar_t* name) noexcept
 	{
 		MessageBoxW(hWnd, L"Unable to Initialize graphics.", L"Error", MB_OK | MB_ICONERROR);
 	}
+	m_Timer = new HPTimer();
+	if (!m_Timer)
+	{
+		MessageBoxW(hWnd, L"Unable to Initialize Timer.", L"Error", MB_OK | MB_ICONERROR);
+	}
+
+	Controller::SwitchLevel(new BaseLevel(gfx, &m_MouseCoordinates));
 }
 
 Window::Window(POINT p, int width, int height, const wchar_t* name) noexcept
@@ -63,11 +70,24 @@ Window::Window(POINT p, int width, int height, const wchar_t* name) noexcept
 	hWnd = CreateWindowW(WindowClass::GetName(), name, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, p.x, p.y, wr.right - wr.left, wr.bottom - wr.top, NULL, NULL, WindowClass::GetInstance(), this);
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
 	//hAccel = LoadAcceleratorsW(WindowClass::GetInstance(), MAKEINTRESOURCEW(IDR_ACCELERATOR1));
+
+	gfx = new Graphics;
+	if (!gfx->Init(hWnd))
+	{
+		MessageBoxW(hWnd, L"Unable to Initialize graphics.", L"Error", MB_OK | MB_ICONERROR);
+	}
+	m_Timer = new HPTimer();
+	if (!m_Timer)
+	{
+		MessageBoxW(hWnd, L"Unable to Initialize Timer.", L"Error", MB_OK | MB_ICONERROR);
+	}
 }
 
 Window::~Window()
 {
+	Controller::Cleanup();
 	SafeDelete(&gfx);
+	SafeDelete(&m_Timer);
 	if (hAccel) DestroyAcceleratorTable(hAccel);
 	DestroyWindow(hWnd);
 }
@@ -114,13 +134,13 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		}
 		break;
 	case WM_CHAR:
-		//m_Keyboard.OnChar(static_cast<wchar_t>(wParam));
+		Controller::m_Keyboard.OnChar(static_cast<wchar_t>(wParam));
 		break;
 	case WM_KEYDOWN:
-		//if (!(lParam & 0x40000000) || m_Keyboard.AutorepeatEnabled()) m_Keyboard.OnKeyPressed(static_cast<unsigned char>(wParam));
+		if (!(lParam & 0x40000000) || Controller::m_Keyboard.AutorepeatEnabled()) Controller::m_Keyboard.OnKeyPressed(static_cast<unsigned char>(wParam));
 		break;
 	case WM_KEYUP:
-		//m_Keyboard.OnKeyReleased(static_cast<unsigned char>(wParam));
+		Controller::m_Keyboard.OnKeyReleased(static_cast<unsigned char>(wParam));
 		break;
 	case WM_COMMAND:
 		//accelerator interaction here

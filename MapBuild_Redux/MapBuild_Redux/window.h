@@ -1,7 +1,11 @@
 #pragma once
 #include <Windows.h>
 #include <vector>
+#include "HPTimer.h"
 #include "Graphics.h"
+#include "keyboard.h"
+#include "Controller.h"
+#include "BaseLevel.h"
 
 class Window
 {
@@ -62,21 +66,30 @@ public:
 	HWND& GetHWND() { return hWnd; }
 	bool ProcessMessage();
 	void SetGraphics(Graphics* const graphics) { gfx = graphics; }
-//	void UpdateWindow(double dDelta);
 //	void ProcessEvents();
 //	void Render(long calcframes, bool bShowFrames = false);
 	D2D1_POINT_2F GetMousePosition() { return m_MouseCoordinates; }
 	Graphics* const GetGraphics() { return gfx; }
 	void Render()
 	{ 
+		Controller::Render();
+		/*
+		//build image
 		gfx->GetCompatibleTarget()->BeginDraw();
-		//gfx->GetCompatibleTarget()->Clear(D2D1::ColorF(1, 0, 0));
 		gfx->ClearScreenS(gfx->GetCompatibleTarget(), D2D1::ColorF(1,0,0));
 		gfx->GetCompatibleTarget()->EndDraw();
+
+		//clear background and display built image
 		gfx->BeginDraw();
 		gfx->ClearScreenS(gfx->GetRenderTarget());
 		gfx->SwapBuffer();
 		gfx->EndDraw(); 
+		*/
+	}
+	void Update()
+	{
+		Controller::Update(m_Timer->GetTimeDelta());
+		m_Timer->Update();
 	}
 private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
@@ -93,4 +106,5 @@ private:
 	D2D1_POINT_2F m_MouseCoordinates = D2D1::Point2F();
 	HACCEL hAccel = NULL;
 	Graphics* gfx = NULL;
+	HPTimer* m_Timer = NULL;
 };

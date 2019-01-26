@@ -1,5 +1,4 @@
 #include "window.h"
-#include "HPTimer.h"
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevious, LPWSTR cmd, int iCmdShow)
 {
@@ -16,16 +15,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevious, LPWSTR cmd, int iC
 	Window wnd(WindowWidth, WindowHeight, L"MapBuilder");
 
 	MSG msg = {};
-	HPTimer* timer = new HPTimer;
 
 	//main loop
 	while (wnd.ProcessMessage())
 	{
-		timer->Update();
+		wnd.Update();
 		wnd.Render();
 	}
 
-	//cleanup
-	if (timer) delete timer;
 	return msg.wParam;
 }

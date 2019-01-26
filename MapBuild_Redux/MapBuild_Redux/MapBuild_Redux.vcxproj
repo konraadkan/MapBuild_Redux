@@ -115,14 +115,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BaseLevel.cpp" />
+    <ClCompile Include="Controller.cpp" />
     <ClCompile Include="Graphics.cpp" />
+    <ClCompile Include="keyboard.cpp" />
+    <ClCompile Include="Level.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BaseLevel.h" />
+    <ClInclude Include="Controller.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="HPTimer.h" />
     <ClInclude Include="keyboard.h" />
+    <ClInclude Include="Level.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
