@@ -9,6 +9,11 @@ Graphics::Graphics()
 
 Graphics::~Graphics()
 {
+	while (pGeometryPaths.size())
+	{
+		SafeRelease(&pGeometryPaths.back());
+		pGeometryPaths.pop_back();
+	}
 	SafeRelease(&m_Factory);
 	SafeRelease(&m_RenderTarget);
 	SafeRelease(&m_WriteFactory);
@@ -59,11 +64,12 @@ bool Graphics::Init(HWND hWnd, D2D1_SIZE_F CompatibleRenderSize)
 
 	if (!CompatibleRenderSize.width && !CompatibleRenderSize.height)
 	{
-		m_CompatibleTargetSize.width = static_cast<float>(rect.right);
-		m_CompatibleTargetSize.height = static_cast<float>(rect.bottom);
+		m_CompatibleTargetSize.width = static_cast<float>(rect.right) * 2.0f;
+		m_CompatibleTargetSize.height = static_cast<float>(rect.bottom) * 2.0f;
 	}
 	result = m_RenderTarget->CreateCompatibleRenderTarget(m_CompatibleTargetSize, &pCompatibleTarget);
 	if (result != S_OK) return false;
+
 	return true;
 }
 
@@ -106,4 +112,41 @@ void Graphics::SwapBuffer()
 		m_RenderTarget->DrawBitmap(tBitmap, D2D1::RectF(0.0f, 0.0f, m_CompatibleTargetSize.width, m_CompatibleTargetSize.height), 1.0f, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, D2D1::RectF(0.0f, 0.0f, m_CompatibleTargetSize.width, m_CompatibleTargetSize.height));
 	}
 	SafeRelease(&tBitmap);
+}
+
+bool Graphics::BuildCustomGeometry(std::queue<D2D1_POINT_2F> points, D2D1_COLOR_F color, bool fill, float thickness, D2D1_FIGURE_BEGIN figurebegin, D2D1_FIGURE_END figureend)
+{
+	ID2D1PathGeometry* pG = nullptr;
+	pGeometryPaths.push_back(pG);
+
+	if (FAILED(m_Factory->CreatePathGeometry(&pGeometryPaths.back())))
+	{
+		pGeometryPaths.pop_back();
+		return false;
+	}
+	ID2D1GeometrySink* pSink = nullptr;
+	if (SUCCEEDED(pGeometryPaths.back()->Open(&pSink)))
+	{
+		pSink->BeginFigure(points.front(), figurebegin);
+		points.pop();
+		while (points.size())
+		{
+			pSink->AddLine(points.front());
+			points.pop();
+		}
+		pSink->EndFigure(figureend);
+		pSink->Close();
+		SafeRelease(&pSink);
+
+		CustomGeometryDetails cgd;
+		cgd.bFill = fill;
+		cgd.Color = color;
+		cgd.thickness = thickness;
+		GeometryDetails.push_back(cgd);
+		
+		return true;
+	}
+	SafeRelease(&pGeometryPaths.back());
+	pGeometryPaths.pop_back();
+	return false;
 }

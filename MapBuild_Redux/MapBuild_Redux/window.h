@@ -66,31 +66,19 @@ public:
 	HWND& GetHWND() { return hWnd; }
 	bool ProcessMessage();
 	void SetGraphics(Graphics* const graphics) { gfx = graphics; }
-//	void ProcessEvents();
-//	void Render(long calcframes, bool bShowFrames = false);
 	D2D1_POINT_2F GetMousePosition() { return m_MouseCoordinates; }
 	Graphics* const GetGraphics() { return gfx; }
 	void Render()
 	{ 
 		Controller::Render();
-		/*
-		//build image
-		gfx->GetCompatibleTarget()->BeginDraw();
-		gfx->ClearScreenS(gfx->GetCompatibleTarget(), D2D1::ColorF(1,0,0));
-		gfx->GetCompatibleTarget()->EndDraw();
-
-		//clear background and display built image
-		gfx->BeginDraw();
-		gfx->ClearScreenS(gfx->GetRenderTarget());
-		gfx->SwapBuffer();
-		gfx->EndDraw(); 
-		*/
 	}
 	void Update()
 	{
 		Controller::Update(m_Timer->GetTimeDelta());
 		m_Timer->Update();
 	}
+	const int GetWidth() { return width; }
+	const int GetHeight() { return height; }
 private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 	static LRESULT CALLBACK HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;

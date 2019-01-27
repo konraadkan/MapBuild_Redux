@@ -3,6 +3,8 @@
 #include<Windows.h>
 #include<d2d1_1.h>
 #include<dwrite.h>
+#include<queue>
+#include<vector>
 #pragma comment(lib, "dwrite.lib")
 #pragma comment(lib, "windowscodecs.lib")
 #pragma comment(lib, "d2d1.lib")
@@ -19,13 +21,23 @@ private:
 		}
 	}
 private:
+	struct CustomGeometryDetails
+	{
+		D2D1_COLOR_F Color = D2D1::ColorF(0.0f, 0.0f, 0.0f);
+		bool bFill = false;
+		float thickness = 1.0f;
+	};
+private:
 	ID2D1Factory* m_Factory = NULL;
 	ID2D1HwndRenderTarget* m_RenderTarget = NULL;
 	ID2D1SolidColorBrush* m_Brush = NULL;
 	IDWriteFactory* m_WriteFactory = NULL;
 	IDWriteTextFormat* m_WriteFormat = NULL;
 	IDWriteTextFormat* m_WriteFormatSmall = NULL;
-	ID2D1BitmapRenderTarget* pCompatibleTarget = NULL;
+	ID2D1BitmapRenderTarget* pCompatibleTarget = NULL;	
+
+	std::vector<ID2D1PathGeometry*> pGeometryPaths;
+	std::vector<CustomGeometryDetails> GeometryDetails;
 
 	D2D1_SIZE_F m_CompatibleTargetSize = D2D1::SizeF();
 public:
@@ -39,6 +51,7 @@ public:
 	float GetOutputTextHeight(const wchar_t* string, D2D1_SIZE_F maxsize, bool bFormatSmall = false);
 	bool ResizeCompatibleRenderTarget(D2D1_SIZE_F newsize);
 	const D2D1_SIZE_F GetCompatibleTargetSize() { return m_CompatibleTargetSize; }
+	bool BuildCustomGeometry(std::queue<D2D1_POINT_2F> points, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), bool fill = false, float thickness = 1.0f, D2D1_FIGURE_BEGIN figurebegin = D2D1_FIGURE_BEGIN_FILLED, D2D1_FIGURE_END figureend = D2D1_FIGURE_END_CLOSED);
 
 	ID2D1HwndRenderTarget* GetRenderTarget() { return m_RenderTarget; }
 	ID2D1BitmapRenderTarget* GetCompatibleTarget() { return pCompatibleTarget; }
@@ -59,6 +72,20 @@ public:
 		if (!m_Brush) return false;
 		m_Brush->SetColor(color);
 		target->FillEllipse(D2D1::Ellipse(center, radius, radius), m_Brush);
+		return true;
+	}
+	template<typename T> bool DrawEllipse(T target, D2D1_POINT_2F center, float radiusX, float radiusY, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), float thickness = 1.0f)
+	{
+		if (!m_Brush) return false;
+		m_Brush->SetColor(color);
+		target->DrawEllipse(D2D1::Ellipse(center, radiusX, radiusY), m_Brush, thickness);
+		return true;
+	}
+	template<typename T> bool FillEllipse(T target, D2D1_POINT_2F center, float radiusX, float radiusY, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f))
+	{
+		if (!m_Brush) return false;
+		m_Brush->SetColor(color);
+		target->FillEllipse(D2D1::Ellipse(center, radiusX, radiusY), m_Brush);
 		return true;
 	}
 	template<typename T> bool DrawLine(T target, D2D1_POINT_2F p1, D2D1_POINT_2F p2, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), float thickness = 1.0f)
@@ -167,11 +194,17 @@ public:
 		target->GetTransform(&transform);
 		target->SetTransform(transform * D2D1::Matrix3x2F::Translation(offset));
 	}
+	template<typename T> void ApplyRotation(T target, float RotAngle, D2D1_POINT_2F RotCenter)
+	{
+		D2D1::Matrix3x2F transform = D2D1::Matrix3x2F::Identity(); 
+		target->GetTransform(&transform);
+		target->SetTransform(transform * D2D1::Matrix3x2F::Rotation(RotAngle, RotCenter));
+	}
 	template<typename T> const D2D1_POINT_2F GetTransformedPoint(T target, D2D1_POINT_2F p)
 	{
 		D2D1::Matrix3x2F transform = D2D1::Matrix3x2F::Identity();
 		target->GetTransform(&transform);
-		transform.Invert();
+		if (transform.IsInvertible()) transform.Invert();
 		return transform.TransformPoint(p);
 	}
 	template<typename T> void DrawDefaultGrid(T target, D2D1_SIZE_F size, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), float thickness = 1.0f)
@@ -184,6 +217,26 @@ public:
 		{
 			DrawLine(target, D2D1::Point2F(0.0f, y), D2D1::Point2F(static_cast<float>(m_CompatibleTargetSize.width), y), color, thickness);			
 		}
-		DrawRect(target, D2D1::RectF(0.0f, 0.0f, m_CompatibleTargetSize.width, m_CompatibleTargetSize.height), color, thickness);
+		DrawRect(target, D2D1::RectF(0.0f, 0.0f, m_CompatibleTargetSize.width, m_CompatibleTargetSize.height), color, thickness * 5.0f);
+	}
+	template<typename T> void DrawCustomGeometry(T target)
+	{
+		if (!m_Brush) return;
+		for (size_t i = 0; i < pGeometryPaths.size(); i++)
+		{
+			if (GeometryDetails.size() > i)
+			{
+				m_Brush->SetColor(GeometryDetails[i].Color);
+				if (GeometryDetails[i].bFill)
+					target->FillGeometry(pGeometryPaths[i], m_Brush);
+				else
+					target->DrawGeometry(pGeometryPaths[i], m_Brush, GeometryDetails[i].thickness);
+			}
+			else
+			{
+				m_Brush->SetColor(D2D1::ColorF(0.0f, 0.0f, 0.0f));
+				target->DrawGeometry(pGeometryPaths[i], m_Brush);
+			}
+		}
 	}
 };

@@ -11,12 +11,22 @@ private:
 	D2D1_SIZE_F Offset = D2D1::SizeF();
 	D2D1_POINT_2F* pMouseCoordinate = nullptr;
 	D2D1_POINT_2F TranslatedCoordinates = D2D1::Point2F();
+	D2D1_SIZE_F WindowSize = D2D1::SizeF();
+	D2D1_SIZE_F ScreenSize = D2D1::SizeF();
+	float RotationAngle = 0.0f;
+	float RotationSpeed = 30.0f;
+	float MovementSpeed = 100.0f;
+	D2D1_POINT_2F RotationCenter = D2D1::Point2F();	
+	bool bShowSideMenu = true;
+	D2D1_COLOR_F GridBackgroundColor = D2D1::ColorF(0.75f, 0.75f, 0.75f);
 public:
-	BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePosition);
+	BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePosition, int WindowX, int WindowY);
 	~BaseLevel();
 	void Load(Keyboard* const keyboard) override;
 	void Unload() override;
 	void Render() override;
 	void ProcessEvents(double dDelta) override;
-	void Update(double dDelta) override;	
+	void Update(double dDelta) override;
+private:
+	void DrawSideMenu();
 };

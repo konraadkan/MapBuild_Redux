@@ -8,6 +8,7 @@ class Level
 protected:
 	static Graphics* gfx;
 	Keyboard* pKeyboard = nullptr;
+	bool bGridOnTop = false;
 public:	
 	virtual void Load(Keyboard* const keyboard) = 0;
 	virtual void Unload() = 0;
@@ -18,6 +19,8 @@ public:
 	{
 		return false;
 	}
+	virtual void SetGridOnTop() { bGridOnTop = true; }
+	virtual void UnsetGridOnTop() { bGridOnTop = false; }
 public:
 	struct Move
 	{
@@ -28,6 +31,8 @@ public:
 			Down,
 			Left,
 			Right,
+			RotatePositive,
+			RotateNegative,
 			Error
 		};
 		std::vector<Direction> vDirection;

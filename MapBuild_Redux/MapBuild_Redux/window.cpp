@@ -57,7 +57,7 @@ Window::Window(int width, int height, const wchar_t* name) noexcept
 		MessageBoxW(hWnd, L"Unable to Initialize Timer.", L"Error", MB_OK | MB_ICONERROR);
 	}
 
-	Controller::SwitchLevel(new BaseLevel(gfx, &m_MouseCoordinates));
+	Controller::SwitchLevel(new BaseLevel(gfx, &m_MouseCoordinates, width, height));
 }
 
 Window::Window(POINT p, int width, int height, const wchar_t* name) noexcept
@@ -70,7 +70,7 @@ Window::Window(POINT p, int width, int height, const wchar_t* name) noexcept
 	AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, false);
 	hWnd = CreateWindowW(WindowClass::GetName(), name, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, p.x, p.y, wr.right - wr.left, wr.bottom - wr.top, NULL, NULL, WindowClass::GetInstance(), this);
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
-	//hAccel = LoadAcceleratorsW(WindowClass::GetInstance(), MAKEINTRESOURCEW(IDR_ACCELERATOR1));
+	hAccel = LoadAcceleratorsW(WindowClass::GetInstance(), MAKEINTRESOURCEW(IDR_ACCELERATOR1));
 
 	gfx = new Graphics;
 	if (!gfx->Init(hWnd))
@@ -82,6 +82,8 @@ Window::Window(POINT p, int width, int height, const wchar_t* name) noexcept
 	{
 		MessageBoxW(hWnd, L"Unable to Initialize Timer.", L"Error", MB_OK | MB_ICONERROR);
 	}
+
+	Controller::SwitchLevel(new BaseLevel(gfx, &m_MouseCoordinates, width, height));
 }
 
 Window::~Window()
