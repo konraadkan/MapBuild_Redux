@@ -150,3 +150,42 @@ bool Graphics::BuildCustomGeometry(std::queue<D2D1_POINT_2F> points, D2D1_COLOR_
 	pGeometryPaths.pop_back();
 	return false;
 }
+
+bool Graphics::PointInRect(const D2D1_POINT_2F p, const D2D1_RECT_F rect)
+{
+	return p.x >= rect.left && p.x <= rect.right && p.y >= rect.top && p.y <= rect.bottom;
+}
+
+bool Graphics::RectOverlap(const D2D1_RECT_F r1, const D2D1_RECT_F r2, bool bFirst)
+{
+	if (r1.bottom >= r2.bottom && r1.top <= r2.top && r1.right >= r2.right && r1.left <= r2.left)
+		return true;
+	if (r1.bottom >= r2.bottom && r1.top <= r2.top)
+	{
+		if (r1.left >= r2.left && r1.left <= r2.right) return true;
+		if (r1.right >= r2.left && r1.right <= r2.right) return true;
+	}
+	if (r1.left <= r2.left && r1.right >= r2.right)
+	{
+		if (r1.top >= r2.top && r1.top <= r2.bottom) return true;
+		if (r1.bottom >= r2.top && r2.bottom <= r2.bottom) return true;
+	}
+	if (PointInRect(D2D1::Point2F(r1.left, r1.bottom), r2)) return true;
+	if (PointInRect(D2D1::Point2F(r1.left, r1.top), r2)) return true;
+	if (PointInRect(D2D1::Point2F(r1.right, r1.bottom), r2)) return true;
+	if (PointInRect(D2D1::Point2F(r1.right, r1.top), r2)) return true;
+	if (bFirst)	if (RectOverlap(r2, r1, false)) return true;
+	return false;
+}
+
+const D2D1_RECT_F Graphics::TransformRect(const D2D1_RECT_F rect, const D2D1::Matrix3x2F Transforms)
+{
+	D2D1::Matrix3x2F temp = Transforms;
+	D2D1_POINT_2F tl = D2D1::Point2F(rect.left, rect.top);
+	D2D1_POINT_2F tr = D2D1::Point2F(rect.right, rect.bottom);
+
+	tl = temp.TransformPoint(tl);
+	tr = temp.TransformPoint(tr);
+
+	return D2D1::RectF(tl.x, tl.y, tr.x, tr.y);
+}

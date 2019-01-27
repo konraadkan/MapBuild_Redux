@@ -6,6 +6,15 @@
 class Level
 {
 protected:
+	template<typename T> void SafeDelete(T** ppT)
+	{
+		if (ppT)
+		{
+			delete (*ppT);
+			(*ppT) = nullptr;
+		}
+	}
+protected:
 	static Graphics* gfx;
 	Keyboard* pKeyboard = nullptr;
 	bool bGridOnTop = false;

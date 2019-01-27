@@ -1,10 +1,11 @@
 #pragma once
 #include "Level.h"
+#include "SideMenu.h"
 
 class BaseLevel : public Level
 {
 private:
-	D2D1_POINT_2F Center = {};
+	D2D1_POINT_2F Center = D2D1::Point2F();
 	D2D1_SIZE_F GridSquareSize = D2D1::SizeF(64.0f, 64.0f);
 	D2D1_SIZE_F Scale = D2D1::SizeF(1.0f, 1.0f);
 	D2D1_SIZE_F ScaleSpeed = D2D1::SizeF(0.05f, 0.05f);
@@ -19,6 +20,7 @@ private:
 	D2D1_POINT_2F RotationCenter = D2D1::Point2F();	
 	bool bShowSideMenu = true;
 	D2D1_COLOR_F GridBackgroundColor = D2D1::ColorF(0.75f, 0.75f, 0.75f);
+	D2D1::Matrix3x2F Transforms = D2D1::Matrix3x2F::Identity();
 public:
 	BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePosition, int WindowX, int WindowY);
 	~BaseLevel();
@@ -29,4 +31,6 @@ public:
 	void Update(double dDelta) override;
 private:
 	void DrawSideMenu();
+public:
+	SideMenu* pSideMenu = nullptr;
 };

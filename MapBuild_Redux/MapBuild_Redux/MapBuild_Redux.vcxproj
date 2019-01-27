@@ -116,8 +116,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BaseLevel.cpp" />
+    <ClCompile Include="Buttons.cpp" />
     <ClCompile Include="Controller.cpp" />
     <ClCompile Include="Graphics.cpp" />
+    <ClCompile Include="InteractObjects.cpp" />
     <ClCompile Include="keyboard.cpp" />
     <ClCompile Include="Level.cpp" />
     <ClCompile Include="main.cpp" />
@@ -125,12 +127,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseLevel.h" />
+    <ClInclude Include="Buttons.h" />
     <ClInclude Include="Controller.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="HPTimer.h" />
+    <ClInclude Include="InteractObjects.h" />
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="Level.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SideMenu.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>
   <ItemGroup>

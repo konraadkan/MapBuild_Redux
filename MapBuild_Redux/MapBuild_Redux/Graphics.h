@@ -25,6 +25,7 @@ private:
 	{
 		D2D1_COLOR_F Color = D2D1::ColorF(0.0f, 0.0f, 0.0f);
 		bool bFill = false;
+		bool bHide = false;
 		float thickness = 1.0f;
 	};
 private:
@@ -52,6 +53,9 @@ public:
 	bool ResizeCompatibleRenderTarget(D2D1_SIZE_F newsize);
 	const D2D1_SIZE_F GetCompatibleTargetSize() { return m_CompatibleTargetSize; }
 	bool BuildCustomGeometry(std::queue<D2D1_POINT_2F> points, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), bool fill = false, float thickness = 1.0f, D2D1_FIGURE_BEGIN figurebegin = D2D1_FIGURE_BEGIN_FILLED, D2D1_FIGURE_END figureend = D2D1_FIGURE_END_CLOSED);
+	bool RectOverlap(const D2D1_RECT_F r1, const D2D1_RECT_F r2, bool bFirst = true);
+	bool PointInRect(const D2D1_POINT_2F p, const D2D1_RECT_F rect);
+	const D2D1_RECT_F TransformRect(const D2D1_RECT_F rect, const D2D1::Matrix3x2F Transforms);
 
 	ID2D1HwndRenderTarget* GetRenderTarget() { return m_RenderTarget; }
 	ID2D1BitmapRenderTarget* GetCompatibleTarget() { return pCompatibleTarget; }
@@ -67,8 +71,28 @@ public:
 		target->DrawEllipse(D2D1::Ellipse(center, radius, radius), m_Brush, thickness);
 		return true;
 	}
+	template<typename T> bool DrawCircle(T target, const D2D1::Matrix3x2F Transforms, const D2D1_RECT_F ClientArea, D2D1_POINT_2F center, float radius, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), float thickness = 1.0f)
+	{
+		D2D1_RECT_F circlerect = D2D1::RectF(center.x - radius, center.y - radius, center.x + radius, center.y + radius);
+		if (!RectOverlap(TransformRect(circlerect, Transforms), ClientArea)) return false;
+
+		if (!m_Brush) return false;
+		m_Brush->SetColor(color);
+		target->DrawEllipse(D2D1::Ellipse(center, radius, radius), m_Brush, thickness);
+		return true;
+	}
 	template<typename T> bool FillCircle(T target, D2D1_POINT_2F center, float radius, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f))
 	{
+		if (!m_Brush) return false;
+		m_Brush->SetColor(color);
+		target->FillEllipse(D2D1::Ellipse(center, radius, radius), m_Brush);
+		return true;
+	}
+	template<typename T> bool FillCircle(T target, const D2D1::Matrix3x2F Transforms, const D2D1_RECT_F ClientArea, D2D1_POINT_2F center, float radius, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f))
+	{
+		D2D1_RECT_F circlerect = D2D1::RectF(center.x - radius, center.y - radius, center.x + radius, center.y + radius);
+		if (!RectOverlap(TransformRect(circlerect, Transforms), ClientArea)) return false;
+
 		if (!m_Brush) return false;
 		m_Brush->SetColor(color);
 		target->FillEllipse(D2D1::Ellipse(center, radius, radius), m_Brush);
@@ -81,8 +105,28 @@ public:
 		target->DrawEllipse(D2D1::Ellipse(center, radiusX, radiusY), m_Brush, thickness);
 		return true;
 	}
+	template<typename T> bool DrawEllipse(T target, const D2D1::Matrix3x2F Transforms, const D2D1_RECT_F ClientArea, D2D1_POINT_2F center, float radiusX, float radiusY, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), float thickness = 1.0f)
+	{
+		D2D1_RECT_F circlerect = D2D1::RectF(center.x - radiusX, center.y - radiusY, center.x + radiusX, center.y + radiusY);
+		if (!RectOverlap(TransformRect(circlerect, Transforms), ClientArea)) return false;
+
+		if (!m_Brush) return false;
+		m_Brush->SetColor(color);
+		target->DrawEllipse(D2D1::Ellipse(center, radiusX, radiusY), m_Brush, thickness);
+		return true;
+	}
 	template<typename T> bool FillEllipse(T target, D2D1_POINT_2F center, float radiusX, float radiusY, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f))
 	{
+		if (!m_Brush) return false;
+		m_Brush->SetColor(color);
+		target->FillEllipse(D2D1::Ellipse(center, radiusX, radiusY), m_Brush);
+		return true;
+	}
+	template<typename T> bool FillEllipse(T target, const D2D1::Matrix3x2F Transforms, const D2D1_RECT_F ClientArea, D2D1_POINT_2F center, float radiusX, float radiusY, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f))
+	{
+		D2D1_RECT_F circlerect = D2D1::RectF(center.x - radiusX, center.y - radiusY, center.x + radiusX, center.y + radiusY);
+		if (!RectOverlap(TransformRect(circlerect, Transforms), ClientArea)) return false;
+
 		if (!m_Brush) return false;
 		m_Brush->SetColor(color);
 		target->FillEllipse(D2D1::Ellipse(center, radiusX, radiusY), m_Brush);
@@ -95,8 +139,27 @@ public:
 		target->DrawLine(p1, p2, m_Brush, thickness);
 		return true;
 	}
+	template<typename T> bool DrawLine(T target, const D2D1::Matrix3x2F Transforms, const D2D1_RECT_F ClientArea, D2D1_POINT_2F p1, D2D1_POINT_2F p2, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), float thickness = 1.0f)
+	{
+		D2D1_RECT_F rect = D2D1::RectF(p1.x, p1.y, p2.x, p2.y);
+		if (!RectOverlap(TransformRect(rect, Transforms), ClientArea)) return false;
+
+		if (!m_Brush) return false;
+		m_Brush->SetColor(color);
+		target->DrawLine(p1, p2, m_Brush, thickness);
+		return true;
+	}
 	template<typename T> bool DrawRect(T target, D2D1_RECT_F area, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), float thickness = 1.0f)
 	{
+		if (!m_Brush) return false;
+		m_Brush->SetColor(color);
+		target->DrawRectangle(area, m_Brush, thickness);
+		return true;
+	}
+	template<typename T> bool DrawRect(T target, const D2D1::Matrix3x2F Transforms, const D2D1_RECT_F ClientArea, D2D1_RECT_F area, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), float thickness = 1.0f)
+	{
+		if (!RectOverlap(TransformRect(area, Transforms), ClientArea)) return false;
+
 		if (!m_Brush) return false;
 		m_Brush->SetColor(color);
 		target->DrawRectangle(area, m_Brush, thickness);
@@ -109,8 +172,26 @@ public:
 		target->DrawRoundedRectangle(D2D1::RoundedRect(area, radiusX, radiusY), m_Brush, thickness);
 		return true;
 	}
+	template<typename T> bool DrawRoundedRect(T target, const D2D1::Matrix3x2F Transforms, const D2D1_RECT_F ClientArea, D2D1_RECT_F area, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), float radiusX = 1.0f, float radiusY = 1.0f, float thickness = 1.0f)
+	{
+		if (!RectOverlap(TransformRect(area, Transforms), ClientArea)) return false;
+
+		if (!m_Brush) return false;
+		m_Brush->SetColor(color);
+		target->DrawRoundedRectangle(D2D1::RoundedRect(area, radiusX, radiusY), m_Brush, thickness);
+		return true;
+	}
 	template<typename T> bool FillRect(T target, D2D1_RECT_F area, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f))
 	{
+		if (!m_Brush) return false;
+		m_Brush->SetColor(color);
+		target->FillRectangle(area, m_Brush);
+		return true;
+	}
+	template<typename T> bool FillRect(T target, const D2D1::Matrix3x2F Transforms, const D2D1_RECT_F ClientArea, D2D1_RECT_F area, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f))
+	{
+		if (!RectOverlap(TransformRect(area, Transforms), ClientArea)) return false;
+
 		if (!m_Brush) return false;
 		m_Brush->SetColor(color);
 		target->FillRectangle(area, m_Brush);
@@ -122,6 +203,21 @@ public:
 		m_Brush->SetColor(color);
 		target->FillRoundedRectangle(D2D1::RoundedRect(area, radiusX, radiusY), m_Brush);
 		return true;
+	}
+	template<typename T> bool FillRoundedRect(T target, const D2D1::Matrix3x2F Transforms, const D2D1_RECT_F ClientArea, D2D1_RECT_F area, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), float radiusX = 1.0f, float radiusY = 1.0f)
+	{
+		if (!RectOverlap(TransformRect(area, Transforms), ClientArea)) return false;
+
+		if (!m_Brush) return false;
+		m_Brush->SetColor(color);
+		target->FillRoundedRectangle(D2D1::RoundedRect(area, radiusX, radiusY), m_Brush);
+		return true;
+	}
+	template<typename T> bool OutputText(T target, const D2D1::Matrix3x2F Transforms, const D2D1_RECT_F ClientArea, const wchar_t* text, D2D1_RECT_F targetArea, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), DWRITE_TEXT_ALIGNMENT alignment = DWRITE_TEXT_ALIGNMENT::DWRITE_TEXT_ALIGNMENT_LEADING, DWRITE_PARAGRAPH_ALIGNMENT p_alignment = DWRITE_PARAGRAPH_ALIGNMENT::DWRITE_PARAGRAPH_ALIGNMENT_NEAR)
+	{
+		if (!RectOverlap(TransformRect(targetArea, Transforms), ClientArea)) return false;
+
+		OutputText(target, text, targetArea, color, alignment, p_alignment);
 	}
 	template<typename T> bool OutputText(T target, const wchar_t* text, D2D1_RECT_F targetArea, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), DWRITE_TEXT_ALIGNMENT alignment = DWRITE_TEXT_ALIGNMENT::DWRITE_TEXT_ALIGNMENT_LEADING, DWRITE_PARAGRAPH_ALIGNMENT p_alignment = DWRITE_PARAGRAPH_ALIGNMENT::DWRITE_PARAGRAPH_ALIGNMENT_NEAR)
 	{
@@ -151,6 +247,12 @@ public:
 		m_WriteFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
 		m_WriteFormat->SetParagraphAlignment(p);
 		return true;
+	}
+	template<typename T> bool OutputTextSmall(T target, const D2D1::Matrix3x2F Transforms, const D2D1_RECT_F ClientArea, const wchar_t* text, D2D1_RECT_F targetArea, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), DWRITE_TEXT_ALIGNMENT alignment = DWRITE_TEXT_ALIGNMENT::DWRITE_TEXT_ALIGNMENT_LEADING, DWRITE_PARAGRAPH_ALIGNMENT p_alignment = DWRITE_PARAGRAPH_ALIGNMENT::DWRITE_PARAGRAPH_ALIGNMENT_NEAR)
+	{
+		if (!RectOverlap(TransformRect(targetArea, Transforms), ClientArea)) return false;
+
+		OutputTextSmall(target, text, targetArea, color, alignment, p_alignment);
 	}
 	template<typename T> bool OutputTextSmall(T target, const wchar_t* text, D2D1_RECT_F targetArea, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), DWRITE_TEXT_ALIGNMENT alignment = DWRITE_TEXT_ALIGNMENT::DWRITE_TEXT_ALIGNMENT_LEADING, DWRITE_PARAGRAPH_ALIGNMENT p_alignment = DWRITE_PARAGRAPH_ALIGNMENT::DWRITE_PARAGRAPH_ALIGNMENT_NEAR)
 	{
@@ -207,15 +309,15 @@ public:
 		if (transform.IsInvertible()) transform.Invert();
 		return transform.TransformPoint(p);
 	}
-	template<typename T> void DrawDefaultGrid(T target, D2D1_SIZE_F size, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), float thickness = 1.0f)
+	template<typename T> void DrawDefaultGrid(T target, const D2D1::Matrix3x2F Transforms, const D2D1_RECT_F ClientArea, D2D1_SIZE_F size, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), float thickness = 1.0f)
 	{
 		for (float x = 0; x <= static_cast<float>(m_CompatibleTargetSize.width); x += size.width)
 		{
-			DrawLine(target, D2D1::Point2F(x, 0.0f), D2D1::Point2F(x, static_cast<float>(m_CompatibleTargetSize.height)), color, thickness);
+			DrawLine(target, Transforms, ClientArea, D2D1::Point2F(x, 0.0f), D2D1::Point2F(x, static_cast<float>(m_CompatibleTargetSize.height)), color, thickness);
 		}
 		for (float y = 0; y <= static_cast<float>(m_CompatibleTargetSize.height); y += size.height)
-		{
-			DrawLine(target, D2D1::Point2F(0.0f, y), D2D1::Point2F(static_cast<float>(m_CompatibleTargetSize.width), y), color, thickness);			
+		{			
+			DrawLine(target, Transforms, ClientArea, D2D1::Point2F(0.0f, y), D2D1::Point2F(static_cast<float>(m_CompatibleTargetSize.width), y), color, thickness);
 		}
 		DrawRect(target, D2D1::RectF(0.0f, 0.0f, m_CompatibleTargetSize.width, m_CompatibleTargetSize.height), color, thickness * 5.0f);
 	}
@@ -226,6 +328,7 @@ public:
 		{
 			if (GeometryDetails.size() > i)
 			{
+				if (GeometryDetails[i].bHide) continue;
 				m_Brush->SetColor(GeometryDetails[i].Color);
 				if (GeometryDetails[i].bFill)
 					target->FillGeometry(pGeometryPaths[i], m_Brush);
