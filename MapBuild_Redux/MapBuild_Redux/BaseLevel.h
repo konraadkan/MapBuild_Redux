@@ -12,8 +12,10 @@ private:
 	D2D1_SIZE_F Offset = D2D1::SizeF();
 	D2D1_POINT_2F* pMouseCoordinate = nullptr;
 	D2D1_POINT_2F TranslatedCoordinates = D2D1::Point2F();
+	D2D1_POINT_2F MenuCoordinates = D2D1::Point2F();
 	D2D1_SIZE_F WindowSize = D2D1::SizeF();
 	D2D1_SIZE_F ScreenSize = D2D1::SizeF();
+	D2D1_RECT_F m_ClientWindow = D2D1::RectF();
 	float RotationAngle = 0.0f;
 	float RotationSpeed = 30.0f;
 	float MovementSpeed = 100.0f;

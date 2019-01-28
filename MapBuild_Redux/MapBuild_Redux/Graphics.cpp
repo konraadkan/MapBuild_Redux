@@ -151,6 +151,37 @@ bool Graphics::BuildCustomGeometry(std::queue<D2D1_POINT_2F> points, D2D1_COLOR_
 	return false;
 }
 
+bool Graphics::BuildCustomGeometry(std::vector<ID2D1PathGeometry*>& pGeometry, std::queue<D2D1_POINT_2F> points, D2D1_COLOR_F color, bool fill, float thickness, D2D1_FIGURE_BEGIN figurebegin, D2D1_FIGURE_END figureend)
+{
+	ID2D1PathGeometry* pG = nullptr;
+	pGeometry.push_back(pG);
+
+	if (FAILED(m_Factory->CreatePathGeometry(&pGeometry.back())))
+	{
+		pGeometry.pop_back();
+		return false;
+	}
+	ID2D1GeometrySink* pSink = nullptr;
+	if (SUCCEEDED(pGeometry.back()->Open(&pSink)))
+	{
+		pSink->BeginFigure(points.front(), figurebegin);
+		points.pop();
+		while (points.size())
+		{
+			pSink->AddLine(points.front());
+			points.pop();
+		}
+		pSink->EndFigure(figureend);
+		pSink->Close();
+		SafeRelease(&pSink);
+		
+		return true;
+	}
+	SafeRelease(&pGeometryPaths.back());
+	pGeometryPaths.pop_back();
+	return false;
+}
+
 bool Graphics::PointInRect(const D2D1_POINT_2F p, const D2D1_RECT_F rect)
 {
 	return p.x >= rect.left && p.x <= rect.right && p.y >= rect.top && p.y <= rect.bottom;

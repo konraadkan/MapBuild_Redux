@@ -53,6 +53,7 @@ public:
 	bool ResizeCompatibleRenderTarget(D2D1_SIZE_F newsize);
 	const D2D1_SIZE_F GetCompatibleTargetSize() { return m_CompatibleTargetSize; }
 	bool BuildCustomGeometry(std::queue<D2D1_POINT_2F> points, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), bool fill = false, float thickness = 1.0f, D2D1_FIGURE_BEGIN figurebegin = D2D1_FIGURE_BEGIN_FILLED, D2D1_FIGURE_END figureend = D2D1_FIGURE_END_CLOSED);
+	bool BuildCustomGeometry(std::vector<ID2D1PathGeometry*>& pGeometry, std::queue<D2D1_POINT_2F> points, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), bool fill = false, float thickness = 1.0f, D2D1_FIGURE_BEGIN figurebegin = D2D1_FIGURE_BEGIN_FILLED, D2D1_FIGURE_END figureend = D2D1_FIGURE_END_CLOSED);
 	bool RectOverlap(const D2D1_RECT_F r1, const D2D1_RECT_F r2, bool bFirst = true);
 	bool PointInRect(const D2D1_POINT_2F p, const D2D1_RECT_F rect);
 	const D2D1_RECT_F TransformRect(const D2D1_RECT_F rect, const D2D1::Matrix3x2F Transforms);
@@ -217,7 +218,7 @@ public:
 	{
 		if (!RectOverlap(TransformRect(targetArea, Transforms), ClientArea)) return false;
 
-		OutputText(target, text, targetArea, color, alignment, p_alignment);
+		return OutputText(target, text, targetArea, color, alignment, p_alignment);
 	}
 	template<typename T> bool OutputText(T target, const wchar_t* text, D2D1_RECT_F targetArea, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), DWRITE_TEXT_ALIGNMENT alignment = DWRITE_TEXT_ALIGNMENT::DWRITE_TEXT_ALIGNMENT_LEADING, DWRITE_PARAGRAPH_ALIGNMENT p_alignment = DWRITE_PARAGRAPH_ALIGNMENT::DWRITE_PARAGRAPH_ALIGNMENT_NEAR)
 	{
@@ -252,7 +253,7 @@ public:
 	{
 		if (!RectOverlap(TransformRect(targetArea, Transforms), ClientArea)) return false;
 
-		OutputTextSmall(target, text, targetArea, color, alignment, p_alignment);
+		return OutputTextSmall(target, text, targetArea, color, alignment, p_alignment);
 	}
 	template<typename T> bool OutputTextSmall(T target, const wchar_t* text, D2D1_RECT_F targetArea, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), DWRITE_TEXT_ALIGNMENT alignment = DWRITE_TEXT_ALIGNMENT::DWRITE_TEXT_ALIGNMENT_LEADING, DWRITE_PARAGRAPH_ALIGNMENT p_alignment = DWRITE_PARAGRAPH_ALIGNMENT::DWRITE_PARAGRAPH_ALIGNMENT_NEAR)
 	{
@@ -341,5 +342,15 @@ public:
 				target->DrawGeometry(pGeometryPaths[i], m_Brush);
 			}
 		}
+	}
+	template<typename T> void DrawGeometry(T target, ID2D1PathGeometry* path, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), float thickness = 1.0f, bool bFill = false)
+	{
+		if (!m_Brush) return;
+		m_Brush->SetColor(color);
+		if (bFill)
+		{
+			target->FillGeometry(path, m_Brush);
+		}
+		target->DrawGeometry(path, m_Brush, thickness);
 	}
 };

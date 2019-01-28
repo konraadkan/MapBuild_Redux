@@ -123,6 +123,8 @@
     <ClCompile Include="keyboard.cpp" />
     <ClCompile Include="Level.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Shapes.cpp" />
+    <ClCompile Include="SideMenu.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -135,6 +137,8 @@
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="Level.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="ShapeList.h" />
+    <ClInclude Include="Shapes.h" />
     <ClInclude Include="SideMenu.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>

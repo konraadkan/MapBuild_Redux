@@ -5,8 +5,9 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	this->gfx = graphics;
 	this->pMouseCoordinate = pMousePosition;
 	WindowSize = D2D1::SizeF(static_cast<float>(WindowX), static_cast<float>(WindowY));
+	m_ClientWindow = D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height);
 	RotationCenter = D2D1::Point2F(WindowSize.width * 0.5f, WindowSize.height * 0.5f);
-	pSideMenu = new SideMenu(D2D1::RectF(WindowSize.width * 0.85f, 0.0f, WindowSize.width, WindowSize.height), graphics);
+	pSideMenu = new SideMenu(D2D1::RectF(WindowSize.width * 0.85f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow);
 }
 
 BaseLevel::~BaseLevel()
@@ -20,13 +21,6 @@ void BaseLevel::Load(Keyboard* const keyboard)
 	//set default values
 	pKeyboard = keyboard;
 	Center = D2D1::Point2F(WindowSize.width * 0.5f, 0.0f);
-	
-	/*** Example creation Custom Geometry
-	std::queue<D2D1_POINT_2F> ps;
-	ps.push(D2D1::Point2F(WindowSize.width - 22.0f, WindowSize.height * 0.5f));
-	ps.push(D2D1::Point2F(WindowSize.width - 8.0f, WindowSize.height * 0.5f - 20.0f));
-	ps.push(D2D1::Point2F(WindowSize.width - 8.0f, WindowSize.height * 0.5f + 20.0f));
-	gfx->BuildCustomGeometry(ps, D2D1::ColorF(1.0f,1.0f,1.0f), true);*/
 }
 
 void BaseLevel::Unload()
@@ -45,7 +39,7 @@ void BaseLevel::Render()
 	if (!bGridOnTop) gfx->DrawDefaultGrid(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), GridSquareSize, D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.9f), 3.0f);
 
 	gfx->DrawCircle(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), D2D1::Point2F(500, 500), 40, D2D1::ColorF(0, 1, 0), 5.0f);
-	gfx->OutputTextSmall(gfx->GetCompatibleTarget(), L"Test Small", D2D1::RectF(0.0f, 64.0f, 64.0f, 128.0f));
+	gfx->OutputTextSmall(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f,0.0f,WindowSize.width, WindowSize.height), L"Test Small", D2D1::RectF(0.0f, 64.0f, 64.0f, 128.0f));
 	gfx->OutputText(gfx->GetCompatibleTarget(), std::to_wstring(static_cast<long>(TranslatedCoordinates.x)).c_str(), D2D1::RectF(0, 0, 128, 128));
 	gfx->FillCircle(gfx->GetCompatibleTarget(), D2D1::Point2F(800, 800), 100);
 	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), D2D1::RectF(1050, 100, 1900, 500), D2D1::ColorF(0,0,0), 25,25);
@@ -85,13 +79,15 @@ void BaseLevel::Render()
 void BaseLevel::DrawSideMenu()
 {
 	/***** replace with objects, this is just to get an idea of the visuals *****/
-	if (!bShowSideMenu)
+	D2D1::Matrix3x2F oTransform;
+	gfx->GetCompatibleTarget()->GetTransform(&oTransform);	
+	if (pSideMenu->IsHidden())
 	{
-		float halfheight = WindowSize.height * 0.5f;
-		gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), D2D1::RectF(WindowSize.width - 25.0f, 0.0f, WindowSize.width + 25.0f, WindowSize.height - 25), D2D1::ColorF(0.0f, 0.0f, 0.0f, 1.0f), 25.0f, 25.0f);
-		gfx->FillRoundedRect(gfx->GetCompatibleTarget(), D2D1::RectF(WindowSize.width - 25.0f, 0.0f, WindowSize.width + 25.0f, WindowSize.height - 25), D2D1::ColorF(0.0f, 0.2f, 0.7f, 0.90f), 25.0f, 25.0f);		
+		gfx->GetCompatibleTarget()->SetTransform(D2D1::Matrix3x2F::Translation(D2D1::SizeF(pSideMenu->GetSize().width, 0.0f)));
 	}
 	pSideMenu->Draw();
+	MenuCoordinates = gfx->GetTransformedPoint(gfx->GetCompatibleTarget(), *pMouseCoordinate);
+	if (pSideMenu->IsHidden()) gfx->GetCompatibleTarget()->SetTransform(oTransform);
 }
 
 void BaseLevel::Update(double dDelta)
@@ -134,6 +130,13 @@ void BaseLevel::Update(double dDelta)
 void BaseLevel::ProcessEvents(double dDelta)
 {
 	if (!pKeyboard) return;
+
+	//temporary, replace with even setup
+	if (GetKeyState(VK_LBUTTON) < 0)
+	{
+		if (pSideMenu->PointInRect(MenuCoordinates))
+			pSideMenu->Interact(MenuCoordinates);
+	}
 
 	//update the scene
 	Keyboard::Event keyEvents = {};

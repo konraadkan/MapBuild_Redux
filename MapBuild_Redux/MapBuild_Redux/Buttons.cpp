@@ -9,6 +9,7 @@ void Buttons::Interact(D2D1_POINT_2F p)
 			if (child->PointInRect(p))
 			{
 				child->Interact(p);
+				return;
 			}
 		}
 	}

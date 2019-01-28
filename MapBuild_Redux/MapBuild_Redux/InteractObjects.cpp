@@ -2,8 +2,14 @@
 
 InteractObjects::~InteractObjects()
 {
+	Unload();
+}
+
+void InteractObjects::Unload()
+{
 	while (pChild.size())
 	{
+		pChild.back()->Unload();
 		SafeDelete(&pChild.back());
 		pChild.pop_back();
 	}
@@ -47,4 +53,24 @@ void InteractObjects::SetRadiusX(const float rad)
 void InteractObjects::SetRadiusY(const float rad)
 {
 	m_Radius.height = rad;
+}
+
+void InteractObjects::SetRadius(const D2D1_SIZE_F rad)
+{
+	memcpy(&m_Radius, &rad, sizeof(m_Radius));
+}
+
+void InteractObjects::SetCenter(const D2D1_POINT_2F p)
+{
+	//default
+}
+
+void InteractObjects::SetHidden()
+{
+	bHide = true;
+}
+
+void InteractObjects::SetUnhidden()
+{
+	bHide = false;
 }
