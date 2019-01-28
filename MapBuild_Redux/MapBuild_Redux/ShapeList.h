@@ -3,6 +3,7 @@
 enum class ShapeTypes
 {
 	Rectangles,
+	RoundedRectangles,
 	Ellipses,
 	Lines,
 	Custom,

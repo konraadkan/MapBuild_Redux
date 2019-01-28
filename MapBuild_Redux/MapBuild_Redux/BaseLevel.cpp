@@ -7,7 +7,7 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	WindowSize = D2D1::SizeF(static_cast<float>(WindowX), static_cast<float>(WindowY));
 	m_ClientWindow = D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height);
 	RotationCenter = D2D1::Point2F(WindowSize.width * 0.5f, WindowSize.height * 0.5f);
-	pSideMenu = new SideMenu(D2D1::RectF(WindowSize.width * 0.85f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow);
+	pSideMenu = new SideMenu(D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow);
 }
 
 BaseLevel::~BaseLevel()
@@ -20,7 +20,8 @@ void BaseLevel::Load(Keyboard* const keyboard)
 	if (!gfx) return;
 	//set default values
 	pKeyboard = keyboard;
-	Center = D2D1::Point2F(WindowSize.width * 0.5f, 0.0f);
+	//Center = D2D1::Point2F(WindowSize.width * 0.5f, 0.0f);
+	Center = D2D1::Point2F();
 }
 
 void BaseLevel::Unload()

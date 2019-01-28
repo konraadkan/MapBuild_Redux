@@ -33,6 +33,20 @@ protected:
 	D2D1::Matrix3x2F* pTransforms = nullptr;
 	D2D1_RECT_F* pClientRect = nullptr;
 	std::wstring wLable;
+	DWRITE_TEXT_ALIGNMENT m_Alignment;
+	DWRITE_PARAGRAPH_ALIGNMENT m_pAlignment;
+protected:
+	enum class Sector
+	{
+		East,
+		West,
+		North,
+		South,
+		NorthEast,
+		SouthEast,
+		NorthWest,
+		SouthWest
+	};
 public:
 	InteractObjects(Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area) : gfx(graphics), pTransforms(Transform), pClientRect(area) {}
 	~InteractObjects();
@@ -40,7 +54,9 @@ public:
 	virtual void Draw() = 0;	
 public:
 	virtual void Unload();
-	virtual bool PointInRect(const D2D1_POINT_2F p);	
+	virtual bool PointInRect(const D2D1_POINT_2F p);
+	virtual bool PointInTargetRect(const D2D1_RECT_F reet, const D2D1_POINT_2F p);
+	virtual bool PointInSector(const Sector sector, const D2D1_POINT_2F p);
 	virtual void SetDest(const D2D1_RECT_F rect);
 	virtual void MovePosition(const D2D1_POINT_2F p);
 	virtual void SetColor(const D2D1_COLOR_F color);
@@ -60,6 +76,10 @@ public:
 	virtual void SetLable(const wchar_t* name) { wLable = name; }
 	virtual const wchar_t* GetLabel() { return wLable.c_str(); }
 	virtual bool IsHidden() { return bHide; }
+	virtual void SetParagraphAlignment(const DWRITE_PARAGRAPH_ALIGNMENT pAlign) { m_pAlignment = pAlign; }
+	virtual const DWRITE_PARAGRAPH_ALIGNMENT GetParagraphAlignment() { return m_pAlignment; }
+	virtual void SetTextAlignment(const DWRITE_TEXT_ALIGNMENT Align) { m_Alignment = Align; }
+	virtual const DWRITE_TEXT_ALIGNMENT GetTextAlignment() { return m_Alignment; }
 public:
 	std::vector<InteractObjects*> pChild;
 };

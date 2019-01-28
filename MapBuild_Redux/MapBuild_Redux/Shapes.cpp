@@ -8,11 +8,24 @@ void ClassShapes::Draw()
 	case ShapeTypes::Ellipses:
 		if (bFill)
 		{
-			gfx->FillEllipse(gfx->GetCompatibleTarget(), *pTransforms, *pClientRect, Center, m_Radius.width, m_Radius.height, m_Color);
-			gfx->DrawEllipse(gfx->GetCompatibleTarget(), *pTransforms, *pClientRect, Center, m_Radius.width, m_Radius.height, D2D1::ColorF(0.0f, 0.0f, 0.0f), fThickness);
+			if (bUseTransform)
+			{
+				gfx->FillEllipse(gfx->GetCompatibleTarget(), *pTransforms, *pClientRect, Center, m_Radius.width, m_Radius.height, m_Color);
+				gfx->DrawEllipse(gfx->GetCompatibleTarget(), *pTransforms, *pClientRect, Center, m_Radius.width, m_Radius.height, D2D1::ColorF(0.0f, 0.0f, 0.0f), fThickness);
+			}
+			else
+			{
+				gfx->FillEllipse(gfx->GetCompatibleTarget(), Center, m_Radius.width, m_Radius.height, m_Color);
+				gfx->DrawEllipse(gfx->GetCompatibleTarget(), Center, m_Radius.width, m_Radius.height, D2D1::ColorF(0.0f, 0.0f, 0.0f), fThickness);
+			}
 		}
 		else
-		gfx->DrawEllipse(gfx->GetCompatibleTarget(), *pTransforms, *pClientRect, Center, m_Radius.width, m_Radius.height, m_Color, fThickness);
+		{
+			if (bUseTransform)
+				gfx->DrawEllipse(gfx->GetCompatibleTarget(), *pTransforms, *pClientRect, Center, m_Radius.width, m_Radius.height, m_Color, fThickness);
+			else
+				gfx->DrawEllipse(gfx->GetCompatibleTarget(), Center, m_Radius.width, m_Radius.height, m_Color, fThickness);
+		}
 		break;
 	case ShapeTypes::Custom:
 		if (pPathGeometry.size())
@@ -25,7 +38,42 @@ void ClassShapes::Draw()
 				}
 			}
 		}
-}
+		break;
+	case ShapeTypes::Rectangles:
+		if (bUseTransform)
+		{
+			if (bFill) gfx->FillRect(gfx->GetCompatibleTarget(), *pTransforms, *pClientRect, m_Dest, m_Color);
+			gfx->DrawRect(gfx->GetCompatibleTarget(), *pTransforms, *pClientRect, m_Dest, bFill ? D2D1::ColorF(0.0f, 0.0f, 0.0f) : m_Color, fThickness);
+		}
+		else
+		{
+			if (bFill) gfx->FillRect(gfx->GetCompatibleTarget(), m_Dest, m_Color);
+			gfx->DrawRect(gfx->GetCompatibleTarget(), m_Dest, bFill ? D2D1::ColorF(0.0f, 0.0f, 0.0f) : m_Color, fThickness);
+		}
+		break;
+	case ShapeTypes::RoundedRectangles:
+		if (bUseTransform)
+		{
+			if (bFill) gfx->FillRoundedRect(gfx->GetCompatibleTarget(), *pTransforms, *pClientRect, m_Dest, m_Color, m_Radius.width, m_Radius.height);
+			gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), *pTransforms, *pClientRect, m_Dest, bFill ? D2D1::ColorF(0.0f, 0.0f, 0.0f) : m_Color, m_Radius.width, m_Radius.height, fThickness);
+		}
+		else
+		{
+			if (bFill) gfx->FillRoundedRect(gfx->GetCompatibleTarget(), m_Dest, m_Color, m_Radius.width, m_Radius.height);
+			gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), m_Dest, bFill ? D2D1::ColorF(0.0f, 0.0f, 0.0f) : m_Color, m_Radius.width, m_Radius.height, fThickness);
+		}
+		break;
+	case ShapeTypes::Lines:
+		if (Points.size() > 2)
+		{
+			for (size_t i = 0; i < Points.size() - 1; i++)
+			{
+				if (bUseTransform) gfx->DrawLine(gfx->GetCompatibleTarget(), *pTransforms, *pClientRect, Points[i], Points[i + 1], m_Color, fThickness);
+				else gfx->DrawLine(gfx->GetCompatibleTarget(), Points[i], Points[i + 1], m_Color, fThickness);
+			}
+		}
+		break;
+	}
 	if (pChild.size())
 	{
 		for (auto& child : pChild)

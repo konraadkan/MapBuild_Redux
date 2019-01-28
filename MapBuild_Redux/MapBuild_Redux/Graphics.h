@@ -240,7 +240,8 @@ public:
 			D2D1::Matrix3x2F oMatrix = D2D1::Matrix3x2F::Identity();
 			target->GetTransform(&oMatrix);
 			D2D1_RECT_F trect = D2D1::RectF(targetArea.left, targetArea.top, targetArea.left + temp, targetArea.bottom);
-			target->SetTransform(oMatrix * D2D1::Matrix3x2F::Scale(D2D1::SizeF(scale, scale), D2D1::Point2F(targetArea.left, (targetArea.bottom + targetArea.top) * 0.5f)));
+			//target->SetTransform(oMatrix * D2D1::Matrix3x2F::Scale(D2D1::SizeF(scale, scale), D2D1::Point2F(targetArea.left, (targetArea.bottom + targetArea.top) * 0.5f)));
+			target->SetTransform(D2D1::Matrix3x2F::Scale(D2D1::SizeF(scale, scale), D2D1::Point2F(targetArea.left, (targetArea.bottom + targetArea.top) * 0.5f)) * oMatrix);
 			OutputText(target, text, trect, color, alignment, p_alignment);
 			target->SetTransform(oMatrix);
 		}
@@ -275,7 +276,8 @@ public:
 			D2D1::Matrix3x2F oMatrix = D2D1::Matrix3x2F::Identity();
 			target->GetTransform(&oMatrix);
 			D2D1_RECT_F trect = D2D1::RectF(targetArea.left, targetArea.top, targetArea.left + temp, targetArea.bottom);
-			target->SetTransform(oMatrix * D2D1::Matrix3x2F::Scale(D2D1::SizeF(scale, scale), D2D1::Point2F(targetArea.left, (targetArea.bottom + targetArea.top) * 0.5f)));
+			//target->SetTransform(oMatrix * D2D1::Matrix3x2F::Scale(D2D1::SizeF(scale, scale), D2D1::Point2F(targetArea.left, (targetArea.bottom + targetArea.top) * 0.5f)));
+			target->SetTransform(D2D1::Matrix3x2F::Scale(D2D1::SizeF(scale, scale), D2D1::Point2F(targetArea.left, (targetArea.bottom + targetArea.top) * 0.5f)) * oMatrix);
 			OutputText(target, text, trect, color, alignment, p_alignment);
 			target->SetTransform(oMatrix);
 		}

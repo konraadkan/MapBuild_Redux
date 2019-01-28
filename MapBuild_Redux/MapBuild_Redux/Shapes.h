@@ -12,10 +12,11 @@ private:
 	std::vector<ID2D1PathGeometry*> pPathGeometry;
 	bool bFill = false;
 	bool bBack = false;
+	bool bUseTransform = false;
 private:
 	void CalcRect();
 public:
-	ClassShapes(ShapeTypes Type, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, bool Back = false) : InteractObjects(graphics, Transform, area), ShapeType(Type), bBack(Back)
+	ClassShapes(ShapeTypes Type, Graphics* const graphics, bool UseTransform, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, bool Back = false) : InteractObjects(graphics, Transform, area), ShapeType(Type), bBack(Back), bUseTransform(UseTransform)
 	{
 		switch (ShapeType)
 		{

@@ -20,6 +20,44 @@ bool InteractObjects::PointInRect(const D2D1_POINT_2F p)
 	return (p.x >= m_Dest.left && p.x <= m_Dest.right && p.y >= m_Dest.top && p.y <= m_Dest.bottom);
 }
 
+bool InteractObjects::PointInTargetRect(const D2D1_RECT_F rect, const D2D1_POINT_2F p)
+{
+	return (p.x >= rect.left && p.x <= rect.right && p.y >= rect.top && p.y <= rect.bottom);
+}
+
+bool InteractObjects::PointInSector(const Sector sector, const D2D1_POINT_2F p)
+{
+	D2D1_RECT_F sector_rect = D2D1::RectF();
+	switch (sector)
+	{
+	case Sector::East:
+		sector_rect.left = m_Dest.left + (m_Dest.right - m_Dest.left) * 0.5f;
+		sector_rect.top = m_Dest.top;
+		sector_rect.right = m_Dest.right;
+		sector_rect.bottom = m_Dest.bottom;
+		break;
+	case Sector::West:
+		sector_rect.left = m_Dest.left;
+		sector_rect.top = m_Dest.top;
+		sector_rect.right = m_Dest.left + (m_Dest.right - m_Dest.left) * 0.5f;
+		sector_rect.bottom = m_Dest.bottom;
+		break;
+	case Sector::North:
+		sector_rect.left = m_Dest.left;
+		sector_rect.top = m_Dest.top;
+		sector_rect.right = m_Dest.right;
+		sector_rect.bottom = m_Dest.top + (m_Dest.bottom - m_Dest.top) * 0.5f;
+		break;
+	case Sector::South:
+		sector_rect.left = m_Dest.left;
+		sector_rect.top = m_Dest.top + (m_Dest.bottom - m_Dest.top) * 0.5f;
+		sector_rect.right = m_Dest.right;
+		sector_rect.bottom = m_Dest.bottom;
+		break;
+	}
+	return PointInTargetRect(sector_rect, p);
+}
+
 void InteractObjects::SetDest(const D2D1_RECT_F rect)
 {
 	memcpy(&m_Dest, &rect, sizeof(m_Dest));
