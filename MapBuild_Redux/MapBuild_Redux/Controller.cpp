@@ -3,6 +3,7 @@
 Level* Controller::CurrentLevel = NULL;
 bool Controller::bLoading = true;
 Keyboard Controller::m_Keyboard = {};
+Mouse Controller::m_Mouse = {};
 
 void Controller::SwitchLevel(Level* const level)
 {
@@ -13,7 +14,7 @@ void Controller::SwitchLevel(Level* const level)
 		delete CurrentLevel;
 	}
 	CurrentLevel = level;
-	CurrentLevel->Load(&m_Keyboard);
+	CurrentLevel->Load(&m_Keyboard, &m_Mouse);
 	bLoading = false;
 }
 

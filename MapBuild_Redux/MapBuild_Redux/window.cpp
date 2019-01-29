@@ -56,7 +56,6 @@ Window::Window(int width, int height, const wchar_t* name) noexcept
 	{
 		MessageBoxW(hWnd, L"Unable to Initialize Timer.", L"Error", MB_OK | MB_ICONERROR);
 	}
-
 	Controller::SwitchLevel(new BaseLevel(gfx, &m_MouseCoordinates, width, height));
 }
 
@@ -135,6 +134,36 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 			ScreenToClient(hWnd, &tp);
 			m_MouseCoordinates = D2D1::Point2F(static_cast<float>(tp.x), static_cast<float>(tp.y));
 		}
+		Controller::m_Mouse.OnMouseMove(m_MouseCoordinates.x, m_MouseCoordinates.y);
+		break;
+	case WM_LBUTTONDOWN:
+		Controller::m_Mouse.OnLeftPressed(m_MouseCoordinates.x, m_MouseCoordinates.y);
+		SetForegroundWindow(hWnd);
+		break;
+	case WM_RBUTTONDOWN:
+		Controller::m_Mouse.OnRightPressed(m_MouseCoordinates.x, m_MouseCoordinates.y);
+		break;
+	case WM_MBUTTONDOWN:
+		Controller::m_Mouse.OnMiddlePressed(m_MouseCoordinates.x, m_MouseCoordinates.y);
+		break;
+	case WM_LBUTTONUP:
+		Controller::m_Mouse.OnLeftReleased(m_MouseCoordinates.x, m_MouseCoordinates.y);
+		break;
+	case WM_RBUTTONUP:
+		Controller::m_Mouse.OnRightReleased(m_MouseCoordinates.x, m_MouseCoordinates.y);
+		break;
+	case WM_MBUTTONUP:
+		Controller::m_Mouse.OnMiddleReleased(m_MouseCoordinates.x, m_MouseCoordinates.y);
+		break;
+	case WM_MOUSEWHEEL:
+		if (GET_WHEEL_DELTA_WPARAM(wParam) > 0)
+		{
+			Controller::m_Mouse.OnWheelUp(m_MouseCoordinates.x, m_MouseCoordinates.y);
+		}
+		else if (GET_WHEEL_DELTA_WPARAM(wParam) < 0)
+		{
+			Controller::m_Mouse.OnWheelDown(m_MouseCoordinates.x, m_MouseCoordinates.y);
+		}
 		break;
 	case WM_CHAR:
 		Controller::m_Keyboard.OnChar(static_cast<wchar_t>(wParam));
@@ -144,6 +173,9 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		break;
 	case WM_KEYUP:
 		Controller::m_Keyboard.OnKeyReleased(static_cast<unsigned char>(wParam));
+		break;
+	case WM_KILLFOCUS:
+		Controller::m_Keyboard.ClearState();
 		break;
 	case WM_COMMAND:
 		//accelerator interaction here

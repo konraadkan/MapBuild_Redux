@@ -105,6 +105,21 @@ void ClassShapes::Interact(const D2D1_POINT_2F p)
 	}
 }
 
+void ClassShapes::Interact()
+{
+	if (pChild.size())
+	{
+		for (auto& child : pChild)
+		{
+			if (child->PointInRect())
+			{
+				child->Interact();
+				return;
+			}
+		}
+	}
+}
+
 void ClassShapes::SetFill()
 {
 	bFill = true;

@@ -3,7 +3,6 @@
 #include <vector>
 #include "HPTimer.h"
 #include "Graphics.h"
-#include "keyboard.h"
 #include "Controller.h"
 #include "BaseLevel.h"
 
@@ -70,7 +69,7 @@ public:
 	Graphics* const GetGraphics() { return gfx; }
 	void Render()
 	{ 
-		Controller::Render();
+		Controller::Render();		
 	}
 	void Update()
 	{

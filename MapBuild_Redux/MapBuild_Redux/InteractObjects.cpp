@@ -15,6 +15,12 @@ void InteractObjects::Unload()
 	}
 }
 
+bool InteractObjects::PointInRect()
+{
+	if (!pInvTransforms) return PointInRect(*pMouseCoordinates);
+	return PointInRect(pInvTransforms->TransformPoint(*pMouseCoordinates));
+}
+
 bool InteractObjects::PointInRect(const D2D1_POINT_2F p)
 {
 	return (p.x >= m_Dest.left && p.x <= m_Dest.right && p.y >= m_Dest.top && p.y <= m_Dest.bottom);
@@ -78,6 +84,11 @@ void InteractObjects::SetColor(const D2D1_COLOR_F color)
 	memcpy(&m_Color, &color, sizeof(m_Color));
 }
 
+void InteractObjects::SetHighlightColor(const D2D1_COLOR_F color)
+{
+	memcpy(&m_HighlightColor, &color, sizeof(m_HighlightColor));
+}
+
 void InteractObjects::SetThickness(const float thickness)
 {
 	fThickness = thickness;
@@ -111,4 +122,23 @@ void InteractObjects::SetHidden()
 void InteractObjects::SetUnhidden()
 {
 	bHide = false;
+}
+
+void InteractObjects::Interact(const D2D1_POINT_2F p)
+{
+	for (auto& child : pChild)
+	{
+		if (child->PointInRect(p))
+		{
+			child->Interact(p);
+		}
+	}
+}
+
+void InteractObjects::Interact()
+{
+	for (auto& child : pChild)
+	{
+		if (child->PointInRect()) child->Interact();
+	}
 }

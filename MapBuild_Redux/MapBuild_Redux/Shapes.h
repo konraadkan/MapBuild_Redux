@@ -16,7 +16,7 @@ private:
 private:
 	void CalcRect();
 public:
-	ClassShapes(ShapeTypes Type, Graphics* const graphics, bool UseTransform, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, bool Back = false) : InteractObjects(graphics, Transform, area), ShapeType(Type), bBack(Back), bUseTransform(UseTransform)
+	ClassShapes(ShapeTypes Type, Graphics* const graphics, bool UseTransform, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, bool Back = false) : InteractObjects(graphics, Transform, area, p), ShapeType(Type), bBack(Back), bUseTransform(UseTransform)
 	{
 		switch (ShapeType)
 		{
@@ -36,6 +36,7 @@ public:
 	void Draw() override;
 	void SetCenter(const D2D1_POINT_2F p) override;
 	void Interact(const D2D1_POINT_2F p) override;
+	void Interact() override;
 	void SetFill() override;
 	void UnsetFill() override;
 	bool BuildCustomShape(std::queue<D2D1_POINT_2F> p, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f)) override;

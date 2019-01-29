@@ -7,7 +7,8 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	WindowSize = D2D1::SizeF(static_cast<float>(WindowX), static_cast<float>(WindowY));
 	m_ClientWindow = D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height);
 	RotationCenter = D2D1::Point2F(WindowSize.width * 0.5f, WindowSize.height * 0.5f);
-	pSideMenu = new SideMenu(D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow);
+	pSideMenu = new SideMenu(D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow, &MenuCoordinates);
+	IObjects.push_back(pSideMenu);
 }
 
 BaseLevel::~BaseLevel()
@@ -15,12 +16,12 @@ BaseLevel::~BaseLevel()
 	Unload();
 }
 
-void BaseLevel::Load(Keyboard* const keyboard)
+void BaseLevel::Load(Keyboard* const keyboard, Mouse* const mouse)
 {
 	if (!gfx) return;
 	//set default values
 	pKeyboard = keyboard;
-	//Center = D2D1::Point2F(WindowSize.width * 0.5f, 0.0f);
+	pMouse = mouse;
 	Center = D2D1::Point2F();
 }
 
@@ -28,6 +29,11 @@ void BaseLevel::Unload()
 {
 	//cleanup as necessary
 	SafeDelete(&pSideMenu);
+	while (IObjects.size())
+	{
+		IObjects.back() = nullptr;
+		IObjects.pop_back();
+	}
 	this->gfx = nullptr;
 	this->pMouseCoordinate = nullptr;
 }
@@ -74,6 +80,7 @@ void BaseLevel::Render()
 
 	gfx->SwapBuffer();
 	//build side bar menu / initiative
+	gfx->OutputText(gfx->GetRenderTarget(), std::to_wstring(afps).c_str(), D2D1::RectF(0, 500, 500, 564));
 	gfx->EndDraw(gfx->GetRenderTarget());
 }
 
@@ -93,6 +100,7 @@ void BaseLevel::DrawSideMenu()
 
 void BaseLevel::Update(double dDelta)
 {
+	afps = static_cast<float>(1.0 / dDelta);
 	if (Movement.bMove)
 	{
 		for (auto& d : Movement.vDirection)
@@ -130,14 +138,79 @@ void BaseLevel::Update(double dDelta)
 
 void BaseLevel::ProcessEvents(double dDelta)
 {
+	ProcessKeyboardEvents(dDelta);
+	ProcessMouseEvents(dDelta);
+}
+
+void BaseLevel::ProcessMouseEvents(double dDelta)
+{
+	if (!pMouse) return;
+
+	if (!pMouse->IsEmpty())
+	{
+		Mouse::Event e = pMouse->Read();
+		switch (e.GetType())
+		{
+		case Mouse::Event::Type::LPress:
+			break;
+		case Mouse::Event::Type::LRelease:
+		{
+			for (auto& io : IObjects)
+			{
+				if (io->PointInRect())
+				{
+					io->Interact();
+					break;
+				}
+			}
+		}
+		break;
+		case Mouse::Event::Type::RPress:
+			break;
+		case Mouse::Event::Type::RRelease:
+			break;
+		case Mouse::Event::Type::MPress:
+			break;
+		case Mouse::Event::Type::MRelease:
+			break;
+		case Mouse::Event::Type::WheelUp:
+		{
+			for (auto& io : IObjects)
+			{
+				if (io->PointInRect())
+				{
+					io->WheelUp();
+					break;
+				}
+			}
+		}
+			break;
+		case Mouse::Event::Type::WheelDown:
+		{
+			for (auto& io : IObjects)
+			{
+				if (io->PointInRect())
+				{
+					io->WheelDown();
+					break;
+				}
+			}
+		}
+			break;
+		}
+	}
+}
+
+void BaseLevel::ProcessKeyboardEvents(double dDelta)
+{
 	if (!pKeyboard) return;
 
 	//temporary, replace with even setup
-	if (GetKeyState(VK_LBUTTON) < 0)
+	/*if (GetKeyState(VK_LBUTTON) < 0)
 	{
 		if (pSideMenu->PointInRect(MenuCoordinates))
 			pSideMenu->Interact(MenuCoordinates);
-	}
+	}*/
 
 	//update the scene
 	Keyboard::Event keyEvents = {};

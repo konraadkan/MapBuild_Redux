@@ -1,10 +1,12 @@
 #pragma once
 #include "Level.h"
 #include "SideMenu.h"
+#include <vector>
 
 class BaseLevel : public Level
 {
 private:
+	std::vector<InteractObjects*> IObjects;
 	D2D1_POINT_2F Center = D2D1::Point2F();
 	D2D1_SIZE_F GridSquareSize = D2D1::SizeF(64.0f, 64.0f);
 	D2D1_SIZE_F Scale = D2D1::SizeF(1.0f, 1.0f);
@@ -26,13 +28,16 @@ private:
 public:
 	BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePosition, int WindowX, int WindowY);
 	~BaseLevel();
-	void Load(Keyboard* const keyboard) override;
+	void Load(Keyboard* const keyboard, Mouse* const mouse) override;
 	void Unload() override;
 	void Render() override;
 	void ProcessEvents(double dDelta) override;
 	void Update(double dDelta) override;
 private:
 	void DrawSideMenu();
+	void ProcessKeyboardEvents(double dDelta);
+	void ProcessMouseEvents(double dDelta);
+	float afps = 0.0f;
 public:
 	SideMenu* pSideMenu = nullptr;
 };

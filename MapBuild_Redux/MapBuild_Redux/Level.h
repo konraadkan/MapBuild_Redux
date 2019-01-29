@@ -1,6 +1,7 @@
 #pragma once
 #include "Graphics.h"
 #include "keyboard.h"
+#include "Mouse.h"
 #include <queue>
 
 class Level
@@ -17,9 +18,10 @@ protected:
 protected:
 	static Graphics* gfx;
 	Keyboard* pKeyboard = nullptr;
+	Mouse* pMouse = nullptr;
 	bool bGridOnTop = false;
 public:	
-	virtual void Load(Keyboard* const keyboard) = 0;
+	virtual void Load(Keyboard* const keyboard, Mouse* const mouse) = 0;
 	virtual void Unload() = 0;
 	virtual void Render() = 0;
 	virtual void Update(double dDelta) = 0;

@@ -1,4 +1,5 @@
 #pragma once
+#include "MenuSection.h"
 #include "Buttons.h"
 #include "Shapes.h"
 
@@ -68,8 +69,7 @@ private:
 	void UpdateNextButtonRect(const MenuItemType ItemType);
 	void AddSeparation(const MenuItemType ItemType, D2D1::Matrix3x2F* const transform, D2D1_RECT_F* const area, const D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f));
 public:
-	SideMenu(Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area) : Buttons(graphics, Transform, area) {}
-	SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area);
+	SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p);
 	~SideMenu()
 	{
 		while (pChild.size())
@@ -80,5 +80,9 @@ public:
 	}
 	void Draw() override;
 	void Interact(const D2D1_POINT_2F p) override;
+	void Interact() override;
 	bool PointInRect(const D2D1_POINT_2F p) override;
+	void WheelUp() override;
+	void WheelDown() override;
+	void Unload() override;
 };

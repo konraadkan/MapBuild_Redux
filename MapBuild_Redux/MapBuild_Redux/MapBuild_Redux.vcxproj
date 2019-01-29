@@ -123,6 +123,8 @@
     <ClCompile Include="keyboard.cpp" />
     <ClCompile Include="Level.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MenuSection.cpp" />
+    <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="Shapes.cpp" />
     <ClCompile Include="SideMenu.cpp" />
     <ClCompile Include="window.cpp" />
@@ -136,6 +138,8 @@
     <ClInclude Include="InteractObjects.h" />
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="Level.h" />
+    <ClInclude Include="MenuSection.h" />
+    <ClInclude Include="Mouse.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ShapeList.h" />
     <ClInclude Include="Shapes.h" />

@@ -6,6 +6,7 @@ class Controller
 	Controller() { bLoading = true; }
 public:
 	static Keyboard m_Keyboard;
+	static Mouse m_Mouse;
 	static Level* CurrentLevel;
 	static bool bLoading;
 	static void Render();
