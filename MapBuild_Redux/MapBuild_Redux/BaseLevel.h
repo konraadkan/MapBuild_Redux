@@ -37,7 +37,7 @@ private:
 	void DrawSideMenu();
 	void ProcessKeyboardEvents(double dDelta);
 	void ProcessMouseEvents(double dDelta);
-	float afps = 0.0f;
+	int afps = 0;
 public:
 	SideMenu* pSideMenu = nullptr;
 };

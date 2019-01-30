@@ -27,6 +27,7 @@ protected:
 	D2D1_RECT_F m_ExpandedDest = D2D1::RectF();
 	D2D1_COLOR_F m_Color = D2D1::ColorF(0.0f, 0.0f, 0.0f);
 	D2D1_COLOR_F m_HighlightColor = D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.0f);
+	D2D1_COLOR_F m_SelectedColor = D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.0f);
 	D2D1_SIZE_F m_Radius = D2D1::SizeF();
 	float fThickness = 1.0f;
 	Graphics* gfx = nullptr;
@@ -38,7 +39,7 @@ protected:
 	std::wstring wLable;
 	DWRITE_TEXT_ALIGNMENT m_Alignment;
 	DWRITE_PARAGRAPH_ALIGNMENT m_pAlignment;
-	D2D1_POINT_2F* pMouseCoordinates;
+	D2D1_POINT_2F* pMouseCoordinates;	
 protected:
 	enum class Sector
 	{
@@ -58,6 +59,7 @@ public:
 	virtual void Interact();
 	virtual void Draw() = 0;
 public:
+	virtual void SetSelectionColor(const D2D1_COLOR_F color) { memcpy(&m_SelectedColor, &color, sizeof(m_SelectedColor)); }
 	virtual void SetInvertTransformPointer(D2D1::Matrix3x2F* const pInvT) { pInvTransforms = pInvT; }
 	virtual void SetMousePointer(D2D1_POINT_2F* const p) { pMouseCoordinates = p; }
 	virtual void WheelUp() {}
@@ -95,6 +97,8 @@ public:
 	virtual const DWRITE_TEXT_ALIGNMENT GetTextAlignment() { return m_Alignment; }
 	virtual void MouseOver() {}
 	virtual void AddChild(InteractObjects* Iobject) {}
+	virtual void ChangeMode() {}
 public:
 	std::vector<InteractObjects*> pChild;
+	InteractObjects* pParent = nullptr;
 };

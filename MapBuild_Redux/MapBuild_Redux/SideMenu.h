@@ -63,15 +63,34 @@ private:
 	const D2D1_SIZE_F SizeMenuSize = D2D1::SizeF(94.0f, 32.0f);
 	const D2D1_SIZE_F ItemMenuSize = D2D1::SizeF(94.0f, 54.0f);
 	const float SeperationDistance = 10.0f;
+	bool bBuildMode = true;
 private:
 	std::vector<D2D1_RECT_F> CategoryStartPoints;
+	std::vector<InteractObjects*> InitiativeModeObjects;
+	std::vector<InteractObjects*> BuildModeObjects;
 	const D2D1_RECT_F GetNextButtonRect(const MenuItemType ItemType);
 	void UpdateNextButtonRect(const MenuItemType ItemType);
 	void AddSeparation(const MenuItemType ItemType, D2D1::Matrix3x2F* const transform, D2D1_RECT_F* const area, const D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f));
+	void DrawBuildMode();
+	void DrawInitiativeMode();
+	void AddInitiativeObject(InteractObjects* const Io);
+	void AddBuildObject(InteractObjects* const Io);
 public:
 	SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p);
 	~SideMenu()
 	{
+		while (!InitiativeModeObjects.empty())
+		{
+			InitiativeModeObjects.back() = nullptr;
+			InitiativeModeObjects.pop_back();
+		}
+
+		while (!BuildModeObjects.empty())
+		{
+			BuildModeObjects.back() = nullptr;
+			BuildModeObjects.pop_back();
+		}
+		
 		while (pChild.size())
 		{
 			SafeDelete(&pChild.back());
@@ -85,4 +104,5 @@ public:
 	void WheelUp() override;
 	void WheelDown() override;
 	void Unload() override;
+	void ChangeMode() override { bBuildMode ^= true; }
 };

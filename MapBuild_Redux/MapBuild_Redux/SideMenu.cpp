@@ -2,14 +2,36 @@
 
 void SideMenu::Draw()
 {
-	for (auto& child : pChild)
+	if (bBuildMode) DrawBuildMode();
+	if (!bBuildMode) DrawInitiativeMode();
+}
+
+void SideMenu::DrawBuildMode()
+{
+	for (auto& child : BuildModeObjects)
 	{
 		if (child) 
 			if(child->IsBack()) child->Draw();
 	}
 	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), m_Dest, D2D1::ColorF(0.0f, 0.0f, 0.0f), m_Radius.width, m_Radius.height, fThickness);
 	gfx->FillRoundedRect(gfx->GetCompatibleTarget(), m_Dest, m_Color, m_Radius.width, m_Radius.height);
-	for (auto& child : pChild)
+	for (auto& child : BuildModeObjects)
+	{
+		if (child)
+			if (!child->IsBack()) child->Draw();
+	}
+}
+
+void SideMenu::DrawInitiativeMode()
+{
+	for (auto& child : InitiativeModeObjects)
+	{
+		if (child)
+			if (child->IsBack()) child->Draw();
+	}
+	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), m_Dest, D2D1::ColorF(0.0f, 0.0f, 0.0f), m_Radius.width, m_Radius.height, fThickness);
+	gfx->FillRoundedRect(gfx->GetCompatibleTarget(), m_Dest, m_Color, m_Radius.width, m_Radius.height);
+	for (auto& child : InitiativeModeObjects)
 	{
 		if (child)
 			if (!child->IsBack()) child->Draw();
@@ -18,13 +40,18 @@ void SideMenu::Draw()
 
 void SideMenu::Interact()
 {
-	for (auto& child : pChild)
+	std::vector<InteractObjects*>* vIo = bBuildMode ? &BuildModeObjects : &InitiativeModeObjects;
+	for (auto& child : *vIo)
 	{
 		if (child->PointInRect())
 		{
 			if (!_wcsicmp(child->GetLabel(), L"ShowHide"))
 			{
 				if (child->PointInSector(Sector::West)) bHide ? SetUnhidden() : SetHidden();
+			}
+			else if (!_wcsicmp(child->GetLabel(), L"Toggle Initiative"))
+			{
+				ChangeMode();
 			}
 			else child->Interact();
 			return;
@@ -34,7 +61,8 @@ void SideMenu::Interact()
 
 void SideMenu::Interact(const D2D1_POINT_2F p)
 {
-	for (auto& child : pChild)
+	std::vector<InteractObjects*>* vIo = bBuildMode ? &BuildModeObjects : &InitiativeModeObjects;
+	for (auto& child : *vIo)
 	{
 		if (child->PointInRect(p))
 		{
@@ -107,6 +135,8 @@ SideMenu::SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1:
 	SetDest(targetDest);
 	SetColor(D2D1::ColorF(0.75f, 0.80f, 0.82f));
 	pChild.push_back(new ClassShapes(ShapeTypes::Ellipses, gfx, false, Transform, pClientRect, pMouseCoordinates, true));
+	AddInitiativeObject(pChild.back());
+	AddBuildObject(pChild.back());
 	pChild.back()->SetRadius(D2D1::SizeF(15.0f, (m_Dest.bottom + m_Dest.top) * 0.5f));
 	pChild.back()->SetCenter(D2D1::Point2F(m_Dest.left, (m_Dest.bottom + m_Dest.top) * 0.5f));
 	pChild.back()->SetFill();
@@ -124,43 +154,47 @@ SideMenu::SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1:
 	//add buttons
 	D2D1_RECT_F t = CategoryStartPoints[static_cast<int>(MenuItemType::Options)];
 	pChild.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, D2D1::RectF(t.left, t.top, m_Dest.right, t.bottom), OptionMenuSize.height, L"Options"));
-	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Lock to Grid", GetNextButtonRect(MenuItemType::Options))); UpdateNextButtonRect(MenuItemType::Options);
-	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Grid on Top", GetNextButtonRect(MenuItemType::Options))); UpdateNextButtonRect(MenuItemType::Options);
-	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle PC Colors", GetNextButtonRect(MenuItemType::Options))); UpdateNextButtonRect(MenuItemType::Options);
-	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Add Custom Colors", GetNextButtonRect(MenuItemType::Options))); UpdateNextButtonRect(MenuItemType::Options);
-	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Initiative", GetNextButtonRect(MenuItemType::Options))); UpdateNextButtonRect(MenuItemType::Options);
-	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Keep Aspect", GetNextButtonRect(MenuItemType::Options))); UpdateNextButtonRect(MenuItemType::Options);
-	pChild.push_back(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Turn Counter", GetNextButtonRect(MenuItemType::Options))); UpdateNextButtonRect(MenuItemType::Options);
+	AddInitiativeObject(pChild.back());
+	AddBuildObject(pChild.back());
+	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Lock to Grid", GetNextButtonRect(MenuItemType::Options), D2D1::ColorF(0.0f,0.0f,0.0f), static_cast<InteractObjects*>(this), true)); UpdateNextButtonRect(MenuItemType::Options);
+	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Grid on Top", GetNextButtonRect(MenuItemType::Options), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true)); UpdateNextButtonRect(MenuItemType::Options);
+	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle PC Colors", GetNextButtonRect(MenuItemType::Options), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true)); UpdateNextButtonRect(MenuItemType::Options);
+	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Add Custom Colors", GetNextButtonRect(MenuItemType::Options), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this))); UpdateNextButtonRect(MenuItemType::Options);
+	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Initiative", GetNextButtonRect(MenuItemType::Options), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true)); UpdateNextButtonRect(MenuItemType::Options);
+	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Keep Aspect", GetNextButtonRect(MenuItemType::Options), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true)); UpdateNextButtonRect(MenuItemType::Options);
+	pChild.push_back(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Turn Counter", GetNextButtonRect(MenuItemType::Options), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true)); UpdateNextButtonRect(MenuItemType::Options);
 	AddSeparation(MenuItemType::Options, Transform, area);
+	AddInitiativeObject(pChild.back());
+	AddBuildObject(pChild.back());
 
 	t = CategoryStartPoints[static_cast<int>(MenuItemType::MainCategory)];
 	pChild.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, D2D1::RectF(t.left, t.top, m_Dest.right, t.bottom), MainMenuSize.height, L"Main Categories"));
+	AddBuildObject(pChild.back());
 	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"PC", GetNextButtonRect(MenuItemType::MainCategory))); UpdateNextButtonRect(MenuItemType::MainCategory);
 	AddSeparation(MenuItemType::MainCategory, Transform, area);
+	AddBuildObject(pChild.back());
 	
 	t = CategoryStartPoints[static_cast<int>(MenuItemType::SubCategory)];
 	pChild.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, D2D1::RectF(t.left, t.top, m_Dest.right, t.bottom), SubMenuSize.height, L"Sub Categories"));
+	AddBuildObject(pChild.back());
 	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Main", GetNextButtonRect(MenuItemType::SubCategory))); UpdateNextButtonRect(MenuItemType::SubCategory);
 	AddSeparation(MenuItemType::SubCategory, Transform, area);
+	AddBuildObject(pChild.back());
 
 	t = CategoryStartPoints[static_cast<int>(MenuItemType::SizeCategory)];
 	pChild.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, D2D1::RectF(t.left, t.top, m_Dest.right, t.bottom), SizeMenuSize.height, L"Size Categories"));
-	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Fine", GetNextButtonRect(MenuItemType::SizeCategory))); UpdateNextButtonRect(MenuItemType::SizeCategory);
+	AddBuildObject(pChild.back());
+	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Fine", GetNextButtonRect(MenuItemType::SizeCategory), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true)); UpdateNextButtonRect(MenuItemType::SizeCategory);
 	AddSeparation(MenuItemType::SizeCategory, Transform, area);
+	AddBuildObject(pChild.back());
 
 	t = CategoryStartPoints[static_cast<int>(MenuItemType::ItemCategory)];
 	pChild.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, D2D1::RectF(t.left, t.top, m_Dest.right, t.bottom), ItemMenuSize.height + 2.0f, L"Items", true));
+	AddBuildObject(pChild.back());
 	for (size_t i = 0; i < 100; i++)
 	{
-		pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Sara", GetNextButtonRect(MenuItemType::ItemCategory))); UpdateNextButtonRect(MenuItemType::ItemCategory);
+		pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Sara", GetNextButtonRect(MenuItemType::ItemCategory), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true)); UpdateNextButtonRect(MenuItemType::ItemCategory);
 	}
-	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Sara", GetNextButtonRect(MenuItemType::ItemCategory))); UpdateNextButtonRect(MenuItemType::ItemCategory);
-	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Sara", GetNextButtonRect(MenuItemType::ItemCategory))); UpdateNextButtonRect(MenuItemType::ItemCategory);
-	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Sara", GetNextButtonRect(MenuItemType::ItemCategory))); UpdateNextButtonRect(MenuItemType::ItemCategory);
-	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Sara", GetNextButtonRect(MenuItemType::ItemCategory))); UpdateNextButtonRect(MenuItemType::ItemCategory);
-	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Sara", GetNextButtonRect(MenuItemType::ItemCategory))); UpdateNextButtonRect(MenuItemType::ItemCategory);
-	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Sara", GetNextButtonRect(MenuItemType::ItemCategory))); UpdateNextButtonRect(MenuItemType::ItemCategory);
-	pChild.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Sara", GetNextButtonRect(MenuItemType::ItemCategory))); UpdateNextButtonRect(MenuItemType::ItemCategory);
 	
 	D2D1_RECT_F const temRect = pChild.back()->GetRect();
 	pChild.back()->SetDest(D2D1::RectF(temRect.left, temRect.top, temRect.right, area->bottom > temRect.bottom ? area->bottom : temRect.bottom));
@@ -199,4 +233,14 @@ void SideMenu::Unload()
 		SafeDelete(&pChild.back());
 		pChild.pop_back();
 	}
+}
+
+void SideMenu::AddInitiativeObject(InteractObjects* const Io)
+{
+	InitiativeModeObjects.push_back(Io);
+}
+
+void SideMenu::AddBuildObject(InteractObjects* const Io)
+{
+	BuildModeObjects.push_back(Io);
 }

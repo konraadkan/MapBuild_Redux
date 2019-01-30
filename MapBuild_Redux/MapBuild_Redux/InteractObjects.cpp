@@ -130,6 +130,10 @@ void InteractObjects::Interact(const D2D1_POINT_2F p)
 	{
 		if (child->PointInRect(p))
 		{
+			if (!_wcsicmp(child->GetLabel(), L"Toggle Initiative"))
+			{
+				if (child->pParent) child->pParent->ChangeMode();
+			}
 			child->Interact(p);
 		}
 	}
@@ -139,6 +143,13 @@ void InteractObjects::Interact()
 {
 	for (auto& child : pChild)
 	{
-		if (child->PointInRect()) child->Interact();
+		if (child->PointInRect())
+		{
+			if (!_wcsicmp(child->GetLabel(), L"Toggle Initiative"))
+			{
+				if (child->pParent) child->pParent->ChangeMode();
+			}
+			child->Interact();
+		}
 	}
 }

@@ -100,7 +100,7 @@ void BaseLevel::DrawSideMenu()
 
 void BaseLevel::Update(double dDelta)
 {
-	afps = static_cast<float>(1.0 / dDelta);
+	afps = static_cast<int>(1.0 / dDelta);
 	if (Movement.bMove)
 	{
 		for (auto& d : Movement.vDirection)
@@ -204,13 +204,6 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 void BaseLevel::ProcessKeyboardEvents(double dDelta)
 {
 	if (!pKeyboard) return;
-
-	//temporary, replace with even setup
-	/*if (GetKeyState(VK_LBUTTON) < 0)
-	{
-		if (pSideMenu->PointInRect(MenuCoordinates))
-			pSideMenu->Interact(MenuCoordinates);
-	}*/
 
 	//update the scene
 	Keyboard::Event keyEvents = {};
