@@ -64,8 +64,11 @@ private:
 	const D2D1_SIZE_F ItemMenuSize = D2D1::SizeF(94.0f, 54.0f);
 	const float SeperationDistance = 10.0f;
 	bool bBuildMode = true;
+	char* Buffer = nullptr;
+	size_t BufferSize = 0;
 private:
 	std::vector<D2D1_RECT_F> CategoryStartPoints;
+	std::vector<MenuSection*> pMenuSections;
 	std::vector<InteractObjects*> InitiativeModeObjects;
 	std::vector<InteractObjects*> BuildModeObjects;
 	const D2D1_RECT_F GetNextButtonRect(const MenuItemType ItemType);
@@ -79,6 +82,13 @@ public:
 	SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p);
 	~SideMenu()
 	{
+		SafeDeleteArray(&Buffer);
+		while (!pMenuSections.empty())
+		{
+			SafeDelete(&pMenuSections.back());
+			pMenuSections.pop_back();
+		}
+
 		while (!InitiativeModeObjects.empty())
 		{
 			InitiativeModeObjects.back() = nullptr;

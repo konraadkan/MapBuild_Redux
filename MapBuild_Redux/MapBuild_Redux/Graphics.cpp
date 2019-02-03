@@ -119,7 +119,7 @@ bool Graphics::BuildCustomGeometry(std::queue<D2D1_POINT_2F> points, D2D1_COLOR_
 	ID2D1PathGeometry* pG = nullptr;
 	pGeometryPaths.push_back(pG);
 
-	if (FAILED(m_Factory->CreatePathGeometry(&pGeometryPaths.back())))
+	if (!SUCCEEDED(m_Factory->CreatePathGeometry(&pGeometryPaths.back())))
 	{
 		pGeometryPaths.pop_back();
 		return false;
@@ -156,7 +156,7 @@ bool Graphics::BuildCustomGeometry(std::vector<ID2D1PathGeometry*>& pGeometry, s
 	ID2D1PathGeometry* pG = nullptr;
 	pGeometry.push_back(pG);
 
-	if (FAILED(m_Factory->CreatePathGeometry(&pGeometry.back())))
+	if (!SUCCEEDED(m_Factory->CreatePathGeometry(&pGeometry.back())))
 	{
 		pGeometry.pop_back();
 		return false;

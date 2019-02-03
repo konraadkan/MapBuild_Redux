@@ -22,6 +22,14 @@ protected:
 			(*ppT) = nullptr;
 		}
 	}
+	template<typename T> void SafeDeleteArray(T** ppT)
+	{
+		if (ppT)
+		{
+			delete[] (*ppT);
+			(*ppT) = nullptr;
+		}
+	}
 protected:
 	D2D1_RECT_F m_Dest = D2D1::RectF();
 	D2D1_RECT_F m_ExpandedDest = D2D1::RectF();
@@ -98,6 +106,7 @@ public:
 	virtual void MouseOver() {}
 	virtual void AddChild(InteractObjects* Iobject) {}
 	virtual void ChangeMode() {}
+	virtual const bool IsSelected() { return false; }
 public:
 	std::vector<InteractObjects*> pChild;
 	InteractObjects* pParent = nullptr;

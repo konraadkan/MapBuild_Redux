@@ -1,10 +1,28 @@
 #pragma once
 #include "Level.h"
 #include "SideMenu.h"
+#include "Pieces.h"
 #include <vector>
 
 class BaseLevel : public Level
 {
+private:
+	template<typename T> void SafeDelete(T** ppT)
+	{
+		if (ppT)
+		{
+			delete (*ppT);
+			(*ppT) = nullptr;
+		}
+	}
+	template<typename T> void SafeDeleteArray(T** ppT)
+	{
+		if (ppT)
+		{
+			delete[](*ppT);
+			(*ppT) = nullptr;
+		}
+	}
 private:
 	std::vector<InteractObjects*> IObjects;
 	D2D1_POINT_2F Center = D2D1::Point2F();
@@ -38,6 +56,12 @@ private:
 	void ProcessKeyboardEvents(double dDelta);
 	void ProcessMouseEvents(double dDelta);
 	int afps = 0;
+	void BuildObjects(const wchar_t* sFilePath);
+	const std::wstring GetLineW(wchar_t* const buffer, wchar_t*& pos);
+	const std::wstring GetLineW(char* const buffer, char*& pos);
+	template<typename T> void RemoveEmptyPieces(T& pieces);
 public:
 	SideMenu* pSideMenu = nullptr;
+	std::vector<PiecesW> vPiecesW;
+	std::vector<Pieces> vPieces;
 };

@@ -33,4 +33,5 @@ public:
 	void Interact(D2D1_POINT_2F p) override;
 	void Interact() override;
 	void Draw() override;
+	const bool IsSelected() override { return bSelected; }
 };

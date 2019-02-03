@@ -34,7 +34,7 @@ HINSTANCE Window::WindowClass::GetInstance() noexcept
 	return wndClass.hInstance;
 }
 
-Window::Window(int width, int height, const wchar_t* name) noexcept
+Window::Window(int Width, int Height, const wchar_t* name) noexcept : width(Width), height(Height)
 {
 	RECT wr = {};
 	wr.left = 100;
@@ -59,7 +59,7 @@ Window::Window(int width, int height, const wchar_t* name) noexcept
 	Controller::SwitchLevel(new BaseLevel(gfx, &m_MouseCoordinates, width, height));
 }
 
-Window::Window(POINT p, int width, int height, const wchar_t* name) noexcept
+Window::Window(POINT p, int Width, int Height, const wchar_t* name) noexcept : width(Width), height(Height)
 {
 	RECT wr = {};
 	wr.left = 100;
@@ -134,7 +134,32 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 			ScreenToClient(hWnd, &tp);
 			m_MouseCoordinates = D2D1::Point2F(static_cast<float>(tp.x), static_cast<float>(tp.y));
 		}
-		Controller::m_Mouse.OnMouseMove(m_MouseCoordinates.x, m_MouseCoordinates.y);
+		if (m_MouseCoordinates.x > 0 && m_MouseCoordinates.y < width && m_MouseCoordinates.y > 0 && m_MouseCoordinates.y < height)
+		{
+			Controller::m_Mouse.OnMouseMove(m_MouseCoordinates.x, m_MouseCoordinates.y);
+			if (!Controller::m_Mouse.InWindow())
+			{
+				Controller::m_Mouse.OnMouseEnter();
+			}
+		}
+		else
+		{
+			m_MouseCoordinates.x = m_MouseCoordinates.x > 0.0f ? m_MouseCoordinates.x : 0.0f;
+			m_MouseCoordinates.x = m_MouseCoordinates.x < width ? m_MouseCoordinates.x : width;
+			m_MouseCoordinates.y = m_MouseCoordinates.y > 0.0f ? m_MouseCoordinates.y : 0.0f;
+			m_MouseCoordinates.y = m_MouseCoordinates.y < height ? m_MouseCoordinates.y : height;
+			if (wParam & (MK_LBUTTON | MK_RBUTTON | MK_MBUTTON))
+			{				
+				Controller::m_Mouse.OnMouseMove(m_MouseCoordinates.x, m_MouseCoordinates.y);
+			}
+			else
+			{
+				Controller::m_Mouse.OnMouseLeave();
+				Controller::m_Mouse.OnLeftReleased(m_MouseCoordinates.x, m_MouseCoordinates.y);
+				Controller::m_Mouse.OnRightReleased(m_MouseCoordinates.x, m_MouseCoordinates.y);
+				Controller::m_Mouse.OnMiddleReleased(m_MouseCoordinates.x, m_MouseCoordinates.y);
+			}
+		}
 		break;
 	case WM_LBUTTONDOWN:
 		Controller::m_Mouse.OnLeftPressed(m_MouseCoordinates.x, m_MouseCoordinates.y);
@@ -169,9 +194,11 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		Controller::m_Keyboard.OnChar(static_cast<wchar_t>(wParam));
 		break;
 	case WM_KEYDOWN:
+	case WM_SYSKEYDOWN:
 		if (!(lParam & 0x40000000) || Controller::m_Keyboard.AutorepeatEnabled()) Controller::m_Keyboard.OnKeyPressed(static_cast<unsigned char>(wParam));
 		break;
 	case WM_KEYUP:
+	case WM_SYSKEYUP:
 		Controller::m_Keyboard.OnKeyReleased(static_cast<unsigned char>(wParam));
 		break;
 	case WM_KILLFOCUS:

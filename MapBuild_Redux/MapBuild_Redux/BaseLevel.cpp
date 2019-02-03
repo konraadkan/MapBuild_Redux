@@ -9,6 +9,16 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	RotationCenter = D2D1::Point2F(WindowSize.width * 0.5f, WindowSize.height * 0.5f);
 	pSideMenu = new SideMenu(D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow, &MenuCoordinates);
 	IObjects.push_back(pSideMenu);
+
+	BuildObjects(L"mainpcs-unicode.ini");
+	//BuildObjects(L"mainpcs.ini");
+	while (vPieces.size())
+	{
+		PiecesW t;
+		t.Convert(vPieces.back());
+		vPiecesW.push_back(t);
+		vPieces.pop_back();
+	}
 }
 
 BaseLevel::~BaseLevel()
@@ -47,7 +57,7 @@ void BaseLevel::Render()
 
 	gfx->DrawCircle(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), D2D1::Point2F(500, 500), 40, D2D1::ColorF(0, 1, 0), 5.0f);
 	gfx->OutputTextSmall(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f,0.0f,WindowSize.width, WindowSize.height), L"Test Small", D2D1::RectF(0.0f, 64.0f, 64.0f, 128.0f));
-	gfx->OutputText(gfx->GetCompatibleTarget(), std::to_wstring(static_cast<long>(TranslatedCoordinates.x)).c_str(), D2D1::RectF(0, 0, 128, 128));
+	gfx->OutputText(gfx->GetCompatibleTarget(), std::wstring(std::to_wstring(static_cast<long>(TranslatedCoordinates.x)) + L"," + std::to_wstring(static_cast<long>(TranslatedCoordinates.y))).c_str(), D2D1::RectF(0, 0, 128, 128));
 	gfx->FillCircle(gfx->GetCompatibleTarget(), D2D1::Point2F(800, 800), 100);
 	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), D2D1::RectF(1050, 100, 1900, 500), D2D1::ColorF(0,0,0), 25,25);
 	gfx->FillRoundedRect(gfx->GetCompatibleTarget(), D2D1::RectF(1050, 505, 1900, 905));
@@ -325,4 +335,113 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 			}
 		}
 	}
+}
+
+template<typename T> void BaseLevel::RemoveEmptyPieces(T& pieces)
+{
+	pieces.erase(std::remove_if(pieces.begin(), pieces.end(), [](auto& o) { return o.GetType().empty(); }), pieces.end());
+}
+
+void BaseLevel::BuildObjects(const wchar_t* sFilePath)
+{
+	size_t BufferSize = 0;
+	FILE* file = nullptr;
+	errno_t err = _wfopen_s(&file, sFilePath, L"rb");
+	if (err)
+	{
+		std::wstring errmsg = L"Failed to open ";
+		errmsg.append(sFilePath);
+		std::wstring errtopic = L"Error #" + std::to_wstring(static_cast<int>(err));
+		MessageBoxW(nullptr, errmsg.c_str(), errtopic.c_str(), MB_OK | MB_ICONERROR);
+		return;
+	}
+
+	fseek(file, 0, SEEK_END);
+	BufferSize = ftell(file);
+	fseek(file, 0, SEEK_SET);
+
+	//handles if the file is in unicode
+	if (fgetwc(file) == 0xFEFF)
+	{
+		wchar_t* buffer = new wchar_t[BufferSize];
+		buffer[BufferSize - 1] = L'\0';
+		fread(buffer, BufferSize - 1, 1, file);
+		fclose(file);
+		file = nullptr;
+		wchar_t* pos = buffer;
+		while (static_cast<size_t>(pos - buffer ) <= BufferSize)
+		{
+			vPiecesW.push_back(PiecesW());
+			std::queue<std::wstring> temp = vPiecesW.back().FillPiece(pos, pos);
+			while (temp.size())
+			{
+				BuildObjects(temp.front().c_str());
+				temp.pop();
+			}
+		}
+		pos = nullptr;
+		RemoveEmptyPieces(vPiecesW);
+		SafeDeleteArray(&buffer);
+	}
+	//handles if the file is in ansi
+	else
+	{
+		fseek(file, 0, SEEK_SET);
+		char* buffer = new char[BufferSize + 1];
+		buffer[BufferSize] = '\0';
+		fread(buffer, BufferSize, 1, file);
+		fclose(file);
+		file = nullptr;
+		char* pos = buffer;
+		while (static_cast<size_t>(pos - buffer + 1) <= BufferSize)
+		{
+			vPieces.push_back(Pieces());
+			std::queue<std::wstring> temp = vPieces.back().FillPiece(pos, pos);
+			while (temp.size())
+			{
+				BuildObjects(temp.front().c_str());
+				temp.pop();
+			}
+		}
+		pos = nullptr;
+		RemoveEmptyPieces(vPieces);
+		SafeDeleteArray(&buffer);
+	}
+	if (file) fclose(file);
+}
+
+const std::wstring BaseLevel::GetLineW(wchar_t* const buffer, wchar_t*& pos)
+{
+	std::wstring wbuffer = (buffer[0] == 0xFEFF) ? buffer + 1 : buffer;
+
+	wchar_t endline[] = L";þ\n\r";
+	std::string::size_type p = wbuffer.find_first_of(endline);
+	if (p == std::string::npos)
+	{
+		pos = pos + wbuffer.size() + 1;
+		return wbuffer;
+	}
+	pos = buffer + p + 1;
+	std::wstring tw(wbuffer.begin(), wbuffer.begin() + p);
+	return tw;
+}
+
+const std::wstring BaseLevel::GetLineW(char* const buffer, char*& pos)
+{
+	std::wstring wbuffer(strlen(buffer), L'#');
+	size_t conv = 0;
+	mbstowcs_s(&conv, &wbuffer[0], strlen(buffer) + 1, buffer, strlen(buffer));
+
+	wchar_t endline[] = L";þ\n\r";
+	std::string::size_type p = wbuffer.find_first_of(endline);
+	if (p == std::string::npos)
+	{
+		pos = pos + wbuffer.size() + 1;
+		return wbuffer;
+	}
+
+	pos = buffer + p + 1;
+
+	std::wstring tw(wbuffer.begin(), wbuffer.begin() + p);
+	return tw;
 }

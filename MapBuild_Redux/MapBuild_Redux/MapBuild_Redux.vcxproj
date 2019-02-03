@@ -125,8 +125,10 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MenuSection.cpp" />
     <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="Pieces.cpp" />
     <ClCompile Include="Shapes.cpp" />
     <ClCompile Include="SideMenu.cpp" />
+    <ClCompile Include="StringMod.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -140,10 +142,12 @@
     <ClInclude Include="Level.h" />
     <ClInclude Include="MenuSection.h" />
     <ClInclude Include="Mouse.h" />
+    <ClInclude Include="Pieces.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ShapeList.h" />
     <ClInclude Include="Shapes.h" />
     <ClInclude Include="SideMenu.h" />
+    <ClInclude Include="StringMod.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>
   <ItemGroup>
