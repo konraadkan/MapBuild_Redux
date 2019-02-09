@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\leona.png
+BodyRect.Left=86.02
+BodyRect.Top=3.15
+BodyRect.Right=142.02
+BodyRect.Bottom=66.77
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=1
+FrameTime=25.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=86.02,3.15,142.02,66.77,

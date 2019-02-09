@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\gilbert.png
+BodyRect.Left=5.29
+BodyRect.Top=0.86
+BodyRect.Right=26.29
+BodyRect.Bottom=46.71
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=3
+FrameTime=250.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=5.29,0.86,26.29,46.71,28.63,0.86,49.63,46.71,53.20,0.86,74.20,46.71,

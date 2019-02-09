@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\yeti.png
+BodyRect.Left=1.61
+BodyRect.Top=32.66
+BodyRect.Right=114.41
+BodyRect.Bottom=141.26
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=3
+FrameTime=250.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=1.61,32.66,114.41,141.26,114.42,32.66,227.22,141.26,228.80,32.66,341.60,141.26,

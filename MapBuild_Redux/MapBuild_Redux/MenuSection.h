@@ -1,11 +1,11 @@
 #pragma once
 #include<vector>
 #include "InteractObjects.h"
+#include "Pieces.h"
 
 class MenuSection : public InteractObjects
 {
-private:
-	void ResizeDest();
+private:	
 	bool bIsScrollable = false;
 	D2D1_SIZE_F EntrySize = D2D1::SizeF(94.0f, 32.0f);
 	D2D1::Matrix3x2F Transforms = D2D1::Matrix3x2F::Identity();
@@ -25,9 +25,11 @@ public:
 		Unload();
 	}
 public:
+	const D2D1_RECT_F GetTranslatedRect() override;
+	D2D1::Matrix3x2F* const GetInvTranforms() { return &InvTransforms; }
 	void Interact() override;
 	void Draw() override;
-	void AddChild(InteractObjects* const Iobject) override;
+	void AddChild(InteractObjects* const Iobject, const D2D1_SIZE_F size, float seperation = 0.0f) override;
 	void Unload() override;
 	void WheelUp() override;
 	void WheelDown() override;
@@ -38,7 +40,15 @@ public:
 	const D2D1_SIZE_F GetEntrySize() { return EntrySize; }
 	void UpdateChildPositions(std::vector<InteractObjects*>& childobjs);
 	void UpdateChildPositions();
+	void SetTranslation(D2D1_SIZE_F size);
+	void ResizeDest();
+	void SetSelectedRoomPointer(std::vector< std::vector<SpritePointer*>>** const p) { pSelectedRoom = p; }
+	void SetSelectedLayerPointer(std::vector<SpritePointer*>** const p) { pSelectedLayer = p; }
+	void SetRoom(const size_t pos) override;
 public:
 	std::vector<MenuSection*> pSubsections;
 	std::vector< std::vector<InteractObjects*>> vChildObjects;
+	std::vector< std::vector< std::vector<SpritePointer*>>>** vSelectRoomsandLayers = nullptr;
+	std::vector< std::vector<SpritePointer*>>** pSelectedRoom = nullptr;
+	std::vector<SpritePointer*>** pSelectedLayer = nullptr;
 };

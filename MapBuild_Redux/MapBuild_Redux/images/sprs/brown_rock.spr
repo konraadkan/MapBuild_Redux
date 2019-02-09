@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\hgss_tileset_mountains_rocks_by_thunderdove-d3bpz02.png
+BodyRect.Left=-135.30
+BodyRect.Top=-54.07
+BodyRect.Right=-105.30
+BodyRect.Bottom=41.93
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=1
+FrameTime=25.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=-135.30,-54.07,-105.30,41.93,

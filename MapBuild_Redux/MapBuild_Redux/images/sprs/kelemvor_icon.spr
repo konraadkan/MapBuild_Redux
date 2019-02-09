@@ -1,0 +1,16 @@
+version=1.1
+BodyPath=images\Kelemvor_icon.bmp
+BodyRect.Left=0
+BodyRect.Top=0
+BodyRect.Right=152
+BodyRect.Bottom=166
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=1
+FrameTime=110
+Color.R=0
+Color.G=255
+Color.B=0
+FrameArray=0,0,152,166,

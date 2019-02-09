@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\Triton.png
+BodyRect.Left=5680.43
+BodyRect.Top=53.14
+BodyRect.Right=5786.71
+BodyRect.Bottom=236.57
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=8
+FrameTime=125.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=5680.43,53.14,5786.71,236.57,5915.96,53.14,6022.25,236.57,6149.95,53.14,6256.24,236.57,6384.98,53.14,6491.26,236.57,6619.43,53.14,6725.71,236.57,6851.80,53.14,6958.08,236.57,7084.76,53.14,7191.04,236.57,7318.02,53.14,7424.30,236.57,

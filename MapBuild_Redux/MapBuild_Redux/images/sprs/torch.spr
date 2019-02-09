@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\torch.png
+BodyRect.Left=5.85
+BodyRect.Top=16.00
+BodyRect.Righ=t25.85
+BodyRect.Bottom=45.23
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=6
+FrameTime=300
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=5.85,16.00,25.85,45.23,37.98,16.00,57.98,45.23,70.19,16.00,90.19,45.23,6.04,64.90,26.04,94.13,38.04,64.90,58.04,94.13,70.13,64.90,90.13,94.13,

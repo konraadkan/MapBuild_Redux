@@ -1,0 +1,16 @@
+version=1.1
+BodyPath=sara-knight2.bmp
+BodyRect.Left=0
+BodyRect.Top=0
+BodyRect.Right=85
+BodyRect.Bottom=158
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=32
+SpriteSize.Bottom=32
+MaxFrames=6
+FrameTime=180
+Color.R=101
+Color.G=141
+Color.B=209
+FrameArray=0,0,85,158,85,0,170,158,170,0,255,158,255,0,340,158,425,0,510,158,

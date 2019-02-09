@@ -1,0 +1,16 @@
+version=1.1
+BodyPath=images\assassin.png
+BodyRect.Left=0
+BodyRect.Top=0
+BodyRect.Right=65
+BodyRect.Bottom=72
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=32
+SpriteSize.Bottom=32
+MaxFrames=6
+FrameTime=110
+Color.R=0
+Color.G=255
+Color.B=0
+FrameArray=0,0,104,155,104,0,208,155,210,0,314,155,330,0,437,155,437,0,537,155,537,0,641,155,

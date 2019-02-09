@@ -23,12 +23,12 @@ bool InteractObjects::PointInRect()
 
 bool InteractObjects::PointInRect(const D2D1_POINT_2F p)
 {
-	return (p.x >= m_Dest.left && p.x <= m_Dest.right && p.y >= m_Dest.top && p.y <= m_Dest.bottom);
+	return (p.x > m_Dest.left && p.x < m_Dest.right && p.y > m_Dest.top && p.y < m_Dest.bottom);
 }
 
 bool InteractObjects::PointInTargetRect(const D2D1_RECT_F rect, const D2D1_POINT_2F p)
 {
-	return (p.x >= rect.left && p.x <= rect.right && p.y >= rect.top && p.y <= rect.bottom);
+	return (p.x > rect.left && p.x < rect.right && p.y > rect.top && p.y < rect.bottom);
 }
 
 bool InteractObjects::PointInSector(const Sector sector, const D2D1_POINT_2F p)

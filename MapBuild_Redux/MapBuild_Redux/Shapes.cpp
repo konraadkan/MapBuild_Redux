@@ -64,12 +64,12 @@ void ClassShapes::Draw()
 		}
 		break;
 	case ShapeTypes::Lines:
-		if (Points.size() > 2)
+		if (vPoints.size() >= 2)
 		{
-			for (size_t i = 0; i < Points.size() - 1; i++)
+			for (size_t i = 0; i < vPoints.size() - 1; i++)
 			{
-				if (bUseTransform) gfx->DrawLine(gfx->GetCompatibleTarget(), *pTransforms, *pClientRect, Points[i], Points[i + 1], m_Color, fThickness);
-				else gfx->DrawLine(gfx->GetCompatibleTarget(), Points[i], Points[i + 1], m_Color, fThickness);
+				if (bUseTransform) gfx->DrawLine(gfx->GetCompatibleTarget(), *pTransforms, *pClientRect, vPoints[i], vPoints[i + 1], m_Color, fThickness);
+				else gfx->DrawLine(gfx->GetCompatibleTarget(), vPoints[i], vPoints[i + 1], m_Color, fThickness);
 			}
 		}
 		break;

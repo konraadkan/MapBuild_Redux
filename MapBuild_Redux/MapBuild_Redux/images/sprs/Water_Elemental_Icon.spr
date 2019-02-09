@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\water_elemental.png
+BodyRect.Left=184.01
+BodyRect.Top=25.35
+BodyRect.Right=536.62
+BodyRect.Bottom=341.04
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=1
+FrameTime=25.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=184.01,25.35,536.62,341.04,

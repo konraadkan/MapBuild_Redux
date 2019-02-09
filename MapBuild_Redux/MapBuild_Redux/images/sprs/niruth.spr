@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\BigDragons_recolor.png
+BodyRect.Left=0.44
+BodyRect.Top=240.50
+BodyRect.Right=119.99
+BodyRect.Bottom=360.05
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=3
+FrameTime=250.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=0.44,240.50,119.99,360.05,120.23,240.50,239.79,360.05,239.74,240.50,359.29,360.05,

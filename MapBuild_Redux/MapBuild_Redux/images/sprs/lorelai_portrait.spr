@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\lorelai.png
+BodyRect.Left=462.02
+BodyRect.Top=5.01
+BodyRect.Right=518.02
+BodyRect.Bottom=69.23
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=1
+FrameTime=25.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=462.02,5.01,518.02,69.23,

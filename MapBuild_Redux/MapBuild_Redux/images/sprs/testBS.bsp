@@ -1,0 +1,3 @@
+Default=sprs\harpy.spr
+Attack=sprs\harpy_attack.spr
+Walk_Left=sprs\harpy_left.spr

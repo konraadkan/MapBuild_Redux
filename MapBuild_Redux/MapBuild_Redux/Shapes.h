@@ -8,7 +8,7 @@ class ClassShapes : public InteractObjects
 private:
 	ShapeTypes ShapeType;
 	D2D1_POINT_2F Center;
-	std::vector<D2D1_POINT_2F> Points;
+	std::vector<D2D1_POINT_2F> vPoints;
 	std::vector<ID2D1PathGeometry*> pPathGeometry;
 	bool bFill = false;
 	bool bBack = false;
@@ -18,11 +18,7 @@ private:
 public:
 	ClassShapes(ShapeTypes Type, Graphics* const graphics, bool UseTransform, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, bool Back = false) : InteractObjects(graphics, Transform, area, p), ShapeType(Type), bBack(Back), bUseTransform(UseTransform)
 	{
-		switch (ShapeType)
-		{
-		case ShapeTypes::Ellipses:		
-			break;
-		}
+
 	}
 	~ClassShapes()
 	{
@@ -42,4 +38,5 @@ public:
 	bool BuildCustomShape(std::queue<D2D1_POINT_2F> p, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f)) override;
 	bool IsBack() override { return bBack; }
 	void Unload() override;
+	void AddPoint(const D2D1_POINT_2F p) { vPoints.push_back(p); }
 };

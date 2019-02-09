@@ -104,9 +104,15 @@ public:
 	virtual void SetTextAlignment(const DWRITE_TEXT_ALIGNMENT Align) { m_Alignment = Align; }
 	virtual const DWRITE_TEXT_ALIGNMENT GetTextAlignment() { return m_Alignment; }
 	virtual void MouseOver() {}
-	virtual void AddChild(InteractObjects* Iobject) {}
+	virtual void AddChild(InteractObjects* const Iobject) {}
+	virtual void AddChild(InteractObjects* const Iobjects, D2D1_SIZE_F size, float seperation = 0.0f) {}
 	virtual void ChangeMode() {}
 	virtual const bool IsSelected() { return false; }
+	virtual void SetIsSelected() { }
+	virtual void UnsetIsSelected() { }
+	virtual const D2D1_RECT_F GetTranslatedRect() { return m_Dest; }
+	virtual D2D1::Matrix3x2F* const GetInvTransforms() { return pInvTransforms; }
+	virtual void SetRoom(const size_t pot) { }
 public:
 	std::vector<InteractObjects*> pChild;
 	InteractObjects* pParent = nullptr;

@@ -13,6 +13,10 @@ private:
 		SubCategory,
 		SizeCategory,
 		ItemCategory,
+		RoomCategory,
+		RoomCategoryCheckBox,
+		LayerCategory,
+		LayerCategoryCheckBox,
 		Error
 	};
 	void FillRect(D2D1_RECT_F& rect, const D2D1_SIZE_F size)
@@ -62,10 +66,25 @@ private:
 	const D2D1_SIZE_F SubMenuSize = D2D1::SizeF(94.0f, 32.0f);
 	const D2D1_SIZE_F SizeMenuSize = D2D1::SizeF(94.0f, 32.0f);
 	const D2D1_SIZE_F ItemMenuSize = D2D1::SizeF(94.0f, 54.0f);
+	const D2D1_SIZE_F RoomMenuSize = D2D1::SizeF(24.0f, 24.0f);
+	const D2D1_SIZE_F RoomCheckBoxMenuSize = D2D1::SizeF(12.0f, 12.0f);
+	const D2D1_SIZE_F LayerMenuSize = D2D1::SizeF(24.0f, 24.0f);
+	const D2D1_SIZE_F LayerCheckBoxMenuSize = D2D1::SizeF(12.0f, 12.0f);
+	D2D1_RECT_F mRealRect = D2D1::RectF();
 	const float SeperationDistance = 10.0f;
 	bool bBuildMode = true;
 	char* Buffer = nullptr;
 	size_t BufferSize = 0;
+private:
+	MenuSection* pOptionsMenu = nullptr;
+	MenuSection* pRoomsMenu = nullptr;
+	MenuSection* pRoomsCheckMenu = nullptr;
+	MenuSection* pLayersMenu = nullptr;
+	MenuSection* pLayersCheckMenu = nullptr;
+	MenuSection* CategoryMenu = nullptr;
+	MenuSection* SubcategoryMenu = nullptr;
+	MenuSection* SizeMenu = nullptr;
+	MenuSection* ItemMenu = nullptr;
 private:
 	std::vector<D2D1_RECT_F> CategoryStartPoints;
 	std::vector<MenuSection*> pMenuSections;
@@ -79,7 +98,9 @@ private:
 	void AddInitiativeObject(InteractObjects* const Io);
 	void AddBuildObject(InteractObjects* const Io);
 public:
-	SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p);
+	SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, 
+		std::vector< std::vector<SpritePointer*>>** const ppRoom, std::vector<SpritePointer*>** const ppLayer, std::vector< std::vector< std::vector<SpritePointer*>>>** const ppRL,
+		std::vector<bool>* const VisibleRooms, std::vector< std::vector<bool>>* const VisibleLayers);
 	~SideMenu()
 	{
 		SafeDeleteArray(&Buffer);
@@ -115,4 +136,16 @@ public:
 	void WheelDown() override;
 	void Unload() override;
 	void ChangeMode() override { bBuildMode ^= true; }
+	void SetInvTransform(D2D1::Matrix3x2F* const inv) { pInvTransforms = inv; }
+	const bool IsInRealRect() { return PointInTargetRect(mRealRect); }
+	void SetSelectedRoomPointer(std::vector< std::vector<SpritePointer*>>** const p) { pSelectedRoom = p; }
+	void SetSelectedLayerPointer(std::vector<SpritePointer*>** const p) { pSelectedLayer = p; }
+	void CreateRoomButton(D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area);
+	void CreateLayerButton(D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area);
+
+	std::vector< std::vector<SpritePointer*>>** pSelectedRoom = nullptr;
+	std::vector<SpritePointer*>** pSelectedLayer = nullptr;
+	std::vector< std::vector< std::vector<SpritePointer*>>>** vSelectRoomsandLayers = nullptr;
+	std::vector<bool>* pVisibleRooms = nullptr;
+	std::vector< std::vector<bool>>* pVisibleLayers = nullptr;
 };

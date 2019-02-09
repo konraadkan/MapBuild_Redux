@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\yuki-onna.png
+BodyRect.Left=60.91
+BodyRect.Top=7.93
+BodyRect.Right=96.19
+BodyRect.Bottom=56.65
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=8
+FrameTime=150.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=60.91,7.93,96.19,56.65,92.83,7.93,128.11,56.65,124.92,7.93,160.20,56.65,61.33,56.17,96.60,104.90,102.31,56.17,137.58,104.90,141.34,56.17,176.61,104.90,181.83,56.17,217.10,104.90,220.97,56.17,256.24,104.90,

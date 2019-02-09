@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\knight.png
+BodyRect.Left=2.32
+BodyRect.Top=2.00
+BodyRect.Right=1166.32
+BodyRect.Bottom=1070.00
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=7
+FrameTime=100.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=2.32,2.00,1166.32,1070.00,1168.46,2.00,2332.46,1070.00,2335.20,2.00,3499.20,1070.00,3500.68,2.00,4664.68,1070.00,4668.21,2.00,5832.21,1070.00,5835.76,2.00,6999.76,1070.00,7002.35,2.00,8166.35,1070.00,

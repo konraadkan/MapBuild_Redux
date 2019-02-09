@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\emilia.png
+BodyRect.Left=4.87
+BodyRect.Top=1.57
+BodyRect.Right=20.00
+BodyRect.Bottom=46.96
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=3
+FrameTime=250.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=4.87,1.57,20.00,46.96,28.54,1.57,43.67,46.96,52.66,1.57,67.79,46.96,

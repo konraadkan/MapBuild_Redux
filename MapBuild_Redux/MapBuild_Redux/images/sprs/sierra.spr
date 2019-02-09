@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\sierra.png
+BodyRect.Left=9.88
+BodyRect.Top=6.42
+BodyRect.Right=30.16
+BodyRect.Bottom=52.13
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=3
+FrameTime=250.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=9.88,6.42,30.16,52.13,33.88,6.42,54.16,52.13,57.83,6.42,78.11,52.13,

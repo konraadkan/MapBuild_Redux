@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\cat_fluffy.png
+BodyRect.Left=296.92
+BodyRect.Top=5.04
+BodyRect.Right=324.03
+BodyRect.Bottom=48.59
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=3
+FrameTime=150.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=296.92,5.04,324.03,48.59,344.81,5.04,371.92,48.59,393.15,5.04,420.26,48.59,

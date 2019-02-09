@@ -7,14 +7,14 @@ void Buttons::Interact(D2D1_POINT_2F p)
 	{
 		if (child)
 		{
-			if (child->PointInRect())
+			if (child->PointInRect(p))
 			{
 				if (!_wcsicmp(child->GetLabel(), L"Toggle Initiative"))
 				{
 					if(child->pParent) child->pParent->ChangeMode();
 				}
 				else
-					child->Interact();
+					child->Interact(p);
 				return;
 			}
 		}
@@ -41,4 +41,66 @@ void Buttons::Draw()
 	{
 		if (child) child->Draw();
 	}
+}
+
+void Checkbox::Interact()
+{
+	if (IsHidden()) return;
+	if (IsSelected()) return;
+
+	SetIsSelected();
+	for (auto& c : pParent->pParent->pChild)
+	{
+		if (!c) continue;
+		for (auto& cb : c->pChild)
+		{
+			if (!cb || cb == this) continue;
+			if (cb->IsSelected())
+				cb->UnsetIsSelected();
+		}
+	}
+
+	if (bRoom)
+	{
+		for (size_t i = 0; i < pParent->pParent->pChild.size(); i++)
+		{
+			if (pParent->pParent->pChild.at(i)->pChild.back()->IsSelected())
+			{
+				pParent->pParent->SetRoom(i);
+				break;
+			}
+		}
+	}
+	else
+	{//if its not a room its a layer
+
+	}	
+}
+
+void RoomLayerBox::Interact(D2D1_POINT_2F p)
+{
+	if (IsHidden()) return;
+	//toggle associated room or layer's visiblity to on / off
+	for (auto& child : pChild)
+	{
+		if (child)
+		{
+			if (child->PointInRect(p))
+			{
+				child->Interact(p);
+				return;
+			}
+		}
+	}	
+	bSelected ^= true;
+	if (bRoom)
+	{
+		pvVisibleRoom->at(uRoomNumber) = bSelected;
+	}
+}
+
+void RoomLayerBox::Interact()
+{
+	if (IsHidden()) return;
+	Interact(*pMouseCoordinates);
 }

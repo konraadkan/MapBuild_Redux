@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\brick_tiles_1.png
+BodyRect.Left=33.99
+BodyRect.Top=1.00
+BodyRect.Right=65.99
+BodyRect.Bottom=33.00
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=1
+FrameTime=25.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=33.99,1.00,65.99,33.00,

@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\ghosts.png
+BodyRect.Left=1.41
+BodyRect.Top=1.88
+BodyRect.Right=46.59
+BodyRect.Bottom=49.18
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=6
+FrameTime=225.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=1.41,1.88,46.59,49.18,49.41,1.88,94.59,49.18,97.26,1.88,142.43,49.18,145.41,1.88,190.59,49.18,193.73,1.88,238.91,49.18,241.42,1.88,286.60,49.18,

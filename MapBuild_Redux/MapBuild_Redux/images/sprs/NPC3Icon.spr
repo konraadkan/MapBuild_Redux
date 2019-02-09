@@ -1,0 +1,16 @@
+version=1.1
+BodyPath=images\icons.png
+BodyRect.Left=776
+BodyRect.Top=0
+BodyRect.Right=873
+BodyRect.Bottom=97
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=32
+SpriteSize.Bottom=32
+MaxFrames=1
+FrameTime=110
+Color.R=0
+Color.G=255
+Color.B=0
+FrameArray=776,0,873,97,

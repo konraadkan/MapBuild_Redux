@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\autumn_theme_by_ayene_chan-d5i9ma1.png
+BodyRect.Left=50.00
+BodyRect.Top=162.67
+BodyRect.Right=154.00
+BodyRect.Bottom=317.67
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=1
+FrameTime=25.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=50.00,162.67,154.00,317.67,

@@ -355,4 +355,8 @@ public:
 		}
 		target->DrawGeometry(path, m_Brush, thickness);
 	}
+	template<typename T> void DrawBitmap(T target, ID2D1Bitmap* const pBitmap, const D2D1_RECT_F destrect, const float opacity, const D2D1_RECT_F srcrect)
+	{
+		target->DrawBitmap(pBitmap, &destrect, opacity, D2D1_BITMAP_INTERPOLATION_MODE::D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, &srcrect);
+	}
 };

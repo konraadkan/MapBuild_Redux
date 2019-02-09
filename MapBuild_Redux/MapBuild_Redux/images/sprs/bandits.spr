@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\bandit.png
+BodyRect.Left=2.82
+BodyRect.Top=5.64
+BodyRect.Righ=t29.00
+BodyRect.Bottom=31.00
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=4
+FrameTime=250.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=2.82,5.64,29.00,31.00,34.89,5.64,61.07,31.00,66.78,5.64,92.96,31.00,99.38,5.64,125.56,31.00,

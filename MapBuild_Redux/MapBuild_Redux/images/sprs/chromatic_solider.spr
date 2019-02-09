@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\chromatic_soldier.png
+BodyRect.Left=6.43
+BodyRect.Top=1.17
+BodyRect.Right=24.01
+BodyRect.Bottom=29.08
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=4
+FrameTime=225.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=6.43,1.17,24.01,29.08,36.35,1.17,57.56,29.08,68.54,1.17,89.75,29.08,100.29,1.17,121.50,29.08,

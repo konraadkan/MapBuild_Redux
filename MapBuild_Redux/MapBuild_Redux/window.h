@@ -73,8 +73,8 @@ public:
 	}
 	void Update()
 	{
-		Controller::Update(m_Timer->GetTimeDelta());
-		m_Timer->Update();
+		Controller::Update(pTimer->GetTimeDelta());
+		pTimer->Update();
 	}
 	const int GetWidth() { return width; }
 	const int GetHeight() { return height; }
@@ -93,5 +93,5 @@ private:
 	D2D1_POINT_2F m_MouseCoordinates = D2D1::Point2F();
 	HACCEL hAccel = NULL;
 	Graphics* gfx = NULL;
-	HPTimer* m_Timer = NULL;
+	HPTimer* pTimer = NULL;
 };

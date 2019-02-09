@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\tengar.png
+BodyRect.Left=470.11
+BodyRect.Top=4.06
+BodyRect.Right=526.11
+BodyRect.Bottom=68.06
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=1
+FrameTime=25.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=470.11,4.06,526.11,68.06,

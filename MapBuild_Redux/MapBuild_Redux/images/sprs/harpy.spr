@@ -1,0 +1,16 @@
+version=1.1
+BodyPath=images\harpy.png
+BodyRect.Left=0
+BodyRect.Top=0
+BodyRect.Right=65
+BodyRect.Bottom=72
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=32
+SpriteSize.Bottom=32
+MaxFrames=6
+FrameTime=150
+Color.R=0
+Color.G=255
+Color.B=0
+FrameArray=0,0,65,72,65,0,130,72,130,0,185,72,189,0,232,72,253,0,302,72,316,0,375,72,

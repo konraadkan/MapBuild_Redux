@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\Bears.png
+BodyRect.Left=513.82
+BodyRect.Top=98.39
+BodyRect.Right=559.42
+BodyRect.Bottom=140.39
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=4
+FrameTime=125.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=513.82,98.39,559.42,140.39,561.52,100.05,607.12,142.05,608.30,100.05,653.90,142.05,656.61,100.05,702.21,142.05,

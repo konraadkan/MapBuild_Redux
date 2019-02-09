@@ -1,0 +1,15 @@
+BodyPath=images\house.png
+BodyRect.Left=230
+BodyRect.Top=20
+BodyRect.Right=330
+BodyRect.Bottom=142
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=32
+SpriteSize.Bottom=32
+MaxFrame=1
+FrameTime=250
+Color.R=0
+Color.G=255
+Color.B=0
+FrameArray=230,20,330,142,

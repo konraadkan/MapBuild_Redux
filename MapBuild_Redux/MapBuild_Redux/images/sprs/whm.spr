@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\whm.png
+BodyRect.Left=0.08
+BodyRect.Top=0.09
+BodyRect.Right=32.50
+BodyRect.Bottom=32.09
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=3
+FrameTime=300.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=0.08,0.09,32.50,32.09,31.90,0.09,64.32,32.09,63.69,0.09,96.11,32.09,

@@ -51,12 +51,12 @@ Window::Window(int Width, int Height, const wchar_t* name) noexcept : width(Widt
 	{
 		MessageBoxW(hWnd, L"Unable to Initialize graphics.", L"Error", MB_OK | MB_ICONERROR);
 	}
-	m_Timer = new HPTimer();
-	if (!m_Timer)
+	pTimer = new HPTimer();
+	if (!pTimer)
 	{
 		MessageBoxW(hWnd, L"Unable to Initialize Timer.", L"Error", MB_OK | MB_ICONERROR);
 	}
-	Controller::SwitchLevel(new BaseLevel(gfx, &m_MouseCoordinates, width, height));
+	Controller::SwitchLevel(new BaseLevel(gfx, &m_MouseCoordinates, width, height, pTimer));
 }
 
 Window::Window(POINT p, int Width, int Height, const wchar_t* name) noexcept : width(Width), height(Height)
@@ -76,20 +76,20 @@ Window::Window(POINT p, int Width, int Height, const wchar_t* name) noexcept : w
 	{
 		MessageBoxW(hWnd, L"Unable to Initialize graphics.", L"Error", MB_OK | MB_ICONERROR);
 	}
-	m_Timer = new HPTimer();
-	if (!m_Timer)
+	pTimer = new HPTimer();
+	if (!pTimer)
 	{
 		MessageBoxW(hWnd, L"Unable to Initialize Timer.", L"Error", MB_OK | MB_ICONERROR);
 	}
 
-	Controller::SwitchLevel(new BaseLevel(gfx, &m_MouseCoordinates, width, height));
+	Controller::SwitchLevel(new BaseLevel(gfx, &m_MouseCoordinates, width, height, pTimer));
 }
 
 Window::~Window()
 {
 	Controller::Cleanup();
 	SafeDelete(&gfx);
-	SafeDelete(&m_Timer);
+	SafeDelete(&pTimer);
 	if (hAccel) DestroyAcceleratorTable(hAccel);
 	DestroyWindow(hWnd);
 }

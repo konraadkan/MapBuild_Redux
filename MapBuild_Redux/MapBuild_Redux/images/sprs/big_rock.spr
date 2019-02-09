@@ -1,0 +1,16 @@
+version=1.1
+BodyPath=images\stones.png
+BodyRect.Left=13
+BodyRect.Top=3
+BodyRect.Right=68
+BodyRect.Bottom=57
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=32
+SpriteSize.Bottom=32
+MaxFrames=1
+FrameTime=110
+Color.R=244
+Color.G=189
+Color.B=176
+FrameArray=13,3,68,57,

@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\fire_elemental.png
+BodyRect.Left=170.67
+BodyRect.Top=97.33
+BodyRect.Right=456.67
+BodyRect.Bottom=393.33
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=1
+FrameTime=25.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=170.67,97.33,456.67,393.33,

@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\apple.png
+BodyRect.Left=6.11
+BodyRect.Top=1.67
+BodyRect.Right=22.11
+BodyRect.Bottom=47.00
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=3
+FrameTime=250.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=6.11,1.67,22.11,47.00,29.90,1.67,45.90,47.00,54.04,1.67,70.04,47.00,

@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\ghosts_spirits.png
+BodyRect.Left=7.67
+BodyRect.Top=6.37
+BodyRect.Right=36.81
+BodyRect.Bottom=49.23
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=9
+FrameTime=100.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=7.67,6.37,36.81,49.23,56.25,6.37,85.40,49.23,103.69,6.37,132.83,49.23,151.90,6.37,181.04,49.23,199.91,6.37,229.05,49.23,248.06,6.37,277.21,49.23,295.89,6.37,325.03,49.23,343.72,6.37,372.87,49.23,391.75,6.37,420.90,49.23,

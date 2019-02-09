@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\unicorns.png
+BodyRect.Left=688.64
+BodyRect.Top=118.16
+BodyRect.Right=750.36
+BodyRect.Bottom=173.01
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=4
+FrameTime=125.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=688.64,118.16,750.36,173.01,753.63,118.16,815.34,173.01,817.82,118.16,879.53,173.01,880.30,118.16,942.01,173.01,

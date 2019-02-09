@@ -1,0 +1,14 @@
+BodyPath=images\dragon.png
+BodyRect.Left=268
+BodyRect.Top=268
+BodyRect.Right=318
+BodyRect.Bottom=318
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=32
+SpriteSize.Bottom=32
+MaxFrames=3
+FrameTime=250
+Color.R=255
+Color.G=255
+Color.B=255

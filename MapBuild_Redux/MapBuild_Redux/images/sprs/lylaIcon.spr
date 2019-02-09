@@ -1,0 +1,16 @@
+version=1.1
+BodyPath=Lyla_Dayela_portrait.bmp
+BodyRect.Left=150
+BodyRect.Top=30
+BodyRect.Right=250
+BodyRect.Bottom=125
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=1
+FrameTime=110
+Color.R=0
+Color.G=255
+Color.B=0
+FrameArray=150,30,250,125,

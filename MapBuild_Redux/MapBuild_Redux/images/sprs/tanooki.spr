@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\Tanookis.png
+BodyRect.Left=296.42
+BodyRect.Top=18.32
+BodyRect.Right=330.53
+BodyRect.Bottom=49.27
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=3
+FrameTime=225.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=296.42,18.32,330.53,49.27,344.02,18.32,378.12,49.27,391.88,18.32,425.99,49.27,

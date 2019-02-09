@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\jeane.png
+BodyRect.Left=155.00
+BodyRect.Top=8.16
+BodyRect.Right=211.00
+BodyRect.Bottom=72.16
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=1
+FrameTime=25.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=155.00,8.16,211.00,72.16,

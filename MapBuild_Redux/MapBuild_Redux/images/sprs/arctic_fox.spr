@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\ArcticFox.png
+BodyRect.Left=0.65
+BodyRect.Top=21.41
+BodyRect.Right=50.29
+BodyRect.Bottom=53.05
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=7
+FrameTime=100.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=0.65,21.41,50.29,53.05,51.56,21.41,101.19,53.05,97.61,21.41,147.24,53.05,147.30,21.41,196.94,53.05,195.18,21.41,244.82,53.05,242.09,21.41,291.73,53.05,287.56,21.41,337.20,53.05,

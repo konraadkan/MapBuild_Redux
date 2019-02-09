@@ -2,6 +2,7 @@
 #include "Level.h"
 #include "SideMenu.h"
 #include "Pieces.h"
+#include "HPTimer.h"
 #include <vector>
 
 class BaseLevel : public Level
@@ -43,8 +44,11 @@ private:
 	bool bShowSideMenu = true;
 	D2D1_COLOR_F GridBackgroundColor = D2D1::ColorF(0.75f, 0.75f, 0.75f);
 	D2D1::Matrix3x2F Transforms = D2D1::Matrix3x2F::Identity();
+	std::vector<bool> vVisibleRooms;
+	std::vector< std::vector<bool>> vVisibleLayers;
+	HPTimer* const pTimer;
 public:
-	BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePosition, int WindowX, int WindowY);
+	BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePosition, int WindowX, int WindowY, HPTimer* const timer);
 	~BaseLevel();
 	void Load(Keyboard* const keyboard, Mouse* const mouse) override;
 	void Unload() override;
@@ -55,6 +59,9 @@ private:
 	void DrawSideMenu();
 	void ProcessKeyboardEvents(double dDelta);
 	void ProcessMouseEvents(double dDelta);
+	void CreateRoom();
+	void CreateLayer(std::vector< std::vector<SpritePointer*>>* const Room);
+	void CreateLayer(size_t uRoomNumber);
 	int afps = 0;
 	void BuildObjects(const wchar_t* sFilePath);
 	const std::wstring GetLineW(wchar_t* const buffer, wchar_t*& pos);
@@ -64,4 +71,9 @@ public:
 	SideMenu* pSideMenu = nullptr;
 	std::vector<PiecesW> vPiecesW;
 	std::vector<Pieces> vPieces;
+	std::vector< std::vector< std::vector<SpritePointer*>>> vSprites;
+	SpritePointer* sptest = nullptr;
+	std::vector<SpritePointer*>* pSelectedLayer = nullptr;
+	std::vector< std::vector<SpritePointer*>>* pSelectedRoom = nullptr;
+	std::vector< std::vector< std::vector<SpritePointer*>>>* ppvSprites;
 };

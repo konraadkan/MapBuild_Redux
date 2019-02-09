@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\ayda.png
+BodyRect.Left=428.99
+BodyRect.Top=5.13
+BodyRect.Right=484.84
+BodyRect.Bottom=69.06
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=1
+FrameTime=25.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=428.99,5.13,484.84,69.06,

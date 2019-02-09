@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\squirrels.png
+BodyRect.Left=277.87
+BodyRect.Top=5.08
+BodyRect.Right=333.98
+BodyRect.Bottom=66.05
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=1
+FrameTime=25.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=277.87,5.08,333.98,66.05,

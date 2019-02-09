@@ -2,12 +2,16 @@
 
 void MenuSection::ResizeDest()
 {
+	if (pChild.back()->pChild.size())
+		if (pChild.back()->pChild.back()->GetRect().bottom >= m_Dest.bottom)
+			m_Dest.bottom = pChild.back()->pChild.back()->GetRect().bottom + 1.0f;
 	if (pChild.back()->GetRect().top >= m_Dest.bottom)
 		m_Dest.bottom = pChild.back()->GetRect().bottom + 1.0f;
 }
 
 void MenuSection::Draw() 
 {
+	if (IsHidden()) return;
 	D2D1::Matrix3x2F ttransform;
 	gfx->GetCompatibleTarget()->GetTransform(&ttransform);
 	gfx->GetCompatibleTarget()->SetTransform(ttransform * Transforms);
@@ -16,7 +20,7 @@ void MenuSection::Draw()
 		child->Draw();
 	}
 	
-	for (auto& subsection : pSubsections)
+	/*for (auto& subsection : pSubsections)
 	{
 		for (auto& child : pChild)
 		{
@@ -24,14 +28,22 @@ void MenuSection::Draw()
 			if (!_wcsicmp(child->GetLabel(), subsection->GetLabel()))
 				subsection->Draw();
 		}
-	}
+	}*/
 	gfx->GetCompatibleTarget()->SetTransform(&ttransform);
 }
 
-void MenuSection::AddChild(InteractObjects* const Iobject)
+void MenuSection::AddChild(InteractObjects* const Iobject, const D2D1_SIZE_F size, float seperation)
 {
+	D2D1_RECT_F lastrect = (!pChild.empty()) ? pChild.back()->GetRect() : D2D1::RectF(m_Dest.left, m_Dest.top, m_Dest.left, m_Dest.top + size.height);
 	pChild.push_back(Iobject);
+	D2D1_RECT_F newrect = D2D1::RectF();
+	if (lastrect.right + size.width > m_Dest.right)
+		newrect = D2D1::RectF(m_Dest.left + 0.2f, lastrect.bottom + seperation, m_Dest.left + size.width + 0.2f, lastrect.bottom + seperation + size.height);
+	else
+		newrect = D2D1::RectF(lastrect.right + 1.0f, lastrect.top, lastrect.right + size.width + 1.0f, lastrect.top + size.height);
+	pChild.back()->SetDest(newrect);
 	pChild.back()->SetInvertTransformPointer(&InvTransforms);
+	pChild.back()->SetRadius(D2D1::SizeF(10.0f, 10.0f));
 	ResizeDest();
 }
 
@@ -155,6 +167,15 @@ void MenuSection::Interact()
 	for (auto& child : pChild)
 	{
 		if (!child) continue;
+		if (child->pChild.size())
+		{
+			for (auto& b : child->pChild)
+			{
+				if (!b) continue;
+				if (b->PointInRect())
+					b->Interact();
+			}
+		}
 		if (child->PointInRect())
 			child->Interact();
 	}
@@ -164,4 +185,25 @@ void MenuSection::Interact()
 		if (section->PointInRect())
 			section->Interact();
 	}
+}
+
+void MenuSection::SetTranslation(D2D1_SIZE_F size)
+{
+	//doing it this way so it reverts to default position;
+	Transforms = D2D1::Matrix3x2F::Translation(size);
+	InvTransforms = Transforms;
+	InvTransforms.Invert();
+}
+
+const D2D1_RECT_F MenuSection::GetTranslatedRect()
+{
+	D2D1_POINT_2F tl = InvTransforms.TransformPoint(D2D1::Point2F(m_Dest.left, m_Dest.top));
+	D2D1_POINT_2F br = InvTransforms.TransformPoint(D2D1::Point2F(m_Dest.right, m_Dest.bottom));
+	return D2D1::RectF(tl.x, tl.y, br.x, br.y);
+}
+
+void MenuSection::SetRoom(const size_t pos)
+{
+	*pSelectedRoom = &(*vSelectRoomsandLayers)->at(pos);	
+	*pSelectedLayer = &(*pSelectedRoom)->front();
 }

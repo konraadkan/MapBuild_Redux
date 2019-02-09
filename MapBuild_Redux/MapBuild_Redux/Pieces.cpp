@@ -25,10 +25,12 @@ std::queue<std::wstring> Pieces::FillPiece(char* const Buffer, char*& pos)
 		else if (!_stricmp(front.c_str(), "Icon"))
 		{
 			SetIconPath(back);
+			LoadPortrait();
 		}
 		else if (!_stricmp(front.c_str(), "Sprite"))
 		{
 			SetSpritePath(back);
+			LoadSprite();
 		}
 		else if (!_stricmp(front.c_str(), "SubMenu"))
 		{
@@ -120,10 +122,12 @@ std::queue<std::wstring> PiecesW::FillPiece(wchar_t* const Buffer, wchar_t*& pos
 		else if (!_wcsicmp(front.c_str(), L"Icon"))
 		{
 			SetIconPath(back);
+			LoadPortrait();
 		}
 		else if (!_wcsicmp(front.c_str(), L"Sprite"))
 		{
 			SetSpritePath(back);
+			LoadSprite();
 		}
 		else if (!_wcsicmp(front.c_str(), L"SubMenu"))
 		{
@@ -213,10 +217,12 @@ std::queue<std::wstring> PiecesW::FillPiece(std::wstring& Buffer, wchar_t*& pos)
 		else if (!_wcsicmp(front.c_str(), L"Icon"))
 		{
 			SetIconPath(back);
+			LoadPortrait();
 		}
 		else if (!_wcsicmp(front.c_str(), L"Sprite"))
 		{
 			SetSpritePath(back);
+			LoadSprite();
 		}
 		else if (!_wcsicmp(front.c_str(), L"SubMenu"))
 		{
@@ -298,4 +304,52 @@ void PiecesW::Convert(Pieces Piece)
 	Piece.KeepAspectSprite() ? SetKeepAspectSprite() : UnsetKeepAspectSprite();
 	Piece.KeepAspectIcon() ? SetKeepAspectIcon() : UnsetKeepAspectIcon();
 	SetBackgroundColor(Piece.GetBackgroundColor());
+}
+
+void PiecesW::LoadSprite()
+{
+	if (GetSpritePath().empty()) return;
+	pSprite = new Sprite(GetSpritePath().c_str(), gfx, pTimer);
+	if (!pSprite->IsSuccess())
+		SafeDelete(&pSprite);
+}
+
+void PiecesW::LoadPortrait()
+{
+	if (GetIconPath().empty()) return;
+	pPortrait = new Sprite(GetIconPath().c_str(), gfx, pTimer);
+	if (!pPortrait->IsSuccess())
+		SafeDelete(&pPortrait);
+}
+
+void Pieces::LoadSprite()
+{
+	if (GetSpritePath().empty()) return;
+	std::wstring SpritePathW(sSpritePath.begin(), sSpritePath.end());
+	pSprite = new Sprite(SpritePathW.c_str(), gfx, pTimer);
+	if (!pSprite->IsSuccess())
+		SafeDelete(&pSprite);
+}
+
+void Pieces::LoadPortrait()
+{
+	if (GetIconPath().empty()) return;
+	std::wstring IconPathW(sIconPath.begin(), sIconPath.end());
+	pPortrait = new Sprite(IconPathW.c_str(), gfx, pTimer);
+	if (!pPortrait->IsSuccess())
+		SafeDelete(&pPortrait);	
+}
+
+void SpritePointer::DrawSprite(Graphics* const gfx, bool back)
+{
+	if (back) gfx->DrawBitmap(gfx->GetCompatibleTarget(), GetSprite()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetSprite()->GetFrame());
+	else gfx->DrawBitmap(gfx->GetRenderTarget(), GetSprite()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetSprite()->GetFrame());
+	GetSprite()->NextFrame();
+}
+
+void SpritePointer::DrawPortrait(Graphics* const gfx, bool back)
+{
+	if (back) gfx->DrawBitmap(gfx->GetCompatibleTarget(), GetPortrait()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetPortrait()->GetFrame());
+	else gfx->DrawBitmap(gfx->GetRenderTarget(), GetPortrait()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetPortrait()->GetFrame());
+	GetPortrait()->NextFrame();
 }

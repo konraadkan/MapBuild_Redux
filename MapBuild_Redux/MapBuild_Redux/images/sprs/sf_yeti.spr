@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\ski_free.png
+BodyRect.Left=63.27
+BodyRect.Top=71.60
+BodyRect.Right=89.67
+BodyRect.Bottom=113.60
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=2
+FrameTime=75.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=63.27,71.60,89.67,113.60,90.07,71.60,121.67,113.60,

@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\hauser.png
+BodyRect.Left=3.83
+BodyRect.Top=4.17
+BodyRect.Right=24.17
+BodyRect.Bottom=52.17
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=3
+FrameTime=250.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=3.83,4.17,24.17,52.17,27.84,4.17,48.18,52.17,51.13,4.17,71.48,52.17,

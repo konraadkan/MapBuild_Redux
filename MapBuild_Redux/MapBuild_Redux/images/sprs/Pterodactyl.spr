@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\Pterodactyl.png
+BodyRect.Left=1.26
+BodyRect.Top=1.19
+BodyRect.Right=73.26
+BodyRect.Bottom=78.52
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=7
+FrameTime=150.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=1.26,1.19,73.26,78.52,80.34,1.19,152.34,78.52,161.84,1.19,233.84,78.52,244.81,1.19,316.81,78.52,325.46,1.19,397.46,78.52,414.36,1.19,486.36,78.52,490.83,1.19,562.83,78.52,

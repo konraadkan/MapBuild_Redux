@@ -1,0 +1,16 @@
+version=1.1
+BodyPath=letters.bmp
+BodyRect.Left=523
+BodyRect.Top=8
+BodyRect.Right=569
+BodyRect.Bottom=60
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=32
+SpriteSize.Bottom=32
+MaxFrames=1
+FrameTime=110
+Color.R=0
+Color.G=255
+Color.B=0
+FrameArray=523,8,569,60,

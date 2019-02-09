@@ -1,0 +1,17 @@
+version=1.1
+BodyPath=images\skeleton_pirate.png
+BodyRect.Left=0
+BodyRect.Top=0
+BodyRect.Right=856
+BodyRect.Bottom=645
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=32
+SpriteSize.Bottom=32
+MaxFrames=6
+FrameTime=250
+Color.R=0
+Color.G=128
+Color.B=128
+CUSTOM=TRUE
+FrameArray=0,149,88,247,100,149,189,247,199,149,287,247,300,149,389,247,393,149,482,247,495,149,584,247,

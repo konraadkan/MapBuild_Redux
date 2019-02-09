@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\Velociraptor.png
+BodyRect.Left=8.94
+BodyRect.Top=256.94
+BodyRect.Right=122.94
+BodyRect.Bottom=343.34
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=2
+FrameTime=300.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=8.94,256.94,122.94,343.34,143.57,256.94,257.57,343.34,

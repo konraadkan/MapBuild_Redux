@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\Sprite_FX_Rocks_0002.png
+BodyRect.Left=106.88
+BodyRect.Top=2.16
+BodyRect.Right=179.74
+BodyRect.Bottom=52.73
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=1
+FrameTime=25.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=106.88,2.16,179.74,52.73,

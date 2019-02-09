@@ -59,7 +59,6 @@ void SideMenu::Interact()
 				ChangeMode();
 			}
 			else child->Interact();
-			return;
 		}
 	}
 	for (auto& section : pMenuSections)
@@ -124,8 +123,11 @@ void SideMenu::UpdateNextButtonRect(MenuItemType type)
 	}
 }
 
-SideMenu::SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p) : Buttons(graphics, Transform, area, p)
+SideMenu::SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, std::vector< std::vector<SpritePointer*>>** const ppRoom, std::vector<SpritePointer*>** const ppLayer, std::vector< std::vector< std::vector<SpritePointer*>>>** const ppRL, std::vector<bool>* const VisibleRooms, std::vector< std::vector<bool>>* const VisibleLayers) : pSelectedRoom(ppRoom), pSelectedLayer(ppLayer), vSelectRoomsandLayers(ppRL), Buttons(graphics, Transform, area, p)
 {
+	pVisibleLayers = VisibleLayers;
+	pVisibleRooms = VisibleRooms;
+
 	//Options Section
 	CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, targetDest.top + 5.0f));
 	FillRect(CategoryStartPoints.back(), OptionMenuSize);
@@ -141,6 +143,18 @@ SideMenu::SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1:
 	//Items
 	CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + SeperationDistance));
 	FillRect(CategoryStartPoints.back(), ItemMenuSize);
+	//Rooms
+	CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + SeperationDistance));
+	FillRect(CategoryStartPoints.back(), RoomMenuSize);
+	//Rooms Check Boxes
+	CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + 3.0f));
+	FillRect(CategoryStartPoints.back(), RoomCheckBoxMenuSize);
+	//Layers
+	CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + SeperationDistance));
+	FillRect(CategoryStartPoints.back(), LayerMenuSize);
+	//Layer Check Box
+	CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + 3.0f));
+	FillRect(CategoryStartPoints.back(), LayerCheckBoxMenuSize);
 
 	SetDest(targetDest);
 	SetColor(D2D1::ColorF(0.75f, 0.80f, 0.82f));
@@ -160,6 +174,7 @@ SideMenu::SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1:
 	pChild.back()->pChild.back()->BuildCustomShape(ps, D2D1::ColorF(1.0f, 1.0f, 1.0f));
 	pChild.back()->pChild.back()->SetLabel(L"ShowHideTriangle");
 	pChild.back()->pChild.back()->SetFill();
+	mRealRect = D2D1::RectF(m_Dest.left - 15.0f, m_Dest.top, m_Dest.right, m_Dest.bottom);
 
 	/*pMenuSections.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, m_Dest, 0.0f, L"workarea", false));
 	pMenuSections.back()->pSubsections.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, m_Dest, 0.0f, L"Options", false));
@@ -170,15 +185,51 @@ SideMenu::SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1:
 	pMenuSections.back()->pSubsections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Lock to Grid", GetNextButtonRect(MenuItemType::Options), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true));
 	pMenuSections.back()->pSubsections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Lock to Grid", GetNextButtonRect(MenuItemType::Options), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true));
 	pMenuSections.back()->pSubsections.back()->UpdateChildPositions();*/
-	pMenuSections.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, D2D1::RectF(m_Dest.left, 0,m_Dest.right, 96), 0.0f, L"Options", false));
-	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Lock to Grid", GetNextButtonRect(MenuItemType::Options), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true));
-	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Grid on Top", GetNextButtonRect(MenuItemType::Options), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true));
-	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle PC Colors", GetNextButtonRect(MenuItemType::Options), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true));
-	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Add Custom Colors", GetNextButtonRect(MenuItemType::Options), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true));
-	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Initiative", GetNextButtonRect(MenuItemType::Options), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true));
-	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Keep Aspect", GetNextButtonRect(MenuItemType::Options), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true));
-	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Turn Counter", GetNextButtonRect(MenuItemType::Options), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true));
-	pMenuSections.back()->UpdateChildPositions();
+	pMenuSections.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, D2D1::RectF(m_Dest.right, m_Dest.top + 3.0f,m_Dest.right + (m_Dest.right - m_Dest.left), OptionMenuSize.height + 3.0f), 0.0f, L"Options", false));
+	pOptionsMenu = pMenuSections.back();
+	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Lock to Grid", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
+	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Grid on Top", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
+	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle PC Colors", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
+	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Add Custom Colors", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
+	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Initiative", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
+	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Keep Aspect", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
+	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Turn Counter", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
+	//pMenuSections.back()->UpdateChildPositions();
+	pChild.push_back(new ClassShapes(ShapeTypes::Lines, gfx, false, Transform, pClientRect, pMouseCoordinates));
+	pChild.back()->SetDest(D2D1::RectF(m_Dest.left, pMenuSections.back()->pChild.back()->GetRect().bottom + 2.0f, m_Dest.right, pMenuSections.back()->pChild.back()->GetRect().bottom + 6.0f));
+	static_cast<ClassShapes*>(pChild.back())->AddPoint(D2D1::Point2F(pChild.back()->GetRect().left, (pChild.back()->GetRect().bottom + pChild.back()->GetRect().top) * 0.5f));
+	static_cast<ClassShapes*>(pChild.back())->AddPoint(D2D1::Point2F(pChild.back()->GetRect().right, (pChild.back()->GetRect().bottom + pChild.back()->GetRect().top) * 0.5f));
+	pChild.back()->SetFill();
+	BuildModeObjects.push_back(pChild.back());
+	InitiativeModeObjects.push_back(pChild.back());
+	D2D1_RECT_F LastRect = pMenuSections.back()->GetTranslatedRect();
+	pMenuSections.back()->SetTranslation(D2D1::SizeF(m_Dest.left - m_Dest.right, 0.0f));
+	
+	pMenuSections.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, D2D1::RectF(m_Dest.right, m_Dest.top + 3.0f, m_Dest.right + (m_Dest.right - m_Dest.left), OptionMenuSize.height + 3.0f), 0.0f, L"Room"));
+	pMenuSections.back()->SetTranslation(D2D1::SizeF(m_Dest.left - m_Dest.right, LastRect.bottom + SeperationDistance));
+	pRoomsMenu = pMenuSections.back();
+	pRoomsMenu->SetSelectedRoomPointer(pSelectedRoom);
+	pRoomsMenu->SetSelectedLayerPointer(pSelectedLayer);
+	pRoomsMenu->vSelectRoomsandLayers = vSelectRoomsandLayers;
+	/*for (int i = 0; i < 30; i++)
+	{
+		pRoomsMenu->AddChild(new RoomLayerBox(gfx, Transform, area, pMouseCoordinates, std::to_wstring(i).c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(pMenuSections.back()), true, true, D2D1::ColorF(1.0f, 0.0f, 0.0f), i, 0, pVisibleRooms), RoomMenuSize, RoomCheckBoxMenuSize.height + 2.0f);
+		D2D1_RECT_F rect = pRoomsMenu->pChild.back()->GetRect();
+		float w = (rect.right - rect.left) * 0.25f;
+		rect.left += w;
+		rect.right -= w;
+		rect.top = rect.bottom + 1.0f;
+		rect.bottom = rect.top + RoomCheckBoxMenuSize.height;
+		
+		pRoomsMenu->pChild.back()->pChild.push_back(new Checkbox(gfx, Transform, area, pMouseCoordinates, L" ", rect, D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(pRoomsMenu->pChild.back()), true, i ? false : true));
+		pRoomsMenu->pChild.back()->pChild.back()->SetInvertTransformPointer(pRoomsMenu->pChild.back()->GetInvTransforms());
+		pRoomsMenu->ResizeDest();
+	}*/
+	/*for (int i = 0; i < 30; i++)
+	{
+		CreateRoomButton(Transform, area);
+	}*/
+	pMenuSections.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, D2D1::RectF(LastRect.left + RoomMenuSize.width * 0.25f, LastRect.bottom + RoomMenuSize.height + SeperationDistance, m_Dest.right, LastRect.bottom + SeperationDistance + RoomMenuSize.height * 2.0f), 0.0f, L"RoomChecks"));
 	
 	//D2D1_RECT_F LastRect = pMenuSections.back()->GetRect();	
 
@@ -290,6 +341,30 @@ SideMenu::SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1:
 	
 	D2D1_RECT_F const temRect = pChild.back()->GetRect();
 	pChild.back()->SetDest(D2D1::RectF(temRect.left, temRect.top, temRect.right, area->bottom > temRect.bottom ? area->bottom : temRect.bottom));*/
+}
+
+void SideMenu::CreateRoomButton(D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area)
+{
+	if (!pRoomsMenu) return;
+	if (!pVisibleRooms) return;
+	pRoomsMenu->AddChild(new RoomLayerBox(gfx, Transform, area, pMouseCoordinates, std::to_wstring(pRoomsMenu->pChild.size()).c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(pRoomsMenu), true, true, D2D1::ColorF(1.0f, 0.0f, 0.0f), pRoomsMenu->pChild.size(), 0, pVisibleRooms), RoomMenuSize, RoomCheckBoxMenuSize.height + 2.0f);
+
+	//build rect for selection check box
+	D2D1_RECT_F rect = pRoomsMenu->pChild.back()->GetRect();
+	float w = (rect.right - rect.left) * 0.25f;
+	rect.left += w;
+	rect.right -= w;
+	rect.top = rect.bottom + 1.0f;
+	rect.bottom = rect.top + RoomCheckBoxMenuSize.height;
+
+	pRoomsMenu->pChild.back()->pChild.push_back(new Checkbox(gfx, Transform, area, pMouseCoordinates, L" ", rect, D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(pRoomsMenu->pChild.back()), true, pRoomsMenu->pChild.size() - 1 ? false : true));
+	pRoomsMenu->pChild.back()->pChild.back()->SetInvertTransformPointer(pRoomsMenu->pChild.back()->GetInvTransforms());
+	pRoomsMenu->ResizeDest();
+}
+
+void SideMenu::CreateLayerButton(D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area)
+{
+
 }
 
 void SideMenu::AddSeparation(const MenuItemType ItemType, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, const D2D1_COLOR_F color)

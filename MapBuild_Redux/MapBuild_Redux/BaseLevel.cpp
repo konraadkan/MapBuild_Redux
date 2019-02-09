@@ -1,24 +1,46 @@
 #include "BaseLevel.h"
 
-BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePosition, int WindowX, int WindowY)
+BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePosition, int WindowX, int WindowY, HPTimer* const timer) : pTimer(timer)
 {
 	this->gfx = graphics;
 	this->pMouseCoordinate = pMousePosition;
 	WindowSize = D2D1::SizeF(static_cast<float>(WindowX), static_cast<float>(WindowY));
 	m_ClientWindow = D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height);
 	RotationCenter = D2D1::Point2F(WindowSize.width * 0.5f, WindowSize.height * 0.5f);
-	pSideMenu = new SideMenu(D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow, &MenuCoordinates);
-	IObjects.push_back(pSideMenu);
 
+	pSideMenu = new SideMenu(D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow, &MenuCoordinates, &pSelectedRoom, &pSelectedLayer, &ppvSprites, &vVisibleRooms, &vVisibleLayers);
+	pSideMenu->SetMousePointer(&MenuCoordinates);
+	IObjects.push_back(pSideMenu);
+	for (size_t i = 0; i < 30; i++) CreateRoom();
 	BuildObjects(L"mainpcs-unicode.ini");
 	//BuildObjects(L"mainpcs.ini");
 	while (vPieces.size())
 	{
-		PiecesW t;
+		PiecesW t(gfx, pTimer);
 		t.Convert(vPieces.back());
 		vPiecesW.push_back(t);
 		vPieces.pop_back();
 	}
+
+	/*for (auto& p : vPiecesW)
+	{
+		if (p.GetSpritePath().size())
+		{
+			s = new Sprite(p.GetSpritePath().c_str(), gfx);
+			if (!s->IsSuccess())
+				SafeDelete(&s);
+		}
+		if (s)
+		{
+			SafeDelete(&s);
+		}
+	}*/
+	//stemp = new Sprite(L"test.spr3", gfx);
+	sptest = new SpritePointer(&vPiecesW.front(), Location());
+	
+	ppvSprites = &vSprites;
+	pSelectedRoom = &vSprites.front();
+	pSelectedLayer = &pSelectedRoom->front();
 }
 
 BaseLevel::~BaseLevel()
@@ -38,7 +60,23 @@ void BaseLevel::Load(Keyboard* const keyboard, Mouse* const mouse)
 void BaseLevel::Unload()
 {
 	//cleanup as necessary
+	SafeDelete(&sptest);
 	SafeDelete(&pSideMenu);
+
+	while (vSprites.size())
+	{
+		while (vSprites.back().size())
+		{
+			while (vSprites.back().back().size())
+			{
+				SafeDelete(&vSprites.back().back().back());
+				vSprites.back().back().pop_back();
+			}
+			vSprites.back().pop_back();
+		}
+		vSprites.pop_back();
+	}
+
 	while (IObjects.size())
 	{
 		IObjects.back() = nullptr;
@@ -64,6 +102,50 @@ void BaseLevel::Render()
 	gfx->DrawRect(gfx->GetCompatibleTarget(), D2D1::RectF(500, 100, 1045, 500));
 
 	if (bGridOnTop) gfx->DrawDefaultGrid(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), GridSquareSize, D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.9f), 3.0f);
+
+	if (sptest)
+	{
+		sptest->DrawSprite(gfx);
+	}
+
+	/*
+	for (auto& v : vSprites)
+	{
+		for (auto& w : v.back())
+		{
+			w->DrawSprite(gfx);
+		}
+	}*/
+	
+	/*for (auto& v : vSprites)
+	{
+		if (&v == pSelectedRoom)
+		{
+			for (auto& l : v)
+			{
+				for (auto& z : l)
+				{
+					z->DrawSprite(gfx);
+				}
+			}
+		}
+	}*/
+
+	for (size_t i = 0; i < vVisibleRooms.size(); i++)
+	{
+		if (vVisibleRooms[i])
+		{
+			for (size_t w = 0; w < vVisibleLayers[i].size(); w++)
+			{
+				if (vVisibleLayers[i][w])
+				{
+					for (auto& sprite : vSprites[i][w])
+						sprite->DrawSprite(gfx);
+				}
+			}
+		}
+	}
+
 	gfx->EndDraw(gfx->GetCompatibleTarget());
 
 	//render the frame
@@ -144,6 +226,29 @@ void BaseLevel::Update(double dDelta)
 			if (value) *value = *value + size * static_cast<float>(dDelta) * direction;
 		}
 	}
+	if (pMouse->LeftPressed())
+	{
+		if (pSelectedLayer && !pSideMenu->IsInRealRect())
+		{
+			bool bAdd = true;
+			for (auto& sl : *pSelectedLayer)
+			{
+				if (sl->GetSprite() == sptest->GetPieces()->GetSprite())
+				{
+					if (static_cast<int>(sl->GetDestSprite().left) == static_cast<int>(sptest->GetDestSprite().left) && static_cast<int>(sl->GetDestSprite().top) == static_cast<int>(sptest->GetDestSprite().top))
+					{
+						bAdd = false;
+						break;
+					}
+				}
+			}
+			if (bAdd)
+			{
+				pSelectedLayer->push_back(new SpritePointer(sptest->GetPieces(), Location()));
+				pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + pSelectedLayer->back()->GetSpriteFrameSize().width, TranslatedCoordinates.y + pSelectedLayer->back()->GetSpriteFrameSize().height));
+			}
+		}
+	}
 }
 
 void BaseLevel::ProcessEvents(double dDelta)
@@ -161,7 +266,17 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 		Mouse::Event e = pMouse->Read();
 		switch (e.GetType())
 		{
+		case Mouse::Event::Type::Move:
+		{
+			sptest->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + sptest->GetSpriteFrameSize().width, TranslatedCoordinates.y + sptest->GetSpriteFrameSize().height));
+			break;
+		}
 		case Mouse::Event::Type::LPress:
+			if (pSelectedLayer && !pSideMenu->IsInRealRect())
+			{
+				pSelectedLayer->push_back(new SpritePointer(sptest->GetPieces(), Location()));
+				pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + pSelectedLayer->back()->GetSpriteFrameSize().width, TranslatedCoordinates.y + pSelectedLayer->back()->GetSpriteFrameSize().height));
+			}
 			break;
 		case Mouse::Event::Type::LRelease:
 		{
@@ -371,7 +486,7 @@ void BaseLevel::BuildObjects(const wchar_t* sFilePath)
 		wchar_t* pos = buffer;
 		while (static_cast<size_t>(pos - buffer ) <= BufferSize)
 		{
-			vPiecesW.push_back(PiecesW());
+			vPiecesW.push_back(PiecesW(gfx, pTimer));
 			std::queue<std::wstring> temp = vPiecesW.back().FillPiece(pos, pos);
 			while (temp.size())
 			{
@@ -395,7 +510,7 @@ void BaseLevel::BuildObjects(const wchar_t* sFilePath)
 		char* pos = buffer;
 		while (static_cast<size_t>(pos - buffer + 1) <= BufferSize)
 		{
-			vPieces.push_back(Pieces());
+			vPieces.push_back(Pieces(gfx, pTimer));
 			std::queue<std::wstring> temp = vPieces.back().FillPiece(pos, pos);
 			while (temp.size())
 			{
@@ -444,4 +559,27 @@ const std::wstring BaseLevel::GetLineW(char* const buffer, char*& pos)
 
 	std::wstring tw(wbuffer.begin(), wbuffer.begin() + p);
 	return tw;
+}
+
+void BaseLevel::CreateRoom()
+{
+	vSprites.push_back(std::vector< std::vector<SpritePointer*>>());
+	vVisibleRooms.push_back(true);
+	vVisibleLayers.push_back(std::vector<bool>());
+	CreateLayer(vSprites.size() - 1);
+	if (pSideMenu)
+	{
+		pSideMenu->CreateRoomButton(&Transforms, &m_ClientWindow);
+	}
+}
+
+void BaseLevel::CreateLayer(std::vector< std::vector<SpritePointer*>>* const Room)
+{
+	Room->push_back(std::vector<SpritePointer*>());
+}
+
+void BaseLevel::CreateLayer(size_t uRoomNumber)
+{
+	vSprites[uRoomNumber].push_back(std::vector<SpritePointer*>());
+	vVisibleLayers[uRoomNumber].push_back(true);
 }

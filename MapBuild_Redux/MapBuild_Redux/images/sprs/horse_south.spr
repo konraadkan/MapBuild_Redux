@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\MV4framehorse.png
+BodyRect.Left=16.54
+BodyRect.Top=0.87
+BodyRect.Right=47.85
+BodyRect.Bottom=59.83
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=4
+FrameTime=125.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=16.54,0.87,47.85,59.83,79.63,0.87,110.94,59.83,143.78,0.87,175.08,59.83,207.55,0.87,238.86,59.83,

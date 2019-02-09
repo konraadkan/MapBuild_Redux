@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\mimicgate.png
+BodyRect.Left=17.33
+BodyRect.Top=2.00
+BodyRect.Right=126.53
+BodyRect.Bottom=95.60
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=12
+FrameTime=275.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=17.33,2.00,126.53,95.60,161.62,2.00,270.82,95.60,304.86,2.00,414.06,95.60,17.62,98.49,126.82,192.09,161.08,98.49,270.28,192.09,305.61,98.49,414.81,192.09,17.59,194.73,126.79,288.33,161.33,194.73,270.53,288.33,305.61,194.73,414.81,288.33,17.16,289.48,126.36,383.08,161.70,289.48,270.90,383.08,304.94,289.48,414.14,383.08,

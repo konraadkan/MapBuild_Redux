@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\air_elemental.png
+BodyRect.Left=72.31
+BodyRect.Top=27.38
+BodyRect.Right=289.23
+BodyRect.Bottom=207.38
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=1
+FrameTime=25.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=72.31,27.38,289.23,207.38,

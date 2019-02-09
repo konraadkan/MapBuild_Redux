@@ -1,0 +1,17 @@
+version=1.2
+BodyPath=images\new_tree_set_by_pinkfirefly-d3e8jc6.png
+BodyRect.Left=25.72
+BodyRect.Top=289.12
+BodyRect.Right=129.36
+BodyRect.Bottom=438.58
+SpriteSize.Left=0
+SpriteSize.Top=0
+SpriteSize.Right=64
+SpriteSize.Bottom=64
+MaxFrames=1
+FrameTime=25.00
+Color.R=0
+Color.G=255
+Color.B=0
+Custom=True
+FrameArray=25.72,289.12,129.36,438.58,
