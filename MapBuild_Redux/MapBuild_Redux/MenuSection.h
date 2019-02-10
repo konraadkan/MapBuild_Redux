@@ -26,6 +26,11 @@ public:
 	}
 public:
 	const D2D1_RECT_F GetTranslatedRect() override;
+	const D2D1_RECT_F GetTranslatedRectNotInv();
+	const float Getdx() { return Transforms.dx; }
+	const float Getdy() { return Transforms.dy; }
+	const float Getinvdx() { return InvTransforms.dx; }
+	const float Getinvdy() { return InvTransforms.dy; }
 	D2D1::Matrix3x2F* const GetInvTranforms() { return &InvTransforms; }
 	void Interact() override;
 	void Draw() override;
@@ -45,6 +50,7 @@ public:
 	void SetSelectedRoomPointer(std::vector< std::vector<SpritePointer*>>** const p) { pSelectedRoom = p; }
 	void SetSelectedLayerPointer(std::vector<SpritePointer*>** const p) { pSelectedLayer = p; }
 	void SetRoom(const size_t pos) override;
+	void SetLayer(const size_t pos) override;
 public:
 	std::vector<MenuSection*> pSubsections;
 	std::vector< std::vector<InteractObjects*>> vChildObjects;

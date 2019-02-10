@@ -11,7 +11,11 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	pSideMenu = new SideMenu(D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow, &MenuCoordinates, &pSelectedRoom, &pSelectedLayer, &ppvSprites, &vVisibleRooms, &vVisibleLayers);
 	pSideMenu->SetMousePointer(&MenuCoordinates);
 	IObjects.push_back(pSideMenu);
-	for (size_t i = 0; i < 30; i++) CreateRoom();
+	for (size_t i = 0; i < 30; i++)
+	{
+		CreateRoom();
+		CreateLayer(i);
+	}
 	BuildObjects(L"mainpcs-unicode.ini");
 	//BuildObjects(L"mainpcs.ini");
 	while (vPieces.size())
@@ -103,34 +107,6 @@ void BaseLevel::Render()
 
 	if (bGridOnTop) gfx->DrawDefaultGrid(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), GridSquareSize, D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.9f), 3.0f);
 
-	if (sptest)
-	{
-		sptest->DrawSprite(gfx);
-	}
-
-	/*
-	for (auto& v : vSprites)
-	{
-		for (auto& w : v.back())
-		{
-			w->DrawSprite(gfx);
-		}
-	}*/
-	
-	/*for (auto& v : vSprites)
-	{
-		if (&v == pSelectedRoom)
-		{
-			for (auto& l : v)
-			{
-				for (auto& z : l)
-				{
-					z->DrawSprite(gfx);
-				}
-			}
-		}
-	}*/
-
 	for (size_t i = 0; i < vVisibleRooms.size(); i++)
 	{
 		if (vVisibleRooms[i])
@@ -145,7 +121,10 @@ void BaseLevel::Render()
 			}
 		}
 	}
-
+	if (sptest)
+	{
+		sptest->DrawSprite(gfx);
+	}
 	gfx->EndDraw(gfx->GetCompatibleTarget());
 
 	//render the frame
@@ -565,10 +544,11 @@ void BaseLevel::CreateRoom()
 {
 	vSprites.push_back(std::vector< std::vector<SpritePointer*>>());
 	vVisibleRooms.push_back(true);
-	vVisibleLayers.push_back(std::vector<bool>());
-	CreateLayer(vSprites.size() - 1);
+	vVisibleLayers.push_back(std::vector<bool>());	
 	if (pSideMenu)
 	{
+		pSideMenu->CreateLayerMenuSection();
+		CreateLayer(vSprites.size() - 1);
 		pSideMenu->CreateRoomButton(&Transforms, &m_ClientWindow);
 	}
 }
@@ -582,4 +562,9 @@ void BaseLevel::CreateLayer(size_t uRoomNumber)
 {
 	vSprites[uRoomNumber].push_back(std::vector<SpritePointer*>());
 	vVisibleLayers[uRoomNumber].push_back(true);
+	if (pSideMenu)
+	{
+		pSideMenu->CreateLayer(uRoomNumber);
+		pSideMenu->CreateLayerButton(&Transforms, &m_ClientWindow, uRoomNumber);
+	}
 }

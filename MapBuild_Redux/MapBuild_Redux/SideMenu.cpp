@@ -61,10 +61,10 @@ void SideMenu::Interact()
 			else child->Interact();
 		}
 	}
-	for (auto& section : pMenuSections)
+	for (size_t i = 0; i < pMenuSections.size(); i++)
 	{
-		if (section->PointInRect())
-			section->Interact();
+		if (pMenuSections.at(i)->PointInRect())
+			pMenuSections.at(i)->Interact();
 	}
 }
 
@@ -205,12 +205,23 @@ SideMenu::SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1:
 	D2D1_RECT_F LastRect = pMenuSections.back()->GetTranslatedRect();
 	pMenuSections.back()->SetTranslation(D2D1::SizeF(m_Dest.left - m_Dest.right, 0.0f));
 	
-	pMenuSections.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, D2D1::RectF(m_Dest.right, m_Dest.top + 3.0f, m_Dest.right + (m_Dest.right - m_Dest.left), OptionMenuSize.height + 3.0f), 0.0f, L"Room"));
+	pMenuSections.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, D2D1::RectF(m_Dest.right, m_Dest.top + 3.0f, m_Dest.right + (m_Dest.right - m_Dest.left), RoomMenuSize.height + 3.0f), 0.0f, L"Room"));
+	pMenuSections.back()->pParent = this;
 	pMenuSections.back()->SetTranslation(D2D1::SizeF(m_Dest.left - m_Dest.right, LastRect.bottom + SeperationDistance));
 	pRoomsMenu = pMenuSections.back();
 	pRoomsMenu->SetSelectedRoomPointer(pSelectedRoom);
 	pRoomsMenu->SetSelectedLayerPointer(pSelectedLayer);
 	pRoomsMenu->vSelectRoomsandLayers = vSelectRoomsandLayers;
+
+	//pMenuSections.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, D2D1::RectF(m_Dest.right, m_Dest.top + 3.0f, m_Dest.right + RoomMenuSize.width, RoomMenuSize.height + 3.0f), 0.0f, L"AddRemoveRoom"));
+	pMenuSections.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, D2D1::RectF(m_Dest.right, m_Dest.top + 3.0f, m_Dest.right + RoomMenuSize.width, m_Dest.top + 3.0f + RoomMenuSize.height), 0.0f, L"AddRemoveRoom"));
+	pMenuSections.back()->pParent = this;
+	pMenuSections.back()->SetTranslation(D2D1::SizeF(-RoomMenuSize.width, 0.0f));
+	pAddRemoveRooms = pMenuSections.back();
+	pAddRemoveRooms->SetSelectedLayerPointer(pSelectedLayer);
+	pAddRemoveRooms->SetSelectedRoomPointer(pSelectedRoom);
+	pAddRemoveRooms->vSelectRoomsandLayers = vSelectRoomsandLayers;
+	pAddRemoveRooms->AddChild(new AddItem(true, gfx, Transform, area, pMouseCoordinates, L"+", D2D1::RectF(m_Dest.right, m_Dest.top + 3.0f, m_Dest.right + RoomMenuSize.width, m_Dest.top + RoomMenuSize.height + 3.0f), D2D1::ColorF(0.0f, 0.0f, 0.0f), this), RoomMenuSize, RoomCheckBoxMenuSize.height + 2.0f);
 	/*for (int i = 0; i < 30; i++)
 	{
 		pRoomsMenu->AddChild(new RoomLayerBox(gfx, Transform, area, pMouseCoordinates, std::to_wstring(i).c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(pMenuSections.back()), true, true, D2D1::ColorF(1.0f, 0.0f, 0.0f), i, 0, pVisibleRooms), RoomMenuSize, RoomCheckBoxMenuSize.height + 2.0f);
@@ -229,7 +240,6 @@ SideMenu::SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1:
 	{
 		CreateRoomButton(Transform, area);
 	}*/
-	pMenuSections.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, D2D1::RectF(LastRect.left + RoomMenuSize.width * 0.25f, LastRect.bottom + RoomMenuSize.height + SeperationDistance, m_Dest.right, LastRect.bottom + SeperationDistance + RoomMenuSize.height * 2.0f), 0.0f, L"RoomChecks"));
 	
 	//D2D1_RECT_F LastRect = pMenuSections.back()->GetRect();	
 
@@ -347,7 +357,7 @@ void SideMenu::CreateRoomButton(D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* 
 {
 	if (!pRoomsMenu) return;
 	if (!pVisibleRooms) return;
-	pRoomsMenu->AddChild(new RoomLayerBox(gfx, Transform, area, pMouseCoordinates, std::to_wstring(pRoomsMenu->pChild.size()).c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(pRoomsMenu), true, true, D2D1::ColorF(1.0f, 0.0f, 0.0f), pRoomsMenu->pChild.size(), 0, pVisibleRooms), RoomMenuSize, RoomCheckBoxMenuSize.height + 2.0f);
+	pRoomsMenu->AddChild(new RoomLayerBox(gfx, Transform, area, pMouseCoordinates, std::to_wstring(pRoomsMenu->pChild.size()).c_str(), D2D1::RectF(m_Dest.right, m_Dest.top + 3.0f, m_Dest.right + (m_Dest.right - m_Dest.left), LayerMenuSize.height + 3.0f), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(pRoomsMenu), true, true, D2D1::ColorF(1.0f, 0.0f, 0.0f), pRoomsMenu->pChild.size(), 0, pVisibleRooms), RoomMenuSize, RoomCheckBoxMenuSize.height + 2.0f);
 
 	//build rect for selection check box
 	D2D1_RECT_F rect = pRoomsMenu->pChild.back()->GetRect();
@@ -359,12 +369,57 @@ void SideMenu::CreateRoomButton(D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* 
 
 	pRoomsMenu->pChild.back()->pChild.push_back(new Checkbox(gfx, Transform, area, pMouseCoordinates, L" ", rect, D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(pRoomsMenu->pChild.back()), true, pRoomsMenu->pChild.size() - 1 ? false : true));
 	pRoomsMenu->pChild.back()->pChild.back()->SetInvertTransformPointer(pRoomsMenu->pChild.back()->GetInvTransforms());
+
 	pRoomsMenu->ResizeDest();
+	pAddRemoveRooms->SetTranslation(D2D1::SizeF(pRoomsMenu->Getdx() + (pRoomsMenu->pChild.back()->GetRect().right - pRoomsMenu->GetRect().left), pRoomsMenu->Getdy() + pRoomsMenu->pChild.back()->GetRect().top));
 }
 
-void SideMenu::CreateLayerButton(D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area)
+void SideMenu::CreateLayer(size_t uRoomNumber)
 {
+	if (uRoomNumber >= pLayersMenu.size())
+	{
+		while (pLayersMenu.size() >= uRoomNumber)
+		{
+			CreateLayerMenuSection();
+		}
+	}
+}
 
+void SideMenu::CreateLayerButton(D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, size_t uRoomNumber)
+{
+	if (!pRoomsMenu) return;
+	if (!pVisibleLayers) return;
+	if (!pVisibleRooms) return;
+	if (pLayersMenu.empty() || uRoomNumber >= pLayersMenu.size()) return;
+	pLayersMenu[uRoomNumber]->AddChild(new RoomLayerBox(gfx, Transform, area, pMouseCoordinates, std::to_wstring(pLayersMenu[uRoomNumber]->pChild.size()).c_str(), D2D1::RectF(m_Dest.right, m_Dest.top + 3.0f, m_Dest.right + (m_Dest.right - m_Dest.left), LayerMenuSize.height + 3.0f), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(pLayersMenu[uRoomNumber]), true, true, D2D1::ColorF(1.0f, 0.0f, 0.0f), uRoomNumber, pLayersMenu[uRoomNumber]->pChild.size(), pVisibleRooms, pVisibleLayers, false), LayerMenuSize, LayerCheckBoxMenuSize.height + 2.0f);
+
+	if (uRoomNumber) pLayersMenu[uRoomNumber]->SetHidden();
+
+	//build rect for selection check box
+	D2D1_RECT_F rect = pLayersMenu[uRoomNumber]->pChild.back()->GetRect();
+	float w = (rect.right - rect.left) * 0.25f;
+	rect.left += w;
+	rect.right -= w;
+	rect.top = rect.bottom + 1.0f;
+	rect.bottom = rect.top + LayerCheckBoxMenuSize.height;
+
+	pLayersMenu[uRoomNumber]->pChild.back()->pChild.push_back(new Checkbox(gfx, Transform, area, pMouseCoordinates, L" ", rect, D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(pLayersMenu[uRoomNumber]->pChild.back()), true, pLayersMenu[uRoomNumber]->pChild.size() - 1 ? false : true, D2D1::ColorF(1.0f, 0.0f, 0.0f), false));
+	pLayersMenu[uRoomNumber]->pChild.back()->pChild.back()->SetInvertTransformPointer(pLayersMenu[uRoomNumber]->pChild.back()->GetInvTransforms());
+	pLayersMenu[uRoomNumber]->ResizeDest();
+}
+
+void SideMenu::CreateLayerMenuSection()
+{
+	pMenuSections.push_back(new MenuSection(gfx, pTransforms, pClientRect, pMouseCoordinates, D2D1::RectF(m_Dest.right, m_Dest.top + 3.0f, m_Dest.right + (m_Dest.right - m_Dest.left), m_Dest.top + LayerMenuSize.height + 3.0f), 0.0f, std::to_wstring(pRoomsMenu->pChild.size()).c_str()));
+	D2D1_RECT_F rr = pRoomsMenu->GetRect();
+	float dist = -pRoomsMenu->GetTranslatedRect().top;
+	for (auto& player : pLayersMenu)
+		player->SetTranslation(D2D1::SizeF(m_Dest.left - m_Dest.right, dist + SeperationDistance + (rr.bottom - rr.top)));
+	pMenuSections.back()->SetTranslation(D2D1::SizeF(m_Dest.left - m_Dest.right, dist + SeperationDistance + (rr.bottom - rr.top)));
+	pLayersMenu.push_back(pMenuSections.back());
+	pLayersMenu.back()->SetSelectedRoomPointer(pSelectedRoom);
+	pLayersMenu.back()->SetSelectedLayerPointer(pSelectedLayer);
+	pLayersMenu.back()->vSelectRoomsandLayers = vSelectRoomsandLayers;
 }
 
 void SideMenu::AddSeparation(const MenuItemType ItemType, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, const D2D1_COLOR_F color)

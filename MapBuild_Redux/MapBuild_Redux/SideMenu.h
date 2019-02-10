@@ -66,20 +66,21 @@ private:
 	const D2D1_SIZE_F SubMenuSize = D2D1::SizeF(94.0f, 32.0f);
 	const D2D1_SIZE_F SizeMenuSize = D2D1::SizeF(94.0f, 32.0f);
 	const D2D1_SIZE_F ItemMenuSize = D2D1::SizeF(94.0f, 54.0f);
-	const D2D1_SIZE_F RoomMenuSize = D2D1::SizeF(24.0f, 24.0f);
-	const D2D1_SIZE_F RoomCheckBoxMenuSize = D2D1::SizeF(12.0f, 12.0f);
-	const D2D1_SIZE_F LayerMenuSize = D2D1::SizeF(24.0f, 24.0f);
-	const D2D1_SIZE_F LayerCheckBoxMenuSize = D2D1::SizeF(12.0f, 12.0f);
+	const D2D1_SIZE_F RoomMenuSize = D2D1::SizeF(18.0f, 18.0f);
+	const D2D1_SIZE_F RoomCheckBoxMenuSize = D2D1::SizeF(9.0f, 9.0f);
+	const D2D1_SIZE_F LayerMenuSize = D2D1::SizeF(18.0f, 18.0f);
+	const D2D1_SIZE_F LayerCheckBoxMenuSize = D2D1::SizeF(9.0f, 9.0f);
 	D2D1_RECT_F mRealRect = D2D1::RectF();
 	const float SeperationDistance = 10.0f;
 	bool bBuildMode = true;
 	char* Buffer = nullptr;
 	size_t BufferSize = 0;
-private:
+public:
+	MenuSection* pAddRemoveRooms = nullptr;
 	MenuSection* pOptionsMenu = nullptr;
 	MenuSection* pRoomsMenu = nullptr;
 	MenuSection* pRoomsCheckMenu = nullptr;
-	MenuSection* pLayersMenu = nullptr;
+	std::vector<MenuSection*> pLayersMenu;
 	MenuSection* pLayersCheckMenu = nullptr;
 	MenuSection* CategoryMenu = nullptr;
 	MenuSection* SubcategoryMenu = nullptr;
@@ -141,8 +142,10 @@ public:
 	void SetSelectedRoomPointer(std::vector< std::vector<SpritePointer*>>** const p) { pSelectedRoom = p; }
 	void SetSelectedLayerPointer(std::vector<SpritePointer*>** const p) { pSelectedLayer = p; }
 	void CreateRoomButton(D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area);
-	void CreateLayerButton(D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area);
-
+	void CreateLayerButton(D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, size_t uRoomNumber);
+	void CreateLayerMenuSection();
+	void CreateLayer(size_t uRoomNumber);
+	
 	std::vector< std::vector<SpritePointer*>>** pSelectedRoom = nullptr;
 	std::vector<SpritePointer*>** pSelectedLayer = nullptr;
 	std::vector< std::vector< std::vector<SpritePointer*>>>** vSelectRoomsandLayers = nullptr;

@@ -30,6 +30,9 @@ protected:
 			(*ppT) = nullptr;
 		}
 	}
+public:
+	D2D1::Matrix3x2F* pTransforms = nullptr;
+	D2D1_RECT_F* pClientRect = nullptr;
 protected:
 	D2D1_RECT_F m_Dest = D2D1::RectF();
 	D2D1_RECT_F m_ExpandedDest = D2D1::RectF();
@@ -41,9 +44,7 @@ protected:
 	Graphics* gfx = nullptr;
 	bool bHide = false;
 	bool bMouseOver = false;
-	D2D1::Matrix3x2F* pTransforms = nullptr;
 	D2D1::Matrix3x2F* pInvTransforms = nullptr;
-	D2D1_RECT_F* pClientRect = nullptr;
 	std::wstring wLable;
 	DWRITE_TEXT_ALIGNMENT m_Alignment;
 	DWRITE_PARAGRAPH_ALIGNMENT m_pAlignment;
@@ -113,6 +114,7 @@ public:
 	virtual const D2D1_RECT_F GetTranslatedRect() { return m_Dest; }
 	virtual D2D1::Matrix3x2F* const GetInvTransforms() { return pInvTransforms; }
 	virtual void SetRoom(const size_t pot) { }
+	virtual void SetLayer(const size_t pos) { }
 public:
 	std::vector<InteractObjects*> pChild;
 	InteractObjects* pParent = nullptr;

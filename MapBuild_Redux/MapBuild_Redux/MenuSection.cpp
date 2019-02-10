@@ -164,6 +164,7 @@ void MenuSection::UpdateChildPositions()
 
 void MenuSection::Interact()
 {
+	if (bHide) return;
 	for (auto& child : pChild)
 	{
 		if (!child) continue;
@@ -202,8 +203,21 @@ const D2D1_RECT_F MenuSection::GetTranslatedRect()
 	return D2D1::RectF(tl.x, tl.y, br.x, br.y);
 }
 
+const D2D1_RECT_F MenuSection::GetTranslatedRectNotInv()
+{
+	D2D1_POINT_2F tl = Transforms.TransformPoint(D2D1::Point2F(m_Dest.left, m_Dest.top));
+	D2D1_POINT_2F br = Transforms.TransformPoint(D2D1::Point2F(m_Dest.right, m_Dest.bottom));
+	return D2D1::RectF(tl.x, tl.y, br.x, br.y);
+}
+
 void MenuSection::SetRoom(const size_t pos)
 {
 	*pSelectedRoom = &(*vSelectRoomsandLayers)->at(pos);	
 	*pSelectedLayer = &(*pSelectedRoom)->front();
+	//show layer buttons for proper layer; hide rest of layer buttons
+}
+
+void MenuSection::SetLayer(const size_t pos)
+{
+	*pSelectedLayer = &(*pSelectedRoom)->at(pos);
 }

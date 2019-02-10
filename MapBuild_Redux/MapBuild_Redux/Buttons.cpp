@@ -1,4 +1,5 @@
 #include "Buttons.h"
+#include "SideMenu.h"
 
 void Buttons::Interact(D2D1_POINT_2F p)
 {
@@ -67,13 +68,25 @@ void Checkbox::Interact()
 			if (pParent->pParent->pChild.at(i)->pChild.back()->IsSelected())
 			{
 				pParent->pParent->SetRoom(i);
+				for (auto& layer : static_cast<SideMenu*>(pParent->pParent->pParent)->pLayersMenu)
+				{
+					layer->SetHidden();
+				}
+				static_cast<SideMenu*>(pParent->pParent->pParent)->pLayersMenu.at(i)->SetUnhidden();
 				break;
 			}
 		}
 	}
 	else
 	{//if its not a room its a layer
-
+		for (size_t i = 0; i < pParent->pParent->pChild.size(); i++)
+		{
+			if (pParent->pParent->pChild.at(i)->pChild.back()->IsSelected())
+			{
+				pParent->pParent->SetLayer(i);
+				break;
+			}
+		}
 	}	
 }
 
@@ -97,6 +110,10 @@ void RoomLayerBox::Interact(D2D1_POINT_2F p)
 	{
 		pvVisibleRoom->at(uRoomNumber) = bSelected;
 	}
+	else
+	{
+		pvVisibleLayer->at(uRoomNumber).at(uLayerNumber) = bSelected;
+	}
 }
 
 void RoomLayerBox::Interact()
@@ -104,3 +121,33 @@ void RoomLayerBox::Interact()
 	if (IsHidden()) return;
 	Interact(*pMouseCoordinates);
 }
+
+void AddItem::Interact(D2D1_POINT_2F p)
+{
+	if (bRoom)
+	{
+		SideMenu* parent = (static_cast<SideMenu*>(pParent));
+		//its a room
+		(*parent->vSelectRoomsandLayers)->push_back(std::vector< std::vector<SpritePointer*>>());
+		parent->pVisibleRooms->push_back(true);
+		parent->pVisibleLayers->push_back(std::vector<bool>());
+		parent->CreateLayerMenuSection();
+		(*parent->vSelectRoomsandLayers)->back().push_back(std::vector<SpritePointer*>());
+		parent->pVisibleLayers->back().push_back(true);
+		parent->CreateLayer((*parent->vSelectRoomsandLayers)->size() - 1);
+		parent->CreateRoomButton(pParent->pTransforms, pParent->pClientRect);
+		parent->CreateLayerButton(pParent->pTransforms, pParent->pClientRect, (*parent->vSelectRoomsandLayers)->size() - 1);
+	}
+	else
+	{
+		//its a layer
+	}
+}
+
+/*vSprites[uRoomNumber].push_back(std::vector<SpritePointer*>());
+	vVisibleLayers[uRoomNumber].push_back(true);
+	if (pSideMenu)
+	{
+		pSideMenu->CreateLayer(uRoomNumber);
+		pSideMenu->CreateLayerButton(&Transforms, &m_ClientWindow, uRoomNumber);
+	}*/
