@@ -9,6 +9,15 @@ void MenuSection::ResizeDest()
 		m_Dest.bottom = pChild.back()->GetRect().bottom + 1.0f;
 }
 
+void MenuSection::ResizeDest(const D2D1_SIZE_F r)
+{
+	if (pChild.back()->pChild.size())
+		if (r.height >= m_Dest.bottom)
+			m_Dest.bottom = r.height + 1.0f;
+	if (pChild.back()->GetRect().top >= m_Dest.bottom)
+		m_Dest.bottom = pChild.back()->GetRect().bottom + 1.0f;
+}
+
 void MenuSection::Draw() 
 {
 	if (IsHidden()) return;
@@ -201,6 +210,11 @@ const D2D1_RECT_F MenuSection::GetTranslatedRect()
 	D2D1_POINT_2F tl = InvTransforms.TransformPoint(D2D1::Point2F(m_Dest.left, m_Dest.top));
 	D2D1_POINT_2F br = InvTransforms.TransformPoint(D2D1::Point2F(m_Dest.right, m_Dest.bottom));
 	return D2D1::RectF(tl.x, tl.y, br.x, br.y);
+}
+
+void MenuSection::ShiftTranslation(D2D1_SIZE_F distance)
+{
+	Transforms = Transforms * D2D1::Matrix3x2F::Translation(distance);
 }
 
 const D2D1_RECT_F MenuSection::GetTranslatedRectNotInv()

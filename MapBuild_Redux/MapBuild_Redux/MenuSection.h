@@ -25,6 +25,7 @@ public:
 		Unload();
 	}
 public:
+	void ShiftTranslation(D2D1_SIZE_F distance);
 	const D2D1_RECT_F GetTranslatedRect() override;
 	const D2D1_RECT_F GetTranslatedRectNotInv();
 	const float Getdx() { return Transforms.dx; }
@@ -47,6 +48,7 @@ public:
 	void UpdateChildPositions();
 	void SetTranslation(D2D1_SIZE_F size);
 	void ResizeDest();
+	void ResizeDest(const D2D1_SIZE_F r);
 	void SetSelectedRoomPointer(std::vector< std::vector<SpritePointer*>>** const p) { pSelectedRoom = p; }
 	void SetSelectedLayerPointer(std::vector<SpritePointer*>** const p) { pSelectedLayer = p; }
 	void SetRoom(const size_t pos) override;

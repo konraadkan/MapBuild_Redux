@@ -371,7 +371,23 @@ void SideMenu::CreateRoomButton(D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* 
 	pRoomsMenu->pChild.back()->pChild.back()->SetInvertTransformPointer(pRoomsMenu->pChild.back()->GetInvTransforms());
 
 	pRoomsMenu->ResizeDest();
-	pAddRemoveRooms->SetTranslation(D2D1::SizeF(pRoomsMenu->Getdx() + (pRoomsMenu->pChild.back()->GetRect().right - pRoomsMenu->GetRect().left), pRoomsMenu->Getdy() + pRoomsMenu->pChild.back()->GetRect().top));
+	D2D1_SIZE_F AddItemTranslation = D2D1::SizeF();
+	if (pRoomsMenu->pChild.back()->GetRect().right + RoomMenuSize.width > pRoomsMenu->GetRect().right)
+	{
+		AddItemTranslation = D2D1::SizeF(pRoomsMenu->Getdx(), pRoomsMenu->Getdy() + pRoomsMenu->pChild.back()->GetRect().bottom + RoomCheckBoxMenuSize.height);
+		pRoomsMenu->SetDest(D2D1::RectF(pRoomsMenu->GetRect().left, pRoomsMenu->GetRect().top, pRoomsMenu->GetRect().right, pRoomsMenu->pChild.back()->GetRect().bottom + 1.0f));
+		for (size_t w = 0; w < pLayersMenu.size(); w++)
+		{
+			pLayersMenu.at(w)->ShiftTranslation(D2D1::SizeF(0.0f, RoomCheckBoxMenuSize.height + SeperationDistance + 1.0f));
+		}
+	}
+	else
+	{
+		AddItemTranslation = D2D1::SizeF(pRoomsMenu->Getdx() + (pRoomsMenu->pChild.back()->GetRect().right - pRoomsMenu->GetRect().left), pRoomsMenu->Getdy() + pRoomsMenu->pChild.back()->GetRect().top);
+		for (auto& w : pLayersMenu)
+			w->SetTranslation(D2D1::SizeF(pRoomsMenu->Getdx(), pRoomsMenu->Getdy() + pRoomsMenu->pChild.back()->GetRect().bottom + RoomCheckBoxMenuSize.height + SeperationDistance + 1.0f));
+	}
+	pAddRemoveRooms->SetTranslation(AddItemTranslation);
 }
 
 void SideMenu::CreateLayer(size_t uRoomNumber)
