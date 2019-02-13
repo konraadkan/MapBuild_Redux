@@ -30,8 +30,8 @@ public:
 		pParent = parent;
 		SetSelectionColor(D2D1::ColorF(1, 0, 0, 0.5f));
 	}
-	void Interact(D2D1_POINT_2F p) override;
-	void Interact() override;
+	const bool Interact(D2D1_POINT_2F p) override;
+	const bool Interact() override;
 	void Draw() override;
 	const bool IsSelected() override { return bSelected; }
 	void SetIsSelected() override { bSelected = true; }
@@ -55,8 +55,8 @@ public:
 		uRoomNumber = visibleroomnumber;
 		uLayerNumber = visiblelayernumber;
 	}
-	void Interact() override;
-	void Interact(D2D1_POINT_2F p) override;
+	const bool Interact() override;
+	const bool Interact(D2D1_POINT_2F p) override;
 };
 
 class Checkbox : public Buttons
@@ -66,7 +66,7 @@ private:
 public:
 	Checkbox(Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, bool enableselection = false, bool selected = false,
 		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), bool room = true, DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : bRoom(room), Buttons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
-	void Interact() override;
+	const bool Interact() override;
 };
 
 class AddItem : public Buttons
@@ -76,5 +76,5 @@ private:
 public:
 	AddItem(bool room, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, bool enableselection = false, bool selected = false,
 		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : bRoom(room), Buttons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
-	void Interact(D2D1_POINT_2F p) override;
+	const bool Interact(D2D1_POINT_2F p) override;
 };

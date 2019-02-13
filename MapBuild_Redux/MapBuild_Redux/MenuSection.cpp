@@ -171,9 +171,9 @@ void MenuSection::UpdateChildPositions()
 	m_Dest.bottom = pChild.back()->GetRect().bottom;
 }
 
-void MenuSection::Interact()
+const bool MenuSection::Interact()
 {
-	if (bHide) return;
+	if (bHide) return true;
 	for (auto& child : pChild)
 	{
 		if (!child) continue;
@@ -183,18 +183,19 @@ void MenuSection::Interact()
 			{
 				if (!b) continue;
 				if (b->PointInRect())
-					b->Interact();
+					if (!b->Interact()) return false;
 			}
 		}
 		if (child->PointInRect())
-			child->Interact();
+			if (!child->Interact()) return false;
 	}
 	for (auto& section : pSubsections)
 	{
 		if (!section) continue;
 		if (section->PointInRect())
-			section->Interact();
+			if (!section->Interact()) return false;
 	}
+	return true;
 }
 
 void MenuSection::SetTranslation(D2D1_SIZE_F size)

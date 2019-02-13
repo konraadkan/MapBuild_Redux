@@ -124,7 +124,7 @@ void InteractObjects::SetUnhidden()
 	bHide = false;
 }
 
-void InteractObjects::Interact(const D2D1_POINT_2F p)
+const bool InteractObjects::Interact(const D2D1_POINT_2F p)
 {
 	for (auto& child : pChild)
 	{
@@ -134,12 +134,13 @@ void InteractObjects::Interact(const D2D1_POINT_2F p)
 			{
 				if (child->pParent) child->pParent->ChangeMode();
 			}
-			child->Interact(p);
+			if (!child->Interact(p)) return false;
 		}
 	}
+	return true;
 }
 
-void InteractObjects::Interact()
+const bool InteractObjects::Interact()
 {
 	for (auto& child : pChild)
 	{
@@ -149,7 +150,8 @@ void InteractObjects::Interact()
 			{
 				if (child->pParent) child->pParent->ChangeMode();
 			}
-			child->Interact();
+			if (!child->Interact()) return false;
 		}
 	}
+	return true;
 }

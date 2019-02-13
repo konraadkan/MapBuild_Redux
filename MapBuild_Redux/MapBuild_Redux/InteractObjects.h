@@ -64,8 +64,8 @@ protected:
 public:
 	InteractObjects(Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p) : gfx(graphics), pTransforms(Transform), pClientRect(area), pMouseCoordinates(p) {}
 	~InteractObjects();
-	virtual void Interact(const D2D1_POINT_2F p);
-	virtual void Interact();
+	virtual const bool Interact(const D2D1_POINT_2F p);
+	virtual const bool Interact();
 	virtual void Draw() = 0;
 public:
 	virtual void SetSelectionColor(const D2D1_COLOR_F color) { memcpy(&m_SelectedColor, &color, sizeof(m_SelectedColor)); }

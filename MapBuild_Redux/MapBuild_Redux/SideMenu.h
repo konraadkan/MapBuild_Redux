@@ -77,6 +77,7 @@ private:
 	size_t BufferSize = 0;
 public:
 	MenuSection* pAddRemoveRooms = nullptr;
+	MenuSection* pAddRemoveLayers = nullptr;
 	MenuSection* pOptionsMenu = nullptr;
 	MenuSection* pRoomsMenu = nullptr;
 	MenuSection* pRoomsCheckMenu = nullptr;
@@ -130,8 +131,8 @@ public:
 		}
 	}
 	void Draw() override;
-	void Interact(const D2D1_POINT_2F p) override;
-	void Interact() override;
+	const bool Interact(const D2D1_POINT_2F p) override;
+	const bool Interact() override;
 	bool PointInRect(const D2D1_POINT_2F p) override;
 	void WheelUp() override;
 	void WheelDown() override;
@@ -145,6 +146,9 @@ public:
 	void CreateLayerButton(D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, size_t uRoomNumber);
 	void CreateLayerMenuSection();
 	void CreateLayer(size_t uRoomNumber);
+	void RealignAddLayerButton();
+	void RealignAddLayerButton(unsigned int uRoomNumber);
+	const unsigned int GetSelectedRoomNumber();
 	
 	std::vector< std::vector<SpritePointer*>>** pSelectedRoom = nullptr;
 	std::vector<SpritePointer*>** pSelectedLayer = nullptr;

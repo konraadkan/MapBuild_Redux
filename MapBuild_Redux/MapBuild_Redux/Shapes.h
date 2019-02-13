@@ -31,8 +31,8 @@ public:
 	}
 	void Draw() override;
 	void SetCenter(const D2D1_POINT_2F p) override;
-	void Interact(const D2D1_POINT_2F p) override;
-	void Interact() override;
+	const bool Interact(const D2D1_POINT_2F p) override;
+	const bool Interact() override;
 	void SetFill() override;
 	void UnsetFill() override;
 	bool BuildCustomShape(std::queue<D2D1_POINT_2F> p, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f)) override;

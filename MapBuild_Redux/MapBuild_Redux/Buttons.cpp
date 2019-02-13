@@ -1,9 +1,9 @@
 #include "Buttons.h"
 #include "SideMenu.h"
 
-void Buttons::Interact(D2D1_POINT_2F p)
+const bool Buttons::Interact(D2D1_POINT_2F p)
 {
-	if (IsHidden()) return;
+	if (IsHidden()) return true;
 	for (auto& child : pChild)
 	{
 		if (child)
@@ -12,22 +12,24 @@ void Buttons::Interact(D2D1_POINT_2F p)
 			{
 				if (!_wcsicmp(child->GetLabel(), L"Toggle Initiative"))
 				{
-					if(child->pParent) child->pParent->ChangeMode();
+					if (child->pParent) child->pParent->ChangeMode();
 				}
 				else
-					child->Interact(p);
-				return;
+					if (!child->Interact(p)) return false;
+				return true;
 			}
 		}
 	}
 	//Interaction... look into what exactly to do with this later
 	if(bEnableSelection) bSelected ^= true;
+	return true;
 }
 
-void Buttons::Interact()
+const bool Buttons::Interact()
 {
-	if (IsHidden()) return;
-	Interact(*pMouseCoordinates);
+	if (IsHidden()) return true;
+	if (!Interact(*pMouseCoordinates)) return false;
+	return true;
 }
 
 void Buttons::Draw()
@@ -44,10 +46,10 @@ void Buttons::Draw()
 	}
 }
 
-void Checkbox::Interact()
+const bool Checkbox::Interact()
 {
-	if (IsHidden()) return;
-	if (IsSelected()) return;
+	if (IsHidden()) return true;
+	if (IsSelected()) return true;
 
 	SetIsSelected();
 	for (auto& c : pParent->pParent->pChild)
@@ -73,6 +75,7 @@ void Checkbox::Interact()
 					layer->SetHidden();
 				}
 				static_cast<SideMenu*>(pParent->pParent->pParent)->pLayersMenu.at(i)->SetUnhidden();
+				static_cast<SideMenu*>(pParent->pParent->pParent)->RealignAddLayerButton(i);
 				break;
 			}
 		}
@@ -84,15 +87,17 @@ void Checkbox::Interact()
 			if (pParent->pParent->pChild.at(i)->pChild.back()->IsSelected())
 			{
 				pParent->pParent->SetLayer(i);
+				static_cast<SideMenu*>(pParent->pParent->pParent)->RealignAddLayerButton();
 				break;
 			}
 		}
 	}	
+	return false;
 }
 
-void RoomLayerBox::Interact(D2D1_POINT_2F p)
+const bool RoomLayerBox::Interact(D2D1_POINT_2F p)
 {
-	if (IsHidden()) return;
+	if (IsHidden()) return true;
 	//toggle associated room or layer's visiblity to on / off
 	for (auto& child : pChild)
 	{
@@ -100,8 +105,8 @@ void RoomLayerBox::Interact(D2D1_POINT_2F p)
 		{
 			if (child->PointInRect(p))
 			{
-				child->Interact(p);
-				return;
+				if (!child->Interact(p)) return false;
+				return true;
 			}
 		}
 	}	
@@ -114,15 +119,17 @@ void RoomLayerBox::Interact(D2D1_POINT_2F p)
 	{
 		pvVisibleLayer->at(uRoomNumber).at(uLayerNumber) = bSelected;
 	}
+	return true;
 }
 
-void RoomLayerBox::Interact()
+const bool RoomLayerBox::Interact()
 {
-	if (IsHidden()) return;
-	Interact(*pMouseCoordinates);
+	if (IsHidden()) return true;
+	if (!Interact(*pMouseCoordinates)) return false;
+	return true;
 }
 
-void AddItem::Interact(D2D1_POINT_2F p)
+const bool AddItem::Interact(D2D1_POINT_2F p)
 {
 	if (bRoom)
 	{
@@ -137,17 +144,22 @@ void AddItem::Interact(D2D1_POINT_2F p)
 		parent->CreateLayer((*parent->vSelectRoomsandLayers)->size() - 1);
 		parent->CreateRoomButton(pParent->pTransforms, pParent->pClientRect);
 		parent->CreateLayerButton(pParent->pTransforms, pParent->pClientRect, (*parent->vSelectRoomsandLayers)->size() - 1);
+		parent->RealignAddLayerButton(parent->GetSelectedRoomNumber());
+		return false;
 	}
 	else
 	{
-		//its a layer
-	}
-}
+		//its a layer		
+		SideMenu* parent = static_cast<SideMenu*>(pParent);
+		unsigned int uRoom = parent->GetSelectedRoomNumber();
 
-/*vSprites[uRoomNumber].push_back(std::vector<SpritePointer*>());
-	vVisibleLayers[uRoomNumber].push_back(true);
-	if (pSideMenu)
-	{
-		pSideMenu->CreateLayer(uRoomNumber);
-		pSideMenu->CreateLayerButton(&Transforms, &m_ClientWindow, uRoomNumber);
-	}*/
+		(*parent->vSelectRoomsandLayers)->at(uRoom).push_back(std::vector<SpritePointer*>());
+		parent->pVisibleLayers->at(uRoom).push_back(true);
+		parent->CreateLayer(uRoom);
+		parent->CreateLayerButton(parent->pTransforms, parent->pClientRect, uRoom);
+		parent->pLayersMenu[uRoom]->SetUnhidden();
+		parent->RealignAddLayerButton(uRoom);
+		return false;
+	}
+	return true;
+}

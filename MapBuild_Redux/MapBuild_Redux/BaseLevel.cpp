@@ -11,11 +11,8 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	pSideMenu = new SideMenu(D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow, &MenuCoordinates, &pSelectedRoom, &pSelectedLayer, &ppvSprites, &vVisibleRooms, &vVisibleLayers);
 	pSideMenu->SetMousePointer(&MenuCoordinates);
 	IObjects.push_back(pSideMenu);
-	for (size_t i = 0; i < 30; i++)
-	{
-		CreateRoom();
-		CreateLayer(i);
-	}
+	CreateRoom();
+	
 	BuildObjects(L"mainpcs-unicode.ini");
 	//BuildObjects(L"mainpcs.ini");
 	while (vPieces.size())
@@ -550,6 +547,7 @@ void BaseLevel::CreateRoom()
 		pSideMenu->CreateLayerMenuSection();
 		CreateLayer(vSprites.size() - 1);
 		pSideMenu->CreateRoomButton(&Transforms, &m_ClientWindow);
+		pSideMenu->RealignAddLayerButton();
 	}
 }
 

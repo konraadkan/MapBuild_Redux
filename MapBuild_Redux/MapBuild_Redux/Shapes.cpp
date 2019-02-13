@@ -90,7 +90,7 @@ void ClassShapes::SetCenter(const D2D1_POINT_2F p)
 	CalcRect();
 }
 
-void ClassShapes::Interact(const D2D1_POINT_2F p)
+const bool ClassShapes::Interact(const D2D1_POINT_2F p)
 {
 	if (pChild.size())
 	{
@@ -98,14 +98,15 @@ void ClassShapes::Interact(const D2D1_POINT_2F p)
 		{
 			if (child->PointInRect(p))
 			{
-				child->Interact(p);
-				return;
+				if (!child->Interact(p)) return false;
+				return true;
 			}
 		}
 	}
+	return true;
 }
 
-void ClassShapes::Interact()
+const bool ClassShapes::Interact()
 {
 	if (pChild.size())
 	{
@@ -113,11 +114,12 @@ void ClassShapes::Interact()
 		{
 			if (child->PointInRect())
 			{
-				child->Interact();
-				return;
+				if (!child->Interact()) return false;
+				return true;
 			}
 		}
 	}
+	return true;
 }
 
 void ClassShapes::SetFill()
