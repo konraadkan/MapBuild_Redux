@@ -67,16 +67,19 @@ const bool Checkbox::Interact()
 	{
 		for (size_t i = 0; i < pParent->pParent->pChild.size(); i++)
 		{
-			if (pParent->pParent->pChild.at(i)->pChild.back()->IsSelected())
+			if (pParent) if (pParent->pParent) if (pParent->pParent->pChild.at(i)) if (pParent->pParent->pChild.at(i)->pChild.back())
 			{
-				pParent->pParent->SetRoom(i);
-				for (auto& layer : static_cast<SideMenu*>(pParent->pParent->pParent)->pLayersMenu)
+				if (pParent->pParent->pChild.at(i)->pChild.back()->IsSelected())
 				{
-					layer->SetHidden();
+					pParent->pParent->SetRoom(i);
+					for (auto& layer : static_cast<SideMenu*>(pParent->pParent->pParent)->pLayersMenu)
+					{
+						layer->SetHidden();
+					}
+					static_cast<SideMenu*>(pParent->pParent->pParent)->pLayersMenu.at(i)->SetUnhidden();
+					static_cast<SideMenu*>(pParent->pParent->pParent)->RealignAddLayerButton(i);
+					break;
 				}
-				static_cast<SideMenu*>(pParent->pParent->pParent)->pLayersMenu.at(i)->SetUnhidden();
-				static_cast<SideMenu*>(pParent->pParent->pParent)->RealignAddLayerButton(i);
-				break;
 			}
 		}
 	}
@@ -84,11 +87,14 @@ const bool Checkbox::Interact()
 	{//if its not a room its a layer
 		for (size_t i = 0; i < pParent->pParent->pChild.size(); i++)
 		{
-			if (pParent->pParent->pChild.at(i)->pChild.back()->IsSelected())
+			if (pParent) if (pParent->pParent) if (pParent->pParent->pChild.at(i)) if (pParent->pParent->pChild.at(i)->pChild.back())
 			{
-				pParent->pParent->SetLayer(i);
-				static_cast<SideMenu*>(pParent->pParent->pParent)->RealignAddLayerButton();
-				break;
+				if (pParent->pParent->pChild.at(i)->pChild.back()->IsSelected())
+				{
+					pParent->pParent->SetLayer(i);
+					static_cast<SideMenu*>(pParent->pParent->pParent)->RealignAddLayerButton();
+					break;
+				}
 			}
 		}
 	}	
@@ -113,11 +119,13 @@ const bool RoomLayerBox::Interact(D2D1_POINT_2F p)
 	bSelected ^= true;
 	if (bRoom)
 	{
-		pvVisibleRoom->at(uRoomNumber) = bSelected;
+		if (uRoomNumber < pvVisibleRoom->size())
+			pvVisibleRoom->at(uRoomNumber) = bSelected;
 	}
 	else
 	{
-		pvVisibleLayer->at(uRoomNumber).at(uLayerNumber) = bSelected;
+		if (pvVisibleLayer) if (uRoomNumber < pvVisibleLayer->size()) if (uLayerNumber < pvVisibleLayer->at(uRoomNumber).size())
+			pvVisibleLayer->at(uRoomNumber).at(uLayerNumber) = bSelected;
 	}
 	return true;
 }
@@ -135,6 +143,10 @@ const bool AddItem::Interact(D2D1_POINT_2F p)
 	{
 		SideMenu* parent = (static_cast<SideMenu*>(pParent));
 		//its a room
+		if (!parent) return true;
+		if (!*parent->vSelectRoomsandLayers) return true;
+		if (!parent->pVisibleLayers) return true;
+		if (!parent->pVisibleRooms) return true;
 		(*parent->vSelectRoomsandLayers)->push_back(std::vector< std::vector<SpritePointer*>>());
 		parent->pVisibleRooms->push_back(true);
 		parent->pVisibleLayers->push_back(std::vector<bool>());
@@ -151,13 +163,16 @@ const bool AddItem::Interact(D2D1_POINT_2F p)
 	{
 		//its a layer		
 		SideMenu* parent = static_cast<SideMenu*>(pParent);
+		if (!parent) return true;
 		unsigned int uRoom = parent->GetSelectedRoomNumber();
+		if (!*parent->vSelectRoomsandLayers) return true;
+		if (!parent->pVisibleLayers) return true;
 
-		(*parent->vSelectRoomsandLayers)->at(uRoom).push_back(std::vector<SpritePointer*>());
+		if (uRoom < (*parent->vSelectRoomsandLayers)->size()) (*parent->vSelectRoomsandLayers)->at(uRoom).push_back(std::vector<SpritePointer*>());
 		parent->pVisibleLayers->at(uRoom).push_back(true);
 		parent->CreateLayer(uRoom);
 		parent->CreateLayerButton(parent->pTransforms, parent->pClientRect, uRoom);
-		parent->pLayersMenu[uRoom]->SetUnhidden();
+		if (uRoom < parent->pLayersMenu.size()) parent->pLayersMenu[uRoom]->SetUnhidden();
 		parent->RealignAddLayerButton(uRoom);
 		return false;
 	}
