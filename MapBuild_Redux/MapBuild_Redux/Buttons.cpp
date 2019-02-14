@@ -142,6 +142,8 @@ const bool AddItem::Interact(D2D1_POINT_2F p)
 	if (bRoom)
 	{
 		SideMenu* parent = (static_cast<SideMenu*>(pParent));
+		size_t roomnum = parent->GetSelectedRoomNumber();
+		size_t layernum = parent->GetSelectedLayerNumber(roomnum);
 		//its a room
 		if (!parent) return true;
 		if (!*parent->vSelectRoomsandLayers) return true;
@@ -157,6 +159,8 @@ const bool AddItem::Interact(D2D1_POINT_2F p)
 		parent->CreateRoomButton(pParent->pTransforms, pParent->pClientRect);
 		parent->CreateLayerButton(pParent->pTransforms, pParent->pClientRect, (*parent->vSelectRoomsandLayers)->size() - 1);
 		parent->RealignAddLayerButton(parent->GetSelectedRoomNumber());
+		parent->SetRoom(roomnum);
+		parent->SetLayer(layernum);
 		return false;
 	}
 	else
@@ -165,6 +169,7 @@ const bool AddItem::Interact(D2D1_POINT_2F p)
 		SideMenu* parent = static_cast<SideMenu*>(pParent);
 		if (!parent) return true;
 		unsigned int uRoom = parent->GetSelectedRoomNumber();
+		unsigned int uLayer = parent->GetSelectedLayerNumber(uRoom);
 		if (!*parent->vSelectRoomsandLayers) return true;
 		if (!parent->pVisibleLayers) return true;
 
@@ -174,6 +179,8 @@ const bool AddItem::Interact(D2D1_POINT_2F p)
 		parent->CreateLayerButton(parent->pTransforms, parent->pClientRect, uRoom);
 		if (uRoom < parent->pLayersMenu.size()) parent->pLayersMenu[uRoom]->SetUnhidden();
 		parent->RealignAddLayerButton(uRoom);
+		parent->SetRoom(uRoom);
+		parent->SetLayer(uLayer);
 		return false;
 	}
 	return true;

@@ -376,6 +376,46 @@ const unsigned int SideMenu::GetSelectedRoomNumber()
 	return 0;
 }
 
+void SideMenu::SetRoom(size_t uRoomNumber)
+{
+	if (uRoomNumber < (*vSelectRoomsandLayers)->size())
+	{
+		*pSelectedRoom = &((*vSelectRoomsandLayers)->at(uRoomNumber));
+		*pSelectedLayer = &((*pSelectedRoom)->front());
+	}
+	else
+	{
+		MessageBoxW(nullptr, L"Unable to update room pointer.", L"Error", MB_OK | MB_ICONERROR);
+	}
+}
+
+void SideMenu::SetLayer(size_t uLayerNumber)
+{
+	if (uLayerNumber < (*pSelectedRoom)->size())
+	{
+		*pSelectedLayer = &((*pSelectedRoom)->at(uLayerNumber));
+	}
+	else
+	{
+		MessageBoxW(nullptr, L"Unable to update layer pointer.", L"Error", MB_OK | MB_ICONERROR);
+	}
+}
+
+const unsigned int SideMenu::GetSelectedLayerNumber()
+{
+	return GetSelectedLayerNumber(GetSelectedRoomNumber());
+}
+
+const unsigned int SideMenu::GetSelectedLayerNumber(const unsigned int uRoom)
+{
+	for (size_t i = 0; i < pLayersMenu[uRoom]->pChild.size(); i++)
+	{
+		if (pLayersMenu[uRoom]->pChild.at(i)->pChild.front()->IsSelected())
+			return i;
+	}
+	return 0;
+}
+
 void SideMenu::RealignAddLayerButton()
 {
 	RealignAddLayerButton(GetSelectedRoomNumber());

@@ -227,12 +227,17 @@ const D2D1_RECT_F MenuSection::GetTranslatedRectNotInv()
 
 void MenuSection::SetRoom(const size_t pos)
 {
-	*pSelectedRoom = &(*vSelectRoomsandLayers)->at(pos);	
-	*pSelectedLayer = &(*pSelectedRoom)->front();
+	if (pos < (*vSelectRoomsandLayers)->size())
+	{
+		*pSelectedRoom = &(*vSelectRoomsandLayers)->at(pos);
+		*pSelectedLayer = &(*pSelectedRoom)->front();
+	}
+	else MessageBoxW(nullptr, L"Failed to set room pointer.", L"Error", MB_OK | MB_ICONERROR);
 	//show layer buttons for proper layer; hide rest of layer buttons
 }
 
 void MenuSection::SetLayer(const size_t pos)
 {
-	*pSelectedLayer = &(*pSelectedRoom)->at(pos);
+	if ((*pSelectedRoom)->size() > pos)	*pSelectedLayer = &(*pSelectedRoom)->at(pos);
+	else MessageBoxW(nullptr, L"Failed to set layer", L"Error", MB_OK | MB_ICONERROR);
 }

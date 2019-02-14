@@ -149,6 +149,10 @@ public:
 	void RealignAddLayerButton();
 	void RealignAddLayerButton(unsigned int uRoomNumber);
 	const unsigned int GetSelectedRoomNumber();
+	const unsigned int GetSelectedLayerNumber(const unsigned int uRoom);
+	const unsigned int GetSelectedLayerNumber();
+	void SetRoom(size_t uRoomNumber) override;
+	void SetLayer(size_t uLayerNumber) override;
 	
 	std::vector< std::vector<SpritePointer*>>** pSelectedRoom = nullptr;
 	std::vector<SpritePointer*>** pSelectedLayer = nullptr;
