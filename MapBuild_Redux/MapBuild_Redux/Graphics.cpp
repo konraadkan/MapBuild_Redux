@@ -21,6 +21,7 @@ Graphics::~Graphics()
 	SafeRelease(&m_Brush);
 	SafeRelease(&m_WriteFormatSmall);
 	SafeRelease(&pCompatibleTarget);
+	SafeRelease(&pStrokeStyle);
 }
 
 bool Graphics::ResizeCompatibleRenderTarget(D2D1_SIZE_F newsize)
@@ -70,6 +71,15 @@ bool Graphics::Init(HWND hWnd, D2D1_SIZE_F CompatibleRenderSize)
 	result = m_RenderTarget->CreateCompatibleRenderTarget(m_CompatibleTargetSize, &pCompatibleTarget);
 	if (result != S_OK) return false;
 
+	float fDashes[] = { 10.0f, 6.0f };
+	result = m_Factory->CreateStrokeStyle(D2D1::StrokeStyleProperties(
+		D2D1_CAP_STYLE_FLAT,
+		D2D1_CAP_STYLE_FLAT,
+		D2D1_CAP_STYLE_FLAT,
+		D2D1_LINE_JOIN_MITER,
+		10.0f,
+		D2D1_DASH_STYLE_CUSTOM, 0.0f), fDashes, ARRAYSIZE(fDashes), &pStrokeStyle);
+	if (result != S_OK) return false;
 	return true;
 }
 

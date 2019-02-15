@@ -36,6 +36,7 @@ private:
 	IDWriteTextFormat* m_WriteFormat = NULL;
 	IDWriteTextFormat* m_WriteFormatSmall = NULL;
 	ID2D1BitmapRenderTarget* pCompatibleTarget = NULL;	
+	ID2D1StrokeStyle* pStrokeStyle = NULL;
 
 	std::vector<ID2D1PathGeometry*> pGeometryPaths;
 	std::vector<CustomGeometryDetails> GeometryDetails;
@@ -140,6 +141,13 @@ public:
 		target->DrawLine(p1, p2, m_Brush, thickness);
 		return true;
 	}
+	template<typename T> bool DrawDottedLine(T target, D2D1_POINT_2F p1, D2D1_POINT_2F p2, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), float thickness = 1.0f)
+	{
+		if (!m_Brush) return false;
+		m_Brush->SetColor(color);
+		target->DrawLine(p1, p2, m_Brush, thickness, pStrokeStyle);
+		return true;
+	}
 	template<typename T> bool DrawLine(T target, const D2D1::Matrix3x2F Transforms, const D2D1_RECT_F ClientArea, D2D1_POINT_2F p1, D2D1_POINT_2F p2, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), float thickness = 1.0f)
 	{
 		D2D1_RECT_F rect = D2D1::RectF(p1.x, p1.y, p2.x, p2.y);
@@ -148,6 +156,16 @@ public:
 		if (!m_Brush) return false;
 		m_Brush->SetColor(color);
 		target->DrawLine(p1, p2, m_Brush, thickness);
+		return true;
+	}
+	template<typename T> bool DrawDottedLine(T target, const D2D1::Matrix3x2F Transforms, const D2D1_RECT_F ClientArea, D2D1_POINT_2F p1, D2D1_POINT_2F p2, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), float thickness = 1.0f)
+	{
+		D2D1_RECT_F rect = D2D1::RectF(p1.x, p1.y, p2.x, p2.y);
+		if (!RectOverlap(TransformRect(rect, Transforms), ClientArea)) return false;
+
+		if (!m_Brush) return false;
+		m_Brush->SetColor(color);
+		target->DrawLine(p1, p2, m_Brush, thickness, pStrokeStyle);
 		return true;
 	}
 	template<typename T> bool DrawRect(T target, D2D1_RECT_F area, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), float thickness = 1.0f)

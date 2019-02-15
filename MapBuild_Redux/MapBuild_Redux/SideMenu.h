@@ -71,7 +71,7 @@ private:
 	const D2D1_SIZE_F LayerMenuSize = D2D1::SizeF(18.0f, 18.0f);
 	const D2D1_SIZE_F LayerCheckBoxMenuSize = D2D1::SizeF(9.0f, 9.0f);
 	D2D1_RECT_F mRealRect = D2D1::RectF();
-	const float SeperationDistance = 10.0f;
+	const float SeperationDistance = 5.0f;
 	bool bBuildMode = true;
 	char* Buffer = nullptr;
 	size_t BufferSize = 0;

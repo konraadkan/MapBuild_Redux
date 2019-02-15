@@ -12,6 +12,7 @@ private:
 	D2D1::Matrix3x2F InvTransforms = D2D1::Matrix3x2F::Identity();
 	D2D1_POINT_2F TransformedPoint = D2D1::Point2F();
 	float ScrollStep = 100.0f;
+	BorderStyle Border = BorderStyle::Invisible;
 public:
 	MenuSection(Graphics* const graphics, D2D1::Matrix3x2F* const transform, D2D1_RECT_F* const clientrect, D2D1_POINT_2F* const p, D2D1_RECT_F dest, float scrollstep, const wchar_t* label, bool scroll = false) : InteractObjects(graphics, transform, clientrect, p)
 	{
@@ -53,6 +54,7 @@ public:
 	void SetSelectedLayerPointer(std::vector<SpritePointer*>** const p) { pSelectedLayer = p; }
 	void SetRoom(const size_t pos) override;
 	void SetLayer(const size_t pos) override;
+	void SetBorderStyle(const BorderStyle bs) override { Border = bs; }
 public:
 	std::vector<MenuSection*> pSubsections;
 	std::vector< std::vector<InteractObjects*>> vChildObjects;

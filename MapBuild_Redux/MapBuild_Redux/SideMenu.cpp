@@ -196,18 +196,20 @@ SideMenu::SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1:
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Initiative", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Keep Aspect", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Turn Counter", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
+	pMenuSections.back()->SetBorderStyle(BorderStyle::Solid);
 	//pMenuSections.back()->UpdateChildPositions();
-	pChild.push_back(new ClassShapes(ShapeTypes::Lines, gfx, false, Transform, pClientRect, pMouseCoordinates));
+	/*pChild.push_back(new ClassShapes(ShapeTypes::Lines, gfx, false, Transform, pClientRect, pMouseCoordinates));
 	pChild.back()->SetDest(D2D1::RectF(m_Dest.left, pMenuSections.back()->pChild.back()->GetRect().bottom + 2.0f, m_Dest.right, pMenuSections.back()->pChild.back()->GetRect().bottom + 6.0f));
 	static_cast<ClassShapes*>(pChild.back())->AddPoint(D2D1::Point2F(pChild.back()->GetRect().left, (pChild.back()->GetRect().bottom + pChild.back()->GetRect().top) * 0.5f));
 	static_cast<ClassShapes*>(pChild.back())->AddPoint(D2D1::Point2F(pChild.back()->GetRect().right, (pChild.back()->GetRect().bottom + pChild.back()->GetRect().top) * 0.5f));
 	pChild.back()->SetFill();
 	BuildModeObjects.push_back(pChild.back());
-	InitiativeModeObjects.push_back(pChild.back());
+	InitiativeModeObjects.push_back(pChild.back());*/
 	D2D1_RECT_F LastRect = pMenuSections.back()->GetTranslatedRect();
 	pMenuSections.back()->SetTranslation(D2D1::SizeF(m_Dest.left - m_Dest.right, 0.0f));
 	
 	pMenuSections.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, D2D1::RectF(m_Dest.right, m_Dest.top + 3.0f, m_Dest.right + (m_Dest.right - m_Dest.left), RoomMenuSize.height + 3.0f), 0.0f, L"Room"));
+	pMenuSections.back()->SetBorderStyle(BorderStyle::Dotted);
 	pMenuSections.back()->pParent = this;
 	pMenuSections.back()->SetTranslation(D2D1::SizeF(m_Dest.left - m_Dest.right, LastRect.bottom + SeperationDistance));
 	pRoomsMenu = pMenuSections.back();
@@ -251,7 +253,6 @@ void SideMenu::CreateRoomButton(D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* 
 	pRoomsMenu->pChild.back()->pChild.push_back(new Checkbox(gfx, Transform, area, pMouseCoordinates, L" ", rect, D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(pRoomsMenu->pChild.back()), true, pRoomsMenu->pChild.size() - 1 ? false : true));
 	pRoomsMenu->pChild.back()->pChild.back()->SetInvertTransformPointer(pRoomsMenu->pChild.back()->GetInvTransforms());
 
-	pRoomsMenu->ResizeDest();
 	D2D1_SIZE_F AddItemTranslation = D2D1::SizeF();
 	if (pRoomsMenu->pChild.back()->GetRect().right + RoomMenuSize.width > pRoomsMenu->GetRect().right)
 	{
@@ -268,6 +269,7 @@ void SideMenu::CreateRoomButton(D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* 
 		for (auto& w : pLayersMenu)
 			w->SetTranslation(D2D1::SizeF(pRoomsMenu->Getdx(), pRoomsMenu->Getdy() + pRoomsMenu->pChild.back()->GetRect().bottom + RoomCheckBoxMenuSize.height + SeperationDistance + 1.0f));
 	}
+	pRoomsMenu->ResizeDest();
 	pAddRemoveRooms->SetTranslation(AddItemTranslation);
 }
 
@@ -309,6 +311,7 @@ void SideMenu::CreateLayerButton(D2D1::Matrix3x2F* const Transform, D2D1_RECT_F*
 void SideMenu::CreateLayerMenuSection()
 {
 	pMenuSections.push_back(new MenuSection(gfx, pTransforms, pClientRect, pMouseCoordinates, D2D1::RectF(m_Dest.right, m_Dest.top + 3.0f, m_Dest.right + (m_Dest.right - m_Dest.left), m_Dest.top + LayerMenuSize.height + 3.0f), 0.0f, std::to_wstring(pRoomsMenu->pChild.size()).c_str()));
+	pMenuSections.back()->SetBorderStyle(BorderStyle::Solid);
 	D2D1_RECT_F rr = pRoomsMenu->GetRect();
 	float dist = -pRoomsMenu->GetTranslatedRect().top;
 	for (auto& player : pLayersMenu)

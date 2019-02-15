@@ -2,9 +2,14 @@
 
 void MenuSection::ResizeDest()
 {
+	if (pChild.empty()) return;
 	if (pChild.back()->pChild.size())
+	{
+		if (pChild.back()->GetRect().right + pChild.back()->GetSize().width >= m_Dest.right)
+			m_Dest.bottom = pChild.back()->pChild.back()->GetRect().bottom + 1.0f + pChild.back()->GetSize().height + pChild.back()->pChild.back()->GetSize().height;
 		if (pChild.back()->pChild.back()->GetRect().bottom >= m_Dest.bottom)
 			m_Dest.bottom = pChild.back()->pChild.back()->GetRect().bottom + 1.0f;
+	}
 	if (pChild.back()->GetRect().top >= m_Dest.bottom)
 		m_Dest.bottom = pChild.back()->GetRect().bottom + 1.0f;
 }
@@ -38,6 +43,15 @@ void MenuSection::Draw()
 				subsection->Draw();
 		}
 	}*/
+	switch (Border)
+	{
+	case BorderStyle::Dotted:
+		gfx->DrawDottedLine(gfx->GetCompatibleTarget(), D2D1::Point2F(m_Dest.left, m_Dest.bottom + 2.0f), D2D1::Point2F(m_Dest.right, m_Dest.bottom + 2.0f));
+		break;
+	case BorderStyle::Solid:
+		gfx->DrawLine(gfx->GetCompatibleTarget(), D2D1::Point2F(m_Dest.left, m_Dest.bottom + 2.0f), D2D1::Point2F(m_Dest.right, m_Dest.bottom + 2.0f));
+		break;
+	}
 	gfx->GetCompatibleTarget()->SetTransform(&ttransform);
 }
 
