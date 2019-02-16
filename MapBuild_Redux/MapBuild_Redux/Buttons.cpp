@@ -65,7 +65,7 @@ const bool Checkbox::Interact()
 
 	if (bRoom)
 	{
-		for (size_t i = 0; i < pParent->pParent->pChild.size(); i++)
+		for (unsigned int i = 0; i < pParent->pParent->pChild.size(); i++)
 		{
 			if (pParent) if (pParent->pParent) if (pParent->pParent->pChild.at(i)) if (pParent->pParent->pChild.at(i)->pChild.back())
 			{
@@ -85,7 +85,7 @@ const bool Checkbox::Interact()
 	}
 	else
 	{//if its not a room its a layer
-		for (size_t i = 0; i < pParent->pParent->pChild.size(); i++)
+		for (unsigned int i = 0; i < pParent->pParent->pChild.size(); i++)
 		{
 			if (pParent) if (pParent->pParent) if (pParent->pParent->pChild.at(i)) if (pParent->pParent->pChild.at(i)->pChild.back())
 			{
@@ -142,8 +142,8 @@ const bool AddItem::Interact(D2D1_POINT_2F p)
 	if (bRoom)
 	{
 		SideMenu* parent = (static_cast<SideMenu*>(pParent));
-		size_t roomnum = parent->GetSelectedRoomNumber();
-		size_t layernum = parent->GetSelectedLayerNumber(roomnum);
+		unsigned int roomnum = parent->GetSelectedRoomNumber();
+		unsigned int layernum = parent->GetSelectedLayerNumber(roomnum);
 		//its a room
 		if (!parent) return true;
 		if (!*parent->vSelectRoomsandLayers) return true;

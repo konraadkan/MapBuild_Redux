@@ -136,6 +136,7 @@
     <ClInclude Include="BaseLevel.h" />
     <ClInclude Include="Buttons.h" />
     <ClInclude Include="Controller.h" />
+    <ClInclude Include="CreatureSize.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="HPTimer.h" />
     <ClInclude Include="InteractObjects.h" />

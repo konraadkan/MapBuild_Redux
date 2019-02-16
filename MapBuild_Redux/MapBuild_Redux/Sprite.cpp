@@ -9,7 +9,7 @@ Sprite::Sprite(const wchar_t* sFilePath, Graphics* const graphics, HPTimer* cons
 	if (!_wcsicmp(ext.c_str(), L"spr3"))
 	{
 		SetIsSpr3();
-		size_t ImageBufferLen = 0;
+		unsigned int ImageBufferLen = 0;
 		char* ImageBuffer = DecodeSPR3(sFilePathW.c_str(), ImageBufferLen);
 		bLoadSuccess = InitFromMemory(ImageBuffer, ImageBufferLen);
 
@@ -43,11 +43,11 @@ Sprite::~Sprite()
 char* Sprite::DecodeSPR(const wchar_t* FilePath)
 {
 	FILE* file = nullptr;
-	errno_t err = _wfopen_s(&file, FilePath, L"r");
+	errno_t err = _wfopen_s(&file, FilePath, L"r"); int linenum = __LINE__;
+	
 	if (err)
 	{
-		std::wstring errmsg = L"Unable to open " + std::wstring(FilePath) + std::wstring(L". Error Code: ") + std::to_wstring(err);
-		MessageBoxW(nullptr, errmsg.c_str(), L"Error", MB_OK | MB_ICONERROR);
+		SendErrorMessage(err, linenum);
 		return nullptr;
 	}
 
@@ -138,16 +138,15 @@ void Sprite::TranslateLine(std::string sLine)
 	}
 }
 
-char* Sprite::DecodeSPR3(const wchar_t* FilePath, size_t& ImageBufferLen)
+char* Sprite::DecodeSPR3(const wchar_t* FilePath, unsigned int& ImageBufferLen)
 {
 	if (!IsSpr3()) return nullptr;
 
 	FILE* file = nullptr;
-	errno_t err = _wfopen_s(&file, FilePath, L"rb");
+	errno_t err = _wfopen_s(&file, FilePath, L"rb"); int linenum = __LINE__;
 	if (err)
 	{
-		std::wstring errmsg = L"Unable to open " + std::wstring(FilePath) + std::wstring(L".\nError Code: ") + std::to_wstring(err);
-		MessageBoxW(nullptr, errmsg.c_str(), L"Error", MB_OK | MB_ICONERROR);
+		SendErrorMessage(FilePath, err, linenum);
 		return nullptr;
 	}
 
@@ -161,14 +160,14 @@ char* Sprite::DecodeSPR3(const wchar_t* FilePath, size_t& ImageBufferLen)
 
 	int frames = 0;
 	float version = 0.0f;
-	int position = sizeof(float) * 4;
+	unsigned int position = sizeof(float) * 4;
 
 	memcpy(&fFrameSpeed, Buffer + position, sizeof(fFrameSpeed));
 	position += sizeof(float) + sizeof(double);
 	fFrameSpeed /= 1000.0f;
 	memcpy(&frames, Buffer + position, sizeof(int));
 	position += sizeof(int);
-	position += sizeof(bool);	//this really shouldnt work, but leaving it here since thats how it used to work (may change later)
+	position += sizeof(bool);
 
 	for (int i = 0; i < frames; i++)
 	{
@@ -234,7 +233,7 @@ bool Sprite::InitFromMemory(char* const Buffer, size_t BufferLen)
 	}
 
 	//initialize stream
-	hr = pIWICStream->InitializeFromMemory(reinterpret_cast<BYTE*>(Buffer), BufferLen); linenum = __LINE__;
+	hr = pIWICStream->InitializeFromMemory(reinterpret_cast<BYTE*>(Buffer), static_cast<DWORD>(BufferLen)); linenum = __LINE__;
 	if (!SUCCEEDED(hr))
 	{
 		SendErrorMessage(hr, linenum);
@@ -346,15 +345,26 @@ void Sprite::SendErrorMessage(HRESULT hr, int iLineNumber)
 	MessageBoxW(nullptr, sErrMsgW.c_str(), L"Error", MB_OK | MB_ICONERROR);
 }
 
+void Sprite::SendErrorMessage(std::wstring filename, HRESULT hr, int iLineNumber)
+{
+	_com_error err(hr);
+	std::string sErrMsg = err.ErrorMessage();
+	std::wstring sErrMsgW = L"Unable to open " + filename;
+	sErrMsgW.append(L".\n");
+	sErrMsgW.append(std::wstring(sErrMsg.begin(), sErrMsg.end()));
+	sErrMsgW = L"Error on Line " + std::to_wstring(iLineNumber) + std::wstring(L".\n") + sErrMsgW;
+	MessageBoxW(nullptr, sErrMsgW.c_str(), L"Error", MB_OK | MB_ICONERROR);
+}
+
 char* Sprite::GetStreamBuffer(const wchar_t* FilePath, size_t& BufferLen)
 {
 	if (!FilePath) return nullptr;
 	FILE* file = nullptr;
-	errno_t err = _wfopen_s(&file, FilePath, L"rb");
+	errno_t err = _wfopen_s(&file, FilePath, L"rb"); int linenum = __LINE__;
+	
 	if (err)
 	{
-		std::wstring errmsg = L"Unable to open " + std::wstring(FilePath) + std::wstring(L". Error Code: ") + std::to_wstring(err);
-		MessageBoxW(nullptr, errmsg.c_str(), L"Error", MB_OK | MB_ICONERROR);
+		SendErrorMessage(FilePath, err, linenum);
 		return nullptr;
 	}
 

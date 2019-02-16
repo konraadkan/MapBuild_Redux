@@ -36,6 +36,10 @@ std::queue<std::wstring> Pieces::FillPiece(char* const Buffer, char*& pos)
 		{
 			SetSubMenu(back);
 		}
+		else if (!_stricmp(front.c_str(), "Size"))
+		{
+			SetSize(back);
+		}
 		else if (!_stricmp(front.c_str(), "DefaultInitOrder"))
 		{
 			if (back[0] == 'T' || back[0] == 't')
@@ -132,6 +136,10 @@ std::queue<std::wstring> PiecesW::FillPiece(wchar_t* const Buffer, wchar_t*& pos
 		else if (!_wcsicmp(front.c_str(), L"SubMenu"))
 		{
 			SetSubMenu(back);
+		}
+		else if (!_wcsicmp(front.c_str(), L"Size"))
+		{
+			SetSize(back);
 		}
 		else if (!_wcsicmp(front.c_str(), L"DefaultInitOrder"))
 		{
@@ -306,6 +314,98 @@ void PiecesW::Convert(Pieces Piece)
 	SetBackgroundColor(Piece.GetBackgroundColor());
 }
 
+const CreatureSize PiecesW::StringToSize(const std::wstring wsize)
+{
+	if (!_wcsicmp(wsize.c_str(), L"Fine"))
+		return CreatureSize::Fine;
+	if (!_wcsicmp(wsize.c_str(), L"Diminutive"))
+		return CreatureSize::Diminutive;
+	if (!_wcsicmp(wsize.c_str(), L"Tiny"))
+		return CreatureSize::Tiny;
+	if (!_wcsicmp(wsize.c_str(), L"Small"))
+		return CreatureSize::Small;
+	if (!_wcsicmp(wsize.c_str(), L"Medium"))
+		return CreatureSize::Medium;
+	if (!_wcsicmp(wsize.c_str(), L"Large"))
+		return CreatureSize::Large;
+	if (!_wcsicmp(wsize.c_str(), L"Huge"))
+		return CreatureSize::Huge;
+	if (!_wcsicmp(wsize.c_str(), L"Gargantuan"))
+		return CreatureSize::Gargantuan;
+	if (!_wcsicmp(wsize.c_str(), L"Colossal"))
+		return CreatureSize::Colossal;
+	return CreatureSize::Medium;
+}
+
+const CreatureSize PiecesW::StringToSize(const std::string ssize)
+{
+	if (!_stricmp(ssize.c_str(), "Fine"))
+		return CreatureSize::Fine;
+	if (!_stricmp(ssize.c_str(), "Diminutive"))
+		return CreatureSize::Diminutive;
+	if (!_stricmp(ssize.c_str(), "Tiny"))
+		return CreatureSize::Tiny;
+	if (!_stricmp(ssize.c_str(), "Small"))
+		return CreatureSize::Small;
+	if (!_stricmp(ssize.c_str(), "Medium"))
+		return CreatureSize::Medium;
+	if (!_stricmp(ssize.c_str(), "Large"))
+		return CreatureSize::Large;
+	if (!_stricmp(ssize.c_str(), "Huge"))
+		return CreatureSize::Huge;
+	if (!_stricmp(ssize.c_str(), "Gargantuan"))
+		return CreatureSize::Gargantuan;
+	if (!_stricmp(ssize.c_str(), "Colossal"))
+		return CreatureSize::Colossal;
+	return CreatureSize::Medium;
+}
+
+const CreatureSize Pieces::StringToSize(const std::wstring wsize)
+{
+	if (!_wcsicmp(wsize.c_str(), L"Fine"))
+		return CreatureSize::Fine;
+	if (!_wcsicmp(wsize.c_str(), L"Diminutive"))
+		return CreatureSize::Diminutive;
+	if (!_wcsicmp(wsize.c_str(), L"Tiny"))
+		return CreatureSize::Tiny;
+	if (!_wcsicmp(wsize.c_str(), L"Small"))
+		return CreatureSize::Small;
+	if (!_wcsicmp(wsize.c_str(), L"Medium"))
+		return CreatureSize::Medium;
+	if (!_wcsicmp(wsize.c_str(), L"Large"))
+		return CreatureSize::Large;
+	if (!_wcsicmp(wsize.c_str(), L"Huge"))
+		return CreatureSize::Huge;
+	if (!_wcsicmp(wsize.c_str(), L"Gargantuan"))
+		return CreatureSize::Gargantuan;
+	if (!_wcsicmp(wsize.c_str(), L"Colossal"))
+		return CreatureSize::Colossal;
+	return CreatureSize::Medium;
+}
+
+const CreatureSize Pieces::StringToSize(const std::string ssize)
+{
+	if (!_stricmp(ssize.c_str(), "Fine"))
+		return CreatureSize::Fine;
+	if (!_stricmp(ssize.c_str(), "Diminutive"))
+		return CreatureSize::Diminutive;
+	if (!_stricmp(ssize.c_str(), "Tiny"))
+		return CreatureSize::Tiny;
+	if (!_stricmp(ssize.c_str(), "Small"))
+		return CreatureSize::Small;
+	if (!_stricmp(ssize.c_str(), "Medium"))
+		return CreatureSize::Medium;
+	if (!_stricmp(ssize.c_str(), "Large"))
+		return CreatureSize::Large;
+	if (!_stricmp(ssize.c_str(), "Huge"))
+		return CreatureSize::Huge;
+	if (!_stricmp(ssize.c_str(), "Gargantuan"))
+		return CreatureSize::Gargantuan;
+	if (!_stricmp(ssize.c_str(), "Colossal"))
+		return CreatureSize::Colossal;
+	return CreatureSize::Medium;
+}
+
 void PiecesW::LoadSprite()
 {
 	if (GetSpritePath().empty()) return;
@@ -342,8 +442,16 @@ void Pieces::LoadPortrait()
 
 void SpritePointer::DrawSprite(Graphics* const gfx, bool back)
 {
-	if (back) gfx->DrawBitmap(gfx->GetCompatibleTarget(), GetSprite()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetSprite()->GetFrame());
-	else gfx->DrawBitmap(gfx->GetRenderTarget(), GetSprite()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetSprite()->GetFrame());
+	if (mLocation.mResizedDestSprite.right - mLocation.mResizedDestSprite.left > 0)
+	{
+		if (back) gfx->DrawBitmap(gfx->GetCompatibleTarget(), GetSprite()->GetBitmap(), mLocation.mResizedDestSprite, fOpacity, GetSprite()->GetFrame());
+		else gfx->DrawBitmap(gfx->GetRenderTarget(), GetSprite()->GetBitmap(), mLocation.mResizedDestSprite, fOpacity, GetSprite()->GetFrame());
+	}
+	else
+	{
+		if (back) gfx->DrawBitmap(gfx->GetCompatibleTarget(), GetSprite()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetSprite()->GetFrame());
+		else gfx->DrawBitmap(gfx->GetRenderTarget(), GetSprite()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetSprite()->GetFrame());
+	}
 	GetSprite()->NextFrame();
 }
 
@@ -352,4 +460,27 @@ void SpritePointer::DrawPortrait(Graphics* const gfx, bool back)
 	if (back) gfx->DrawBitmap(gfx->GetCompatibleTarget(), GetPortrait()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetPortrait()->GetFrame());
 	else gfx->DrawBitmap(gfx->GetRenderTarget(), GetPortrait()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetPortrait()->GetFrame());
 	GetPortrait()->NextFrame();
+}
+
+void SpritePointer::BuildResizedDestSprite()
+{
+	if (mSize == CreatureSize::Medium)
+		mLocation.mResizedDestSprite = mLocation.mDestSprite;
+	else
+	{
+		if (mSize < CreatureSize::Medium)
+		{
+			float sizemod = static_cast<float>(1.0f / pow(2, static_cast<unsigned long>(CreatureSize::Medium) - static_cast<unsigned long>(mSize)));
+			mLocation.mResizedDestSprite = D2D1::RectF(mLocation.mDestSprite.left, mLocation.mDestSprite.top,
+				mLocation.mDestSprite.left + (mLocation.mDestSprite.right - mLocation.mDestSprite.left) * sizemod,
+				mLocation.mDestSprite.top + (mLocation.mDestSprite.bottom - mLocation.mDestSprite.top) * sizemod);
+		}
+		else
+		{
+			float sizemod = static_cast<float>(static_cast<unsigned long>(mSize) - static_cast<unsigned long>(CreatureSize::Medium) + 1);
+			mLocation.mResizedDestSprite = D2D1::RectF(mLocation.mDestSprite.left, mLocation.mDestSprite.top,
+				mLocation.mDestSprite.left + (mLocation.mDestSprite.right - mLocation.mDestSprite.left) * sizemod,
+				mLocation.mDestSprite.top + (mLocation.mDestSprite.bottom - mLocation.mDestSprite.top) * sizemod);
+		}
+	}
 }

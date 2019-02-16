@@ -9,6 +9,7 @@ void SideMenu::Draw()
 	{
 		c->Draw();
 	}
+	//CategoryMenu->Draw();
 }
 
 void SideMenu::DrawBuildMode()
@@ -371,7 +372,7 @@ void SideMenu::AddBuildObject(InteractObjects* const Io)
 
 const unsigned int SideMenu::GetSelectedRoomNumber()
 {
-	for (size_t i = 0; i < pRoomsMenu->pChild.size(); i++)
+	for (unsigned int i = 0; i < pRoomsMenu->pChild.size(); i++)
 	{
 		if (pRoomsMenu->pChild.at(i)->pChild.front()->IsSelected())
 			return i;
@@ -411,7 +412,7 @@ const unsigned int SideMenu::GetSelectedLayerNumber()
 
 const unsigned int SideMenu::GetSelectedLayerNumber(const unsigned int uRoom)
 {
-	for (size_t i = 0; i < pLayersMenu[uRoom]->pChild.size(); i++)
+	for (unsigned int i = 0; i < pLayersMenu[uRoom]->pChild.size(); i++)
 	{
 		if (pLayersMenu[uRoom]->pChild.at(i)->pChild.front()->IsSelected())
 			return i;
@@ -439,4 +440,86 @@ void SideMenu::RealignAddLayerButton(unsigned int uRoomNumber)
 		newtranslation.height = pLayersMenu[uRoomNumber]->Getdy() + pLayersMenu[uRoomNumber]->pChild.back()->GetRect().top;
 	}
 	pAddRemoveLayers->SetTranslation(newtranslation);
+	if (CategoryMenu)
+	{
+		CategoryMenu->SetTranslation(D2D1::SizeF(-GetSize().width, pLayersMenu[GetSelectedRoomNumber()]->GetTranslatedRectNotInv().bottom + 2.0f));
+		RealignCategories();
+	}
+}
+
+void SideMenu::BuildCategories(std::vector<PiecesW>* const wPieces)
+{
+	if (!CategoryMenu)
+	{
+		CategoryMenu = new MenuSection(gfx, pTransforms, pClientRect, pMouseCoordinates, D2D1::RectF(pClientRect->right, pClientRect->top + 3.0f, pClientRect->right + GetSize().width, pClientRect->top + MainMenuSize.height + 3.0f), 0.0f, L"MainCategories");
+		pMenuSections.push_back(CategoryMenu);
+	}
+		
+	for (auto& piece : *wPieces)
+	{
+		bool foundit = false;
+		for (unsigned int i = 0; i < CategoryMenu->pChild.size(); i++)
+		{			
+			if (!_wcsicmp(CategoryMenu->pChild.at(i)->GetLabel(), piece.GetType().c_str()))
+			{
+				foundit = true;
+			}
+		}
+		if (!foundit)
+		{
+			CategoryMenu->AddChild(new Buttons(gfx, pTransforms, pClientRect, pMouseCoordinates, piece.GetType().c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), MainMenuSize);
+			CategoryMenu->CreateSubsection(piece.GetType().c_str(), D2D1::RectF(pClientRect->right, pClientRect->top + 3.0f, pClientRect->right + GetSize().width, pClientRect->top + MainMenuSize.height + 3.0f));
+			CategoryMenu->SetTranslation(D2D1::SizeF(-GetSize().width, pLayersMenu[GetSelectedRoomNumber()]->GetTranslatedRectNotInv().bottom + 2.0f));
+			CategoryMenu->SetBorderStyle(BorderStyle::Solid);
+			CategoryMenu->vSubsections.back()->SetTranslation(D2D1::SizeF(0.0f, CategoryMenu->GetSize().height + 5.0f));
+			CategoryMenu->vSubsections.back()->UpdateInvTranforms(CategoryMenu->GetTransforms() * CategoryMenu->vSubsections.back()->GetTransforms());
+		}
+	}
+}
+
+void SideMenu::BuildSubcategories(std::vector<PiecesW>* const wPieces)
+{
+	if (!CategoryMenu)
+		BuildCategories(wPieces);
+	for (auto& piece : *wPieces)
+	{
+		MenuSection* targetSubmenu = CategoryMenu->FindSubmenuSection(piece.GetType().c_str());
+		if (!targetSubmenu)
+		{
+			CategoryMenu->CreateSubsection(piece.GetType().c_str(), D2D1::RectF(pClientRect->right, pClientRect->top + 3.0f, pClientRect->right + GetSize().width, pClientRect->top + MainMenuSize.height + 3.0f));
+			targetSubmenu = CategoryMenu->vSubsections.back();
+		}
+		MenuSection* targetSubSubmenu = targetSubmenu->FindSubmenuSection(piece.GetSubMenu().c_str());
+		if (!targetSubSubmenu)
+		{
+			targetSubmenu->AddChild(new Buttons(gfx, pTransforms, pClientRect, pMouseCoordinates, piece.GetSubMenu().c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), SubMenuSize);
+			targetSubmenu->CreateSubsection(piece.GetSubMenu().c_str(), D2D1::RectF(pClientRect->right, pClientRect->top + 3.0f, pClientRect->right + GetSize().width, pClientRect->top + MainMenuSize.height + 3.0f));
+			targetSubmenu->SetBorderStyle(BorderStyle::Dotted);
+		}
+		targetSubmenu->vSubsections.back()->AddChild(new Buttons(gfx, pTransforms, pClientRect, pMouseCoordinates, piece.GetName().c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), ItemMenuSize);
+		targetSubmenu->vSubsections.back()->SetTranslation(D2D1::SizeF(0.0f, targetSubmenu->GetSize().height + 5.0f));
+		targetSubmenu->vSubsections.back()->UpdateInvTranforms(CategoryMenu->GetTransforms() * targetSubmenu->GetTransforms() * targetSubmenu->vSubsections.back()->GetTransforms());
+	}
+}
+
+void SideMenu::RealignCategories()
+{
+	if (!CategoryMenu) return;
+	
+	for (auto& category : CategoryMenu->vSubsections)
+	{
+		category->UpdateInvTranforms(CategoryMenu->GetTransforms() * category->GetTransforms());
+		if (category->vSubsections.size())
+			RealignSubcategory(category, CategoryMenu->GetTransforms() * category->GetTransforms());
+	}
+}
+void SideMenu::RealignSubcategory(MenuSection* const subcategory, const D2D1::Matrix3x2F parentTransforms)
+{
+	if (!subcategory) return;
+	for (auto& category : subcategory->vSubsections)
+	{
+		category->UpdateInvTranforms(parentTransforms * category->GetTransforms());
+		if (category->vSubsections.size())
+			RealignSubcategory(category, parentTransforms * category->GetTransforms());
+	}
 }

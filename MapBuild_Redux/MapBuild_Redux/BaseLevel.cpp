@@ -22,22 +22,11 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 		vPiecesW.push_back(t);
 		vPieces.pop_back();
 	}
-
-	/*for (auto& p : vPiecesW)
-	{
-		if (p.GetSpritePath().size())
-		{
-			s = new Sprite(p.GetSpritePath().c_str(), gfx);
-			if (!s->IsSuccess())
-				SafeDelete(&s);
-		}
-		if (s)
-		{
-			SafeDelete(&s);
-		}
-	}*/
-	//stemp = new Sprite(L"test.spr3", gfx);
+	pSideMenu->BuildCategories(&vPiecesW);
+	pSideMenu->BuildSubcategories(&vPiecesW);
+	
 	sptest = new SpritePointer(&vPiecesW.front(), Location());
+//	sptest->SetCreatureSize(CreatureSize::Large); //example of how to set creature size for spritepointer objects
 	
 	ppvSprites = &vSprites;
 	pSelectedRoom = &vSprites.front();
@@ -93,7 +82,7 @@ void BaseLevel::Render()
 	gfx->BeginDraw(gfx->GetCompatibleTarget());
 	gfx->ClearScreen(gfx->GetCompatibleTarget(), GridBackgroundColor);
 	if (!bGridOnTop) gfx->DrawDefaultGrid(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), GridSquareSize, D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.9f), 3.0f);
-
+	
 	gfx->DrawCircle(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), D2D1::Point2F(500, 500), 40, D2D1::ColorF(0, 1, 0), 5.0f);
 	gfx->OutputTextSmall(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f,0.0f,WindowSize.width, WindowSize.height), L"Test Small", D2D1::RectF(0.0f, 64.0f, 64.0f, 128.0f));
 	gfx->OutputText(gfx->GetCompatibleTarget(), std::wstring(std::to_wstring(static_cast<long>(TranslatedCoordinates.x)) + L"," + std::to_wstring(static_cast<long>(TranslatedCoordinates.y))).c_str(), D2D1::RectF(0, 0, 128, 128));
@@ -101,8 +90,6 @@ void BaseLevel::Render()
 	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), D2D1::RectF(1050, 100, 1900, 500), D2D1::ColorF(0,0,0), 25,25);
 	gfx->FillRoundedRect(gfx->GetCompatibleTarget(), D2D1::RectF(1050, 505, 1900, 905));
 	gfx->DrawRect(gfx->GetCompatibleTarget(), D2D1::RectF(500, 100, 1045, 500));
-
-	if (bGridOnTop) gfx->DrawDefaultGrid(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), GridSquareSize, D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.9f), 3.0f);
 
 	for (size_t i = 0; i < vVisibleRooms.size(); i++)
 	{
@@ -118,10 +105,13 @@ void BaseLevel::Render()
 			}
 		}
 	}
+	
 	if (sptest)
 	{
 		sptest->DrawSprite(gfx);
 	}
+
+	if (bGridOnTop) gfx->DrawDefaultGrid(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), GridSquareSize, D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.9f), 3.0f);
 	gfx->EndDraw(gfx->GetCompatibleTarget());
 
 	//render the frame
@@ -154,7 +144,6 @@ void BaseLevel::Render()
 
 void BaseLevel::DrawSideMenu()
 {
-	/***** replace with objects, this is just to get an idea of the visuals *****/
 	D2D1::Matrix3x2F oTransform;
 	gfx->GetCompatibleTarget()->GetTransform(&oTransform);	
 	if (pSideMenu->IsHidden())
@@ -221,7 +210,8 @@ void BaseLevel::Update(double dDelta)
 			if (bAdd)
 			{
 				pSelectedLayer->push_back(new SpritePointer(sptest->GetPieces(), Location()));
-				pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + pSelectedLayer->back()->GetSpriteFrameSize().width, TranslatedCoordinates.y + pSelectedLayer->back()->GetSpriteFrameSize().height));
+				pSelectedLayer->back()->SetCreatureSize(sptest->GetCreatureSize());
+				pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + pSelectedLayer->back()->GetSpriteFrameSize().width, TranslatedCoordinates.y + pSelectedLayer->back()->GetSpriteFrameSize().height));				
 			}
 		}
 	}
@@ -251,7 +241,8 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			if (pSelectedLayer && !pSideMenu->IsInRealRect())
 			{
 				pSelectedLayer->push_back(new SpritePointer(sptest->GetPieces(), Location()));
-				pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + pSelectedLayer->back()->GetSpriteFrameSize().width, TranslatedCoordinates.y + pSelectedLayer->back()->GetSpriteFrameSize().height));
+				pSelectedLayer->back()->SetCreatureSize(sptest->GetCreatureSize());
+				pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + pSelectedLayer->back()->GetSpriteFrameSize().width, TranslatedCoordinates.y + pSelectedLayer->back()->GetSpriteFrameSize().height));				
 			}
 			break;
 		case Mouse::Event::Type::LRelease:

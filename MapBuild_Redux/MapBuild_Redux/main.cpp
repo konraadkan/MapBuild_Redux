@@ -26,5 +26,5 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevious, LPWSTR cmd, int iC
 		wnd.Render();
 	}
 
-	return msg.wParam;
+	return static_cast<int>(msg.wParam);
 }

@@ -43,11 +43,13 @@ public:
 	bool PointInRect(const D2D1_POINT_2F p) override;
 	bool PointInRect() override;
 	void CreateSubsection(const wchar_t* label, bool scroll = false, float scrollsize = 0.0f);
+	void CreateSubsection(const wchar_t* label, D2D1_RECT_F dest, bool scroll = false, float scrollsize = 0.0f);
 	void SetEntrySize(const D2D1_SIZE_F size) { memcpy(&EntrySize, &size, sizeof(EntrySize)); }
 	const D2D1_SIZE_F GetEntrySize() { return EntrySize; }
 	void UpdateChildPositions(std::vector<InteractObjects*>& childobjs);
 	void UpdateChildPositions();
 	void SetTranslation(D2D1_SIZE_F size);
+	void UpdateInvTranforms(D2D1::Matrix3x2F transfrom);
 	void ResizeDest();
 	void ResizeDest(const D2D1_SIZE_F r);
 	void SetSelectedRoomPointer(std::vector< std::vector<SpritePointer*>>** const p) { pSelectedRoom = p; }
@@ -56,9 +58,11 @@ public:
 	void SetLayer(const size_t pos) override;
 	void SetBorderStyle(const BorderStyle bs) override { Border = bs; }
 public:
-	std::vector<MenuSection*> pSubsections;
+	std::vector<MenuSection*> vSubsections;
 	std::vector< std::vector<InteractObjects*>> vChildObjects;
 	std::vector< std::vector< std::vector<SpritePointer*>>>** vSelectRoomsandLayers = nullptr;
 	std::vector< std::vector<SpritePointer*>>** pSelectedRoom = nullptr;
 	std::vector<SpritePointer*>** pSelectedLayer = nullptr;
+	MenuSection* const FindSubmenuSection(const wchar_t* wCategoryName);
+	const D2D1::Matrix3x2F GetTransforms() { return Transforms; }
 };

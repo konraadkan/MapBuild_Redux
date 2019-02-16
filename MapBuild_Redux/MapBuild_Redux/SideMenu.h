@@ -153,10 +153,16 @@ public:
 	const unsigned int GetSelectedLayerNumber();
 	void SetRoom(size_t uRoomNumber) override;
 	void SetLayer(size_t uLayerNumber) override;
+	void BuildCategories(std::vector<PiecesW>* const wPieces);
+	void BuildSubcategories(std::vector<PiecesW>* const wPieces);
+	void RealignCategories();
+	void RealignSubcategory(MenuSection* const subcategory, const D2D1::Matrix3x2F parentTranforms);
 	
 	std::vector< std::vector<SpritePointer*>>** pSelectedRoom = nullptr;
 	std::vector<SpritePointer*>** pSelectedLayer = nullptr;
 	std::vector< std::vector< std::vector<SpritePointer*>>>** vSelectRoomsandLayers = nullptr;
 	std::vector<bool>* pVisibleRooms = nullptr;
 	std::vector< std::vector<bool>>* pVisibleLayers = nullptr;
+	MenuSection* pSelectedCategory = nullptr;
+	MenuSection* pSelectedSubcategory = nullptr;	
 };

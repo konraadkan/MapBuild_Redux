@@ -4,6 +4,7 @@
 #include "StringMod.h"
 #include "Sprite.h"
 #include "HPTimer.h"
+#include "CreatureSize.h"
 
 class Pieces : public StringMod
 {
@@ -25,6 +26,7 @@ private:
 		}
 	}
 protected:
+	CreatureSize mSize = CreatureSize::Medium;
 	Sprite* pSprite = nullptr;
 	Sprite* pPortrait = nullptr;
 	Graphics* gfx = nullptr;
@@ -54,6 +56,11 @@ public:
 	const bool KeepAspectIcon() { return bKeepIconAspect; }
 	const D2D1_COLOR_F GetBackgroundColor() { return BackgroundColor; }
 public:
+	const CreatureSize StringToSize(const std::wstring wsize);
+	const CreatureSize StringToSize(const std::string ssize);
+	void SetSize(const std::wstring wsize) { mSize = StringToSize(wsize); }
+	void SetSize(const std::string ssize) { mSize = StringToSize(ssize); }
+	void SetSize(const CreatureSize size) { mSize = size; }
 	void SetType(const std::string type) { sType = type; }
 	void SetName(const std::string name) { sName = name; }
 	void SetIconPath(const std::string spath) { sIconPath = spath; }
@@ -99,6 +106,7 @@ private:
 		}
 	}
 protected:
+	CreatureSize mSize = CreatureSize::Medium;
 	Sprite* pSprite = nullptr;
 	Sprite* pPortrait = nullptr;
 	Graphics* gfx = nullptr;
@@ -134,6 +142,11 @@ public:
 	void SetIconPath(const std::wstring spath) { sIconPath = spath; }
 	void SetSpritePath(const std::wstring spath) { sSpritePath = spath; }
 	void SetSubMenu(const std::wstring spath) { sSubMenu = spath; }
+	const CreatureSize StringToSize(const std::wstring wsize);
+	const CreatureSize StringToSize(const std::string ssize);
+	void SetSize(const std::wstring wsize) { mSize = StringToSize(wsize); }
+	void SetSize(const std::string ssize) { mSize = StringToSize(ssize); }
+	void SetSize(const CreatureSize size) { mSize = size; }
 	void SetDefault() { bDetaultInitOrder = true; }
 	void UnsetDefault() { bDetaultInitOrder = false; }
 	void ToggleDefault() { bDetaultInitOrder ^= true; }
@@ -158,6 +171,7 @@ struct Location
 {
 	D2D1_RECT_F mDestSprite = D2D1::RectF();
 	D2D1_RECT_F mDestPortrait = D2D1::RectF();
+	D2D1_RECT_F mResizedDestSprite = D2D1::RectF();
 	unsigned long uLayer = 0;
 	unsigned long uRoom = 0;
 };
@@ -169,20 +183,24 @@ private:
 	PiecesW* const pPiece;
 	bool bSelected = false;
 	float fOpacity = 1.0f;
+	CreatureSize mSize = CreatureSize::Medium;
 public:
 	SpritePointer(PiecesW* const p, const Location loc) : mLocation(loc), pPiece(p) {}
 	~SpritePointer() { }
 public:
-	void SetDestSprite(const D2D1_RECT_F d) { mLocation.mDestSprite = d; }
+	void SetDestSprite(const D2D1_RECT_F d) { mLocation.mDestSprite = d; BuildResizedDestSprite(); }
 	void SetDestPortrait(const D2D1_RECT_F d) { mLocation.mDestPortrait = d; }
 	void SetLayer(const unsigned long layer) { mLocation.uLayer = layer; }
 	void SetRoom(const unsigned long room) { mLocation.uRoom = room; }
 	void SetSelected() { bSelected = true; }
 	void SetOpacity(const float opacity) { fOpacity = opacity; }
+	void SetCreatureSize(const CreatureSize csize) { mSize = csize; BuildResizedDestSprite(); }
+	const CreatureSize GetCreatureSize() { return mSize; }
 	void UnsetSelected() { bSelected = false; }
 	void ToggleSelected() { bSelected ^= true; }
 	void DrawSprite(Graphics* const gfx, bool back = true);
 	void DrawPortrait(Graphics* const gfx, bool back = true);
+	void BuildResizedDestSprite();
 public:
 	const bool IsSelected() { return bSelected; }
 	const D2D1_RECT_F GetDestSprite() { return mLocation.mDestSprite; }

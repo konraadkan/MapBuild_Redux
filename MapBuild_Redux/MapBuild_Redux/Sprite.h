@@ -53,6 +53,7 @@ public:
 public:
 	void TranslateLine(std::string sLine);
 	void SendErrorMessage(HRESULT hr, int iLineNumber);
+	void SendErrorMessage(std::wstring filname, HRESULT hr, int iLineNumber);
 	void SetIsSpr3() { bIsSPR3 = true; }
 	void UnsetIsSpr3() { bIsSPR3 = false; }
 	void AddFrame(D2D1_RECT_F rect) { vFrames.push_back(rect); }
@@ -64,7 +65,7 @@ public:
 	D2D1_SIZE_F GetFrameSize() { return D2D1::SizeF(vFrames.at(iCurrentFrame).right - vFrames.at(iCurrentFrame).left, vFrames.at(iCurrentFrame).bottom - vFrames.at(iCurrentFrame).top); }
 	ID2D1Bitmap* const GetBitmap() { return pBitmap; }
 private:
-	char* DecodeSPR3(const wchar_t* FilePath, size_t& ImageBufferLen);
+	char* DecodeSPR3(const wchar_t* FilePath, unsigned int& ImageBufferLen);
 	char* DecodeSPR(const wchar_t* FilePath);
 	char* GetStreamBuffer(const wchar_t* FilePath, size_t& ImageBufferLen);
 };

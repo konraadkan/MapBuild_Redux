@@ -34,15 +34,10 @@ void MenuSection::Draw()
 		child->Draw();
 	}
 	
-	/*for (auto& subsection : pSubsections)
+	for (auto& subsection : vSubsections)
 	{
-		for (auto& child : pChild)
-		{
-			if (child->IsSelected())
-			if (!_wcsicmp(child->GetLabel(), subsection->GetLabel()))
-				subsection->Draw();
-		}
-	}*/
+		subsection->Draw();
+	}
 	switch (Border)
 	{
 	case BorderStyle::Dotted:
@@ -81,10 +76,10 @@ void MenuSection::Unload()
 		}
 		vChildObjects.pop_back();
 	}
-	while (pSubsections.size())
+	while (vSubsections.size())
 	{
-		SafeDelete(&pSubsections.back());
-		pSubsections.pop_back();
+		SafeDelete(&vSubsections.back());
+		vSubsections.pop_back();
 	}
 	for (auto& child : pChild)
 	{
@@ -138,6 +133,11 @@ void MenuSection::WheelDown()
 bool MenuSection::PointInRect(const D2D1_POINT_2F p)
 {
 	TransformedPoint = InvTransforms.TransformPoint(p);
+	for (auto& subsections : vSubsections)
+	{
+		if (subsections->PointInRect(p))
+			return true;
+	}
 	return (TransformedPoint.x >= m_Dest.left && TransformedPoint.x <= m_Dest.right && TransformedPoint.y >= m_Dest.top && TransformedPoint.y <= m_Dest.bottom);
 }
 
@@ -148,7 +148,12 @@ bool MenuSection::PointInRect()
 
 void MenuSection::CreateSubsection(const wchar_t* label, bool scroll, float scrollsize)
 {
-	pSubsections.push_back(new MenuSection(gfx, &Transforms, pClientRect, pMouseCoordinates, D2D1::Rect(m_ExpandedDest.left, m_ExpandedDest.bottom + 2.0f, m_ExpandedDest.right, m_ExpandedDest.bottom + 66.0f), scrollsize, label, scroll));
+	vSubsections.push_back(new MenuSection(gfx, &Transforms, pClientRect, pMouseCoordinates, D2D1::Rect(m_ExpandedDest.left, m_ExpandedDest.bottom + 2.0f, m_ExpandedDest.right, m_ExpandedDest.bottom + 66.0f), scrollsize, label, scroll));
+}
+
+void MenuSection::CreateSubsection(const wchar_t* label, D2D1_RECT_F dest, bool scroll, float scrollsize)
+{
+	vSubsections.push_back(new MenuSection(gfx, &Transforms, pClientRect, pMouseCoordinates, dest, scrollsize, label, scroll));
 }
 
 void MenuSection::UpdateChildPositions(std::vector<InteractObjects*>& childobjs)
@@ -203,7 +208,7 @@ const bool MenuSection::Interact()
 		if (child->PointInRect())
 			if (!child->Interact()) return false;
 	}
-	for (auto& section : pSubsections)
+	for (auto& section : vSubsections)
 	{
 		if (!section) continue;
 		if (section->PointInRect())
@@ -217,6 +222,12 @@ void MenuSection::SetTranslation(D2D1_SIZE_F size)
 	//doing it this way so it reverts to default position;
 	Transforms = D2D1::Matrix3x2F::Translation(size);
 	InvTransforms = Transforms;
+	InvTransforms.Invert();
+}
+
+void MenuSection::UpdateInvTranforms(D2D1::Matrix3x2F transform)
+{
+	InvTransforms = transform;
 	InvTransforms.Invert();
 }
 
@@ -254,4 +265,14 @@ void MenuSection::SetLayer(const size_t pos)
 {
 	if ((*pSelectedRoom)->size() > pos)	*pSelectedLayer = &(*pSelectedRoom)->at(pos);
 	else MessageBoxW(nullptr, L"Failed to set layer", L"Error", MB_OK | MB_ICONERROR);
+}
+
+MenuSection* const MenuSection::FindSubmenuSection(const wchar_t* wCategoryName)
+{
+	for (auto& subsection : vSubsections)
+	{
+		if (!_wcsicmp(subsection->GetLabel(), wCategoryName))
+			return subsection;
+	}
+	return nullptr;
 }
