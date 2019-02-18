@@ -25,12 +25,10 @@ std::queue<std::wstring> Pieces::FillPiece(char* const Buffer, char*& pos)
 		else if (!_stricmp(front.c_str(), "Icon"))
 		{
 			SetIconPath(back);
-			LoadPortrait();
 		}
 		else if (!_stricmp(front.c_str(), "Sprite"))
 		{
 			SetSpritePath(back);
-			LoadSprite();
 		}
 		else if (!_stricmp(front.c_str(), "SubMenu"))
 		{
@@ -126,12 +124,10 @@ std::queue<std::wstring> PiecesW::FillPiece(wchar_t* const Buffer, wchar_t*& pos
 		else if (!_wcsicmp(front.c_str(), L"Icon"))
 		{
 			SetIconPath(back);
-			LoadPortrait();
 		}
 		else if (!_wcsicmp(front.c_str(), L"Sprite"))
 		{
 			SetSpritePath(back);
-			LoadSprite();
 		}
 		else if (!_wcsicmp(front.c_str(), L"SubMenu"))
 		{
@@ -225,16 +221,18 @@ std::queue<std::wstring> PiecesW::FillPiece(std::wstring& Buffer, wchar_t*& pos)
 		else if (!_wcsicmp(front.c_str(), L"Icon"))
 		{
 			SetIconPath(back);
-			LoadPortrait();
 		}
 		else if (!_wcsicmp(front.c_str(), L"Sprite"))
 		{
 			SetSpritePath(back);
-			LoadSprite();
 		}
 		else if (!_wcsicmp(front.c_str(), L"SubMenu"))
 		{
 			SetSubMenu(back);
+		}
+		else if (!_wcsicmp(front.c_str(), L"Size"))
+		{
+			SetSize(back);
 		}
 		else if (!_wcsicmp(front.c_str(), L"DefaultInitOrder"))
 		{
@@ -410,8 +408,6 @@ void PiecesW::LoadSprite()
 {
 	if (GetSpritePath().empty()) return;
 	pSprite = new Sprite(GetSpritePath().c_str(), gfx, pTimer);
-	if (!pSprite->IsSuccess())
-		SafeDelete(&pSprite);
 }
 
 void PiecesW::LoadPortrait()
@@ -442,6 +438,7 @@ void Pieces::LoadPortrait()
 
 void SpritePointer::DrawSprite(Graphics* const gfx, bool back)
 {
+	if (!GetSprite()) return;
 	if (mLocation.mResizedDestSprite.right - mLocation.mResizedDestSprite.left > 0)
 	{
 		if (back) gfx->DrawBitmap(gfx->GetCompatibleTarget(), GetSprite()->GetBitmap(), mLocation.mResizedDestSprite, fOpacity, GetSprite()->GetFrame());
@@ -457,6 +454,7 @@ void SpritePointer::DrawSprite(Graphics* const gfx, bool back)
 
 void SpritePointer::DrawPortrait(Graphics* const gfx, bool back)
 {
+	if (!GetPortrait()) return;
 	if (back) gfx->DrawBitmap(gfx->GetCompatibleTarget(), GetPortrait()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetPortrait()->GetFrame());
 	else gfx->DrawBitmap(gfx->GetRenderTarget(), GetPortrait()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetPortrait()->GetFrame());
 	GetPortrait()->NextFrame();
@@ -483,4 +481,162 @@ void SpritePointer::BuildResizedDestSprite()
 				mLocation.mDestSprite.top + (mLocation.mDestSprite.bottom - mLocation.mDestSprite.top) * sizemod);
 		}
 	}
+}
+
+void SpritePointer::SetDestPortrait(const D2D1_RECT_F d)
+{
+	if (!IsKeepAspectPortrait())
+	{
+		mLocation.mDestPortrait = d; 
+	}
+	else
+	{
+		mLocation.mDestPortrait = RectToAspectPortrait(d);
+	}
+}
+
+void SpritePointer::SetDestSprite(const D2D1_RECT_F d, bool ApplyRebuild)
+{
+	if (!IsKeepAspectSprite())
+	{
+		mLocation.mDestSprite = d;
+		if (ApplyRebuild) BuildResizedDestSprite();
+	}
+	else
+	{
+		mLocation.mDestSprite = RectToAspectSprite(d);
+		if (ApplyRebuild) BuildResizedDestSprite();
+	}
+}
+
+const D2D1_RECT_F SpritePointer::RectToAspectSprite(const D2D1_RECT_F d)
+{
+	float fNumerator = fabs(GetSpriteFrameSize().width);
+	float fDenominator = fabs(GetSpriteFrameSize().height);
+	if (fNumerator == fDenominator) return d;
+	if (!fDenominator) return d;
+
+	if (fNumerator > fDenominator)
+	{
+		float fRatio = fDenominator / fNumerator;
+
+		D2D1_RECT_F temp;
+		temp.left = d.left;
+		temp.top = d.top;
+		temp.right = d.right;
+		temp.bottom = temp.top + (d.bottom - d.top) * fRatio;
+
+		float fdist = d.bottom - temp.bottom;
+		temp.top += fdist;
+		temp.bottom += fdist;
+
+		return temp;
+	}
+	else
+	{
+		float fRatio = fNumerator / fDenominator;
+
+		D2D1_RECT_F temp;
+		temp.left = d.left;
+		temp.top = d.top;
+		temp.right = temp.left + (d.right - d.left) * fRatio;
+		temp.bottom = d.bottom;
+
+		float fdist = d.right - temp.right;
+		fdist *= 0.5f;
+		temp.left += fdist;
+		temp.right += fdist;
+		return temp;
+	}
+	return d;
+}
+
+const D2D1_RECT_F SpritePointer::RectToAspectPortrait(const D2D1_RECT_F d)
+{
+	float fNumerator = fabs(GetSpriteFrameSize().width);
+	float fDenominator = fabs(GetSpriteFrameSize().height);
+	if (fNumerator == fDenominator) return d;
+	if (!fDenominator) return d;
+
+	if (fNumerator > fDenominator)
+	{
+		float fRatio = fDenominator / fNumerator;
+
+		D2D1_RECT_F temp;
+		temp.left = d.left;
+		temp.top = d.top;
+		temp.right = d.right;
+		temp.bottom = temp.top + (d.bottom - d.top) * fRatio;
+
+		float fdist = d.bottom - temp.bottom;
+		temp.top += fdist;
+		temp.bottom += fdist;
+		return temp;
+	}
+	else
+	{
+		float fRatio = fNumerator / fDenominator;
+
+		D2D1_RECT_F temp;
+		temp.left = d.left;
+		temp.top = d.top;
+		temp.right = temp.left + (d.right - d.left) * fRatio;
+		temp.bottom = d.bottom;
+
+		float fdist = d.right - temp.right;
+		fdist *= 0.5f;
+		temp.left += fdist;
+		temp.right += fdist;
+		return temp;
+	}
+	return d;
+}
+
+void SpritePointer::MoveDestSprite(const D2D1_SIZE_F changes)
+{
+	mLocation.mDestSprite.left += changes.width;
+	mLocation.mDestSprite.right += changes.width;
+	mLocation.mDestSprite.top += changes.height;
+	mLocation.mDestSprite.bottom += changes.height;
+}
+
+void SpritePointer::MovePortraitSprite(const D2D1_SIZE_F changes)
+{
+	mLocation.mDestPortrait.left += changes.width;
+	mLocation.mDestPortrait.right += changes.width;
+	mLocation.mDestPortrait.top += changes.height;
+	mLocation.mDestPortrait.bottom += changes.height;
+}
+
+void SpritePointer::MoveResizedDestSprite(const D2D1_SIZE_F changes)
+{
+	mLocation.mResizedDestSprite.left += changes.width;
+	mLocation.mResizedDestSprite.right += changes.width;
+	mLocation.mResizedDestSprite.top += changes.height;
+	mLocation.mResizedDestSprite.bottom += changes.height;
+}
+
+void SpritePointer::SetDestSpritePosition(const D2D1_POINT_2F point)
+{
+	mLocation.mDestSprite.left = point.x;
+	mLocation.mDestSprite.top = point.y;
+	mLocation.mDestSprite.right = mLocation.mDestSprite.left + GetSpriteFrameSize().width;
+	mLocation.mDestSprite.bottom = mLocation.mDestSprite.top + GetSpriteFrameSize().height;
+}
+
+void SpritePointer::SetDestResizedSpritePosition(const D2D1_POINT_2F point)
+{
+	D2D1_SIZE_F size = D2D1::SizeF(mLocation.mResizedDestSprite.right - mLocation.mResizedDestSprite.left, mLocation.mResizedDestSprite.bottom - mLocation.mResizedDestSprite.top);
+	mLocation.mResizedDestSprite.left = point.x;
+	mLocation.mResizedDestSprite.top = point.y;
+	mLocation.mResizedDestSprite.right = mLocation.mResizedDestSprite.left + size.width;
+	mLocation.mResizedDestSprite.bottom = mLocation.mResizedDestSprite.top + size.height;
+}
+
+void SpritePointer::SetPortraitPosition(const D2D1_POINT_2F point)
+{
+	mLocation.mDestPortrait.left = point.x;
+	mLocation.mDestPortrait.top = point.y;
+	mLocation.mDestPortrait.right = mLocation.mDestPortrait.left + GetPortraitFrameSize().width;
+	mLocation.mDestPortrait.bottom = mLocation.mDestPortrait.top + GetPortraitFrameSize().height;
 }

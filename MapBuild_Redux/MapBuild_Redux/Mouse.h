@@ -1,4 +1,5 @@
 #pragma once
+#include <d2d1_1.h>
 #include <queue>
 
 class Mouse
@@ -39,9 +40,9 @@ public:
 		{
 			return m_Type;
 		}
-		std::pair<float, float> GetPos() const
+		D2D1_POINT_2F GetPos() const
 		{
-			return { x, y };
+			return D2D1::Point2F(x, y);
 		}
 		float GetPosX() const
 		{

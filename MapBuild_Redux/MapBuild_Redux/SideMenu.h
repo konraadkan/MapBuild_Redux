@@ -65,7 +65,7 @@ private:
 	const D2D1_SIZE_F MainMenuSize = D2D1::SizeF(94.0f, 32.0f);
 	const D2D1_SIZE_F SubMenuSize = D2D1::SizeF(94.0f, 32.0f);
 	const D2D1_SIZE_F SizeMenuSize = D2D1::SizeF(94.0f, 32.0f);
-	const D2D1_SIZE_F ItemMenuSize = D2D1::SizeF(94.0f, 54.0f);
+	const D2D1_SIZE_F ItemMenuSize = D2D1::SizeF(94.0f, 125.0f);
 	const D2D1_SIZE_F RoomMenuSize = D2D1::SizeF(18.0f, 18.0f);
 	const D2D1_SIZE_F RoomCheckBoxMenuSize = D2D1::SizeF(9.0f, 9.0f);
 	const D2D1_SIZE_F LayerMenuSize = D2D1::SizeF(18.0f, 18.0f);
@@ -102,7 +102,7 @@ private:
 public:
 	SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, 
 		std::vector< std::vector<SpritePointer*>>** const ppRoom, std::vector<SpritePointer*>** const ppLayer, std::vector< std::vector< std::vector<SpritePointer*>>>** const ppRL,
-		std::vector<bool>* const VisibleRooms, std::vector< std::vector<bool>>* const VisibleLayers);
+		std::vector<bool>* const VisibleRooms, std::vector< std::vector<bool>>* const VisibleLayers, SpritePointer** const ppsprite);
 	~SideMenu()
 	{
 		SafeDeleteArray(&Buffer);
@@ -165,4 +165,6 @@ public:
 	std::vector< std::vector<bool>>* pVisibleLayers = nullptr;
 	MenuSection* pSelectedCategory = nullptr;
 	MenuSection* pSelectedSubcategory = nullptr;	
+	SpritePointer** ppSelectedSprite = nullptr;
+	void* pBaseLevel = nullptr;
 };

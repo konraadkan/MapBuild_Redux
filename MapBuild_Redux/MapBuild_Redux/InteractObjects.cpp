@@ -69,6 +69,11 @@ void InteractObjects::SetDest(const D2D1_RECT_F rect)
 	memcpy(&m_Dest, &rect, sizeof(m_Dest));
 }
 
+void InteractObjects::SetDestBottom(const float bottom)
+{
+	m_Dest.bottom = bottom;
+}
+
 void InteractObjects::MovePosition(const D2D1_POINT_2F p)
 {
 	D2D1_RECT_F newrect;

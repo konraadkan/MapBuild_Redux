@@ -1,7 +1,7 @@
 #include "Buttons.h"
 #include "SideMenu.h"
 
-const bool Buttons::Interact(D2D1_POINT_2F p)
+const bool Buttons::Interact(const D2D1_POINT_2F p)
 {
 	if (IsHidden()) return true;
 	for (auto& child : pChild)
@@ -101,7 +101,7 @@ const bool Checkbox::Interact()
 	return false;
 }
 
-const bool RoomLayerBox::Interact(D2D1_POINT_2F p)
+const bool RoomLayerBox::Interact(const D2D1_POINT_2F p)
 {
 	if (IsHidden()) return true;
 	//toggle associated room or layer's visiblity to on / off
@@ -137,7 +137,7 @@ const bool RoomLayerBox::Interact()
 	return true;
 }
 
-const bool AddItem::Interact(D2D1_POINT_2F p)
+const bool AddItem::Interact(const D2D1_POINT_2F p)
 {
 	if (bRoom)
 	{
@@ -184,4 +184,149 @@ const bool AddItem::Interact(D2D1_POINT_2F p)
 		return false;
 	}
 	return true;
+}
+
+const bool TypeButtons::Interact(const D2D1_POINT_2F p)
+{
+	if (IsHidden()) return true;
+	if (!pParent) return true;
+
+	for (auto& child : pChild)
+	{
+		if (child)
+		{
+			if (child->PointInRect(p))
+			{
+				if (!child->Interact(p)) return false;
+				return true;
+			}
+		}
+	}
+
+	if (bEnableSelection)
+	{
+		SideMenu* parent = static_cast<SideMenu*>(pParent);
+		
+		for (unsigned int i = 0; i < parent->CategoryMenu->pChild.size(); i++)
+		{
+			if (parent->CategoryMenu->pChild.at(i) == this)
+			{
+				parent->CategoryMenu->vSubsections.at(i)->SetUnhidden();
+				continue;
+			}
+			parent->CategoryMenu->pChild.at(i)->UnsetIsSelected();
+			parent->CategoryMenu->vSubsections.at(i)->SetHidden();
+		}
+
+		SetIsSelected();
+	}
+	return true;
+}
+
+const bool SubsectionButtons::Interact(const D2D1_POINT_2F p)
+{
+	if (IsHidden()) return true;
+	if (!pParent) return true;
+
+	for (auto& child : pChild)
+	{
+		if (child)
+		{
+			if (child->PointInRect(p))
+			{
+				if (!child->Interact(p)) return false;
+				return true;
+			}
+		}
+	}
+
+	if (bEnableSelection)
+	{
+		MenuSection* parent = static_cast<MenuSection*>(pParent);
+		for (unsigned int i = 0; i < parent->pChild.size(); i++)
+		{
+			if (parent->pChild.at(i) == this)
+			{
+				parent->vSubsections.at(i)->SetUnhidden();
+				continue;
+			}
+			parent->pChild.at(i)->UnsetIsSelected();
+			parent->vSubsections.at(i)->SetHidden();
+		}
+		SetIsSelected();
+	}
+	return true;
+}
+
+const bool SpriteItemButtons::Interact(const D2D1_POINT_2F p)
+{
+	if (IsHidden()) return true;
+	if (!pParent) return true;
+
+	for (auto& child : pChild)
+	{
+		if (child)
+		{
+			if (child->PointInRect(p))
+			{
+				if (!child->Interact(p)) return false;
+				return true;
+			}
+		}
+	}
+
+	if (bEnableSelection)
+	{
+		MenuSection* parent = static_cast<MenuSection*>(pParent);
+		for (unsigned int i = 0; i < parent->pChild.size(); i++)
+		{
+			if (parent->pChild.at(i) == this)
+				continue;
+			parent->pChild.at(i)->UnsetIsSelected();
+		}
+		SetIsSelected();
+	}
+
+	if (ppSelectedSprite)
+	{
+		SafeDelete(&(*ppSelectedSprite));
+		(*ppSelectedSprite) = new SpritePointer(pPiecesW, Location());
+		(*ppSelectedSprite)->SetCreatureSize(pPiecesW->GetSize());
+	}
+	return true;
+}
+
+void SpriteItemButtons::Draw()
+{
+	if (IsHidden()) return;
+	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), m_Dest, D2D1::ColorF(0.0f, 0.0f, 0.0f), m_Radius.width, m_Radius.height, fThickness);
+	gfx->FillRoundedRect(gfx->GetCompatibleTarget(), m_Dest, m_Color, m_Radius.width, m_Radius.height);
+	gfx->OutputTextSmall(gfx->GetCompatibleTarget(), GetLabel(), m_Dest, TextColor, m_Alignment, m_pAlignment);
+	if (pPiecesW->GetPortrait())
+	{
+		gfx->DrawBitmap(gfx->GetCompatibleTarget(), pPiecesW->GetPortrait()->GetBitmap(), m_Dest, 1.0f, pPiecesW->GetPortrait()->GetFrame());
+	}
+	else if (pPiecesW->GetSprite())
+	{
+		gfx->DrawBitmap(gfx->GetCompatibleTarget(), pPiecesW->GetSprite()->GetBitmap(), m_Dest, 1.0f, pPiecesW->GetSprite()->GetFrame());
+	}
+	if (PointInRect()) gfx->FillRoundedRect(gfx->GetCompatibleTarget(), m_Dest, m_HighlightColor, m_Radius.width, m_Radius.height);
+	if (bSelected) gfx->FillRoundedRect(gfx->GetCompatibleTarget(), m_Dest, m_SelectedColor, m_Radius.width, m_Radius.height);
+	for (auto& child : pChild)
+	{
+		if (child) child->Draw();
+	}
+}
+
+bool SpriteItemButtons::PointInRect()
+{
+	return PointInRect(*pMouseCoordinates);
+}
+
+bool SpriteItemButtons::PointInRect(const D2D1_POINT_2F p)
+{
+	D2D1::Matrix3x2F t = *pMatrix;
+	t.Invert();
+	D2D1_POINT_2F transformedPoint = t.TransformPoint(p);
+	return (transformedPoint.x >= m_Dest.left && transformedPoint.x <= m_Dest.right && transformedPoint.y >= m_Dest.top && transformedPoint.y <= m_Dest.bottom);
 }

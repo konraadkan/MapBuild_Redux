@@ -8,12 +8,14 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	m_ClientWindow = D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height);
 	RotationCenter = D2D1::Point2F(WindowSize.width * 0.5f, WindowSize.height * 0.5f);
 
-	pSideMenu = new SideMenu(D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow, &MenuCoordinates, &pSelectedRoom, &pSelectedLayer, &ppvSprites, &vVisibleRooms, &vVisibleLayers);
+	pSideMenu = new SideMenu(D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow, &MenuCoordinates, &pSelectedRoom, &pSelectedLayer, &ppvSprites, &vVisibleRooms, &vVisibleLayers, &sptest);
+	pSideMenu->pBaseLevel = this;
 	pSideMenu->SetMousePointer(&MenuCoordinates);
 	IObjects.push_back(pSideMenu);
 	CreateRoom();
 	
 	BuildObjects(L"mainpcs-unicode.ini");
+	this->LoadImages();
 	//BuildObjects(L"mainpcs.ini");
 	while (vPieces.size())
 	{
@@ -26,6 +28,8 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	pSideMenu->BuildSubcategories(&vPiecesW);
 	
 	sptest = new SpritePointer(&vPiecesW.front(), Location());
+	sptest->SetDestSprite(D2D1::RectF(-sptest->GetSpriteFrameSize().width, -sptest->GetSpriteFrameSize().height, 0.0f, 0.0f));
+	sptest->SetCreatureSize(vPiecesW.front().GetSize());
 //	sptest->SetCreatureSize(CreatureSize::Large); //example of how to set creature size for spritepointer objects
 	
 	ppvSprites = &vSprites;
@@ -108,7 +112,8 @@ void BaseLevel::Render()
 	
 	if (sptest)
 	{
-		sptest->DrawSprite(gfx);
+		//sptest->DrawSprite(gfx);
+		gfx->DrawRect(gfx->GetCompatibleTarget(), mPreviewDest, D2D1::ColorF(1.0f, 0.1f, 0.05f, 1.0f), 5.0f);
 	}
 
 	if (bGridOnTop) gfx->DrawDefaultGrid(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), GridSquareSize, D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.9f), 3.0f);
@@ -128,7 +133,6 @@ void BaseLevel::Render()
 	gfx->SwapBuffer();
 	//Get mouse coordinates
 	TranslatedCoordinates = gfx->GetTransformedPoint(gfx->GetRenderTarget(), *pMouseCoordinate);
-	//Center = gfx->GetTransformedPoint(gfx->GetRenderTarget(), D2D1::Point2F(WindowSize.width * 0.5f, WindowSize.height * .05f)); //currently commented out because it leads to wierd interactions
 	gfx->RestoreTransform(gfx->GetRenderTarget());
 
 	gfx->BeginDraw(gfx->GetCompatibleTarget());
@@ -137,7 +141,6 @@ void BaseLevel::Render()
 	gfx->EndDraw(gfx->GetCompatibleTarget());
 
 	gfx->SwapBuffer();
-	//build side bar menu / initiative
 	gfx->OutputText(gfx->GetRenderTarget(), std::to_wstring(afps).c_str(), D2D1::RectF(0, 500, 500, 564));
 	gfx->EndDraw(gfx->GetRenderTarget());
 }
@@ -191,28 +194,56 @@ void BaseLevel::Update(double dDelta)
 			if (value) *value = *value + size * static_cast<float>(dDelta) * direction;
 		}
 	}
-	if (pMouse->LeftPressed())
-	{
-		if (pSelectedLayer && !pSideMenu->IsInRealRect())
+	//if (pMouse->LeftPressed())
+	//{
+	//	if (pSelectedLayer && !pSideMenu->IsInRealRect())
+	//	{
+	//		bool bAdd = true;
+	//		for (auto& sl : *pSelectedLayer)
+	//		{
+	//			if (sl->GetSprite() == sptest->GetPieces()->GetSprite())
+	//			{
+	//				if (bLockToGrid)
+	//				{
+	//					if (static_cast<int>(mPreviewDest.left) == static_cast<int>(sptest->GetDestSprite().left) && static_cast<int>(mPreviewDest.top) == static_cast<int>(sptest->GetDestSprite().top))
+	//					{
+	//						bAdd = false;
+	//						break;
+	//					}
+	//				}
+	//				else
+	//				{
+	//					if (static_cast<int>(sl->GetDestSprite().left) == static_cast<int>(sptest->GetDestSprite().left) && static_cast<int>(sl->GetDestSprite().top) == static_cast<int>(sptest->GetDestSprite().top))
+	//					{
+	//						bAdd = false;
+	//						break;
+	//					}
+	//				}
+	//			}
+	//		}
+	//		if (bAdd)
+	//		{
+	//			pSelectedLayer->push_back(new SpritePointer(sptest->GetPieces(), Location()));
+	//			pSelectedLayer->back()->SetCreatureSize(sptest->GetCreatureSize());
+	//			//pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + pSelectedLayer->back()->GetSpriteFrameSize().width, TranslatedCoordinates.y + pSelectedLayer->back()->GetSpriteFrameSize().height));				
+	//			if (bLockToGrid)
+	//				pSelectedLayer->back()->SetDestSprite(mPreviewDest, false);
+	//			else
+	//				pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + GridSquareSize.width, TranslatedCoordinates.y + GridSquareSize.height));
+	//		}
+	//	}
+	//}
+	if (pMouse->MiddlePressed())
+	{		
+		if (PushMouseCoordinate.x || PushMouseCoordinate.y)
 		{
-			bool bAdd = true;
-			for (auto& sl : *pSelectedLayer)
-			{
-				if (sl->GetSprite() == sptest->GetPieces()->GetSprite())
-				{
-					if (static_cast<int>(sl->GetDestSprite().left) == static_cast<int>(sptest->GetDestSprite().left) && static_cast<int>(sl->GetDestSprite().top) == static_cast<int>(sptest->GetDestSprite().top))
-					{
-						bAdd = false;
-						break;
-					}
-				}
-			}
-			if (bAdd)
-			{
-				pSelectedLayer->push_back(new SpritePointer(sptest->GetPieces(), Location()));
-				pSelectedLayer->back()->SetCreatureSize(sptest->GetCreatureSize());
-				pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + pSelectedLayer->back()->GetSpriteFrameSize().width, TranslatedCoordinates.y + pSelectedLayer->back()->GetSpriteFrameSize().height));				
-			}
+			float dY = PushMouseCoordinate.y - pMouse->GetY();
+			float dX = PushMouseCoordinate.x - pMouse->GetX();
+			float d = static_cast<float>(dDelta);
+			if (dY)
+				Offset.height -= (dY < 0 ? d * dY : d * dY);
+			if (dX)
+				Offset.width -= (dX < 0 ? d * dX : d * dX);
 		}
 	}
 }
@@ -234,7 +265,10 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 		{
 		case Mouse::Event::Type::Move:
 		{
-			sptest->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + sptest->GetSpriteFrameSize().width, TranslatedCoordinates.y + sptest->GetSpriteFrameSize().height));
+			//sptest->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + sptest->GetSpriteFrameSize().width, TranslatedCoordinates.y + sptest->GetSpriteFrameSize().height));
+			sptest->SetDestSpritePosition(TranslatedCoordinates);
+			sptest->SetDestResizedSpritePosition(TranslatedCoordinates);
+			mPreviewDest = GetPreviewRect();
 			break;
 		}
 		case Mouse::Event::Type::LPress:
@@ -242,7 +276,11 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			{
 				pSelectedLayer->push_back(new SpritePointer(sptest->GetPieces(), Location()));
 				pSelectedLayer->back()->SetCreatureSize(sptest->GetCreatureSize());
-				pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + pSelectedLayer->back()->GetSpriteFrameSize().width, TranslatedCoordinates.y + pSelectedLayer->back()->GetSpriteFrameSize().height));				
+				//pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + pSelectedLayer->back()->GetSpriteFrameSize().width, TranslatedCoordinates.y + pSelectedLayer->back()->GetSpriteFrameSize().height));				
+				if (bLockToGrid)
+					pSelectedLayer->back()->SetDestSprite(mPreviewDest, false);
+				else
+					pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + GridSquareSize.width, TranslatedCoordinates.y + GridSquareSize.height));
 			}
 			break;
 		case Mouse::Event::Type::LRelease:
@@ -262,8 +300,11 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 		case Mouse::Event::Type::RRelease:
 			break;
 		case Mouse::Event::Type::MPress:
+			if(!pSideMenu->PointInRect(*pMouseCoordinate) || pSideMenu->IsHidden())
+				PushMouseCoordinate = e.GetPos();
 			break;
 		case Mouse::Event::Type::MRelease:
+			PushMouseCoordinate = D2D1::Point2F();
 			break;
 		case Mouse::Event::Type::WheelUp:
 		{
@@ -273,6 +314,20 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 				{
 					io->WheelUp();
 					break;
+				}
+			}
+			if (pSideMenu->IsInRealRect())
+			{
+				for (auto& categories : pSideMenu->CategoryMenu->vSubsections)
+				{
+					if (!categories->IsHidden())
+					{
+						for (auto& sub : categories->vSubsections)
+						{
+							if (!sub->IsHidden()) //if (sub->PointInRect())
+								sub->WheelUp();
+						}
+					}
 				}
 			}
 		}
@@ -285,6 +340,21 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 				{
 					io->WheelDown();
 					break;
+				}
+			}
+			if (pSideMenu->IsInRealRect())
+			{
+				for (auto& categories : pSideMenu->CategoryMenu->vSubsections)
+				{
+					if (!categories->IsHidden())
+					{
+						for (auto& sub : categories->vSubsections)
+						{
+							if (!sub->IsHidden())
+								//if (sub->PointInRect())
+									sub->WheelDown();
+						}
+					}
 				}
 			}
 		}
@@ -424,6 +494,57 @@ template<typename T> void BaseLevel::RemoveEmptyPieces(T& pieces)
 	pieces.erase(std::remove_if(pieces.begin(), pieces.end(), [](auto& o) { return o.GetType().empty(); }), pieces.end());
 }
 
+void BaseLevel::OutputImageLoadingStatus(unsigned int numloaded, unsigned int total, const std::wstring imagetype)
+{
+	std::wstring msg = L"Loading " + imagetype + L" " + std::to_wstring(numloaded + 1) + L" of " + std::to_wstring(total);
+	gfx->BeginDraw(gfx->GetRenderTarget());
+	gfx->ClearScreen(gfx->GetRenderTarget(), D2D1::ColorF(0.75f, 0.75f, 0.75f));
+	gfx->OutputText(gfx->GetRenderTarget(), msg.c_str(), m_ClientWindow, D2D1::ColorF(0.0f, 0.0f, 0.0f), DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+	gfx->EndDraw(gfx->GetRenderTarget());
+}
+
+void BaseLevel::LoadSprites()
+{
+	unsigned int totalnumbersprites = vPieces.size() + vPiecesW.size();
+	unsigned int spritesloaded = 0;
+	for (auto& piece : vPieces)
+	{
+		OutputImageLoadingStatus(spritesloaded, totalnumbersprites, L"Sprite");
+		piece.LoadSprite();
+		spritesloaded++;
+	}
+	for (auto & piece : vPiecesW)
+	{
+		OutputImageLoadingStatus(spritesloaded, totalnumbersprites, L"Sprite");
+		piece.LoadSprite();
+		spritesloaded++;
+	}
+}
+
+void BaseLevel::LoadImages()
+{
+	LoadSprites();
+	LoadPortraits();
+}
+
+void BaseLevel::LoadPortraits()
+{
+	unsigned int totalnumbersprites = vPieces.size() + vPiecesW.size();
+	unsigned int spritesloaded = 0;
+	for (auto& piece : vPieces)
+	{
+		OutputImageLoadingStatus(spritesloaded, totalnumbersprites, L"Portrait");
+		piece.LoadPortrait();
+		spritesloaded++;
+	}
+	for (auto & piece : vPiecesW)
+	{
+		OutputImageLoadingStatus(spritesloaded, totalnumbersprites, L"Portrait");
+		piece.LoadPortrait();
+		spritesloaded++;
+	}
+}
+
 void BaseLevel::BuildObjects(const wchar_t* sFilePath)
 {
 	size_t BufferSize = 0;
@@ -556,4 +677,38 @@ void BaseLevel::CreateLayer(size_t uRoomNumber)
 		pSideMenu->CreateLayer(uRoomNumber);
 		pSideMenu->CreateLayerButton(&Transforms, &m_ClientWindow, uRoomNumber);
 	}
+}
+
+const D2D1_RECT_F BaseLevel::GetPreviewRect()
+{
+	D2D1_SIZE_F size;
+	float sizemod = 1.0f;
+	switch (sptest->GetCreatureSize())
+	{
+	case CreatureSize::Diminutive:
+	case CreatureSize::Fine:
+	case CreatureSize::Tiny:
+	case CreatureSize::Small:
+	{
+		sizemod = static_cast<float>(1.0f / pow(2, static_cast<unsigned long>(CreatureSize::Medium) - static_cast<unsigned long>(sptest->GetCreatureSize())));
+		size = D2D1::SizeF(GridSquareSize.width * sizemod, GridSquareSize.height * sizemod);
+		break;
+	}
+	case CreatureSize::Medium:
+		size = GridSquareSize;
+		break;
+	default:
+		sizemod = static_cast<float>(1 + static_cast<unsigned int>(sptest->GetCreatureSize()) - static_cast<unsigned int>(CreatureSize::Medium));
+		size = D2D1::SizeF(GridSquareSize.width * sizemod, GridSquareSize.height * sizemod);
+	}
+	if (bLockToGrid)
+	{
+		D2D1_POINT_2F lockedPoint;
+		lockedPoint.x = static_cast<float>(static_cast<unsigned int>(sptest->GetDestSprite().left) / static_cast<unsigned int>(GridSquareSize.width * sizemod));
+		lockedPoint.x *= GridSquareSize.width * sizemod;
+		lockedPoint.y = static_cast<float>(static_cast<unsigned int>(sptest->GetDestSprite().top) / static_cast<unsigned int>(GridSquareSize.height * sizemod));
+		lockedPoint.y *= GridSquareSize.height * sizemod;
+		return D2D1::RectF(lockedPoint.x, lockedPoint.y, lockedPoint.x + size.width, lockedPoint.y + size.height);
+	}
+	return D2D1::RectF(sptest->GetDestSprite().left, sptest->GetDestSprite().top, sptest->GetDestSprite().left + size.width, sptest->GetDestSprite().top + size.height);
 }

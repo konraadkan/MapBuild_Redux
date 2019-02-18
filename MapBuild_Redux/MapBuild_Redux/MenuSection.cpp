@@ -28,7 +28,8 @@ void MenuSection::Draw()
 	if (IsHidden()) return;
 	D2D1::Matrix3x2F ttransform;
 	gfx->GetCompatibleTarget()->GetTransform(&ttransform);
-	gfx->GetCompatibleTarget()->SetTransform(ttransform * Transforms);
+	AllTransforms = ttransform * Transforms;
+	gfx->GetCompatibleTarget()->SetTransform(AllTransforms);
 	for (auto& child : pChild)
 	{
 		child->Draw();
@@ -97,7 +98,7 @@ void MenuSection::WheelUp()
 	if (Transforms.TransformPoint(D2D1::Point2F(pChild.back()->GetRect().left, pChild.back()->GetRect().top)).y > m_Dest.top)
 	{
 		Transforms = D2D1::Matrix3x2F::Translation(D2D1::SizeF(0, ScrollStep * -1)) * Transforms;
-		InvTransforms = Transforms;
+		InvTransforms = AllTransforms * Transforms;
 		InvTransforms.Invert();
 
 		for (auto& child : pChild)
@@ -106,6 +107,8 @@ void MenuSection::WheelUp()
 			if (t.y < m_Dest.top)
 				child->SetHidden();
 		}
+		InvTransforms = AllTransforms;
+		InvTransforms.Invert();
 	}
 }
 
@@ -115,7 +118,7 @@ void MenuSection::WheelDown()
 	if (Transforms.TransformPoint(D2D1::Point2F()).y < 0.0f)
 	{
 		Transforms = D2D1::Matrix3x2F::Translation(D2D1::SizeF(0, ScrollStep)) * Transforms;
-		InvTransforms = Transforms;
+		InvTransforms = AllTransforms * Transforms;
 		InvTransforms.Invert();
 
 		for (auto& child : pChild)
@@ -127,6 +130,8 @@ void MenuSection::WheelDown()
 					child->SetUnhidden();
 			}
 		}
+		InvTransforms = AllTransforms;
+		InvTransforms.Invert();
 	}
 }
 

@@ -37,6 +37,7 @@ private:
 	D2D1_SIZE_F WindowSize = D2D1::SizeF();
 	D2D1_SIZE_F ScreenSize = D2D1::SizeF();
 	D2D1_RECT_F m_ClientWindow = D2D1::RectF();
+	D2D1_RECT_F mPreviewDest = D2D1::RectF();
 	float RotationAngle = 0.0f;
 	float RotationSpeed = 30.0f;
 	float MovementSpeed = 100.0f;
@@ -47,6 +48,8 @@ private:
 	std::vector<bool> vVisibleRooms;
 	std::vector< std::vector<bool>> vVisibleLayers;
 	HPTimer* const pTimer;
+	D2D1_POINT_2F PushMouseCoordinate = D2D1::Point2F();
+	const D2D1_RECT_F GetPreviewRect();
 public:
 	BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePosition, int WindowX, int WindowY, HPTimer* const timer);
 	~BaseLevel();
@@ -55,7 +58,10 @@ public:
 	void Render() override;
 	void ProcessEvents(double dDelta) override;
 	void Update(double dDelta) override;
-private:
+	void SetLockToGrid() { bLockToGrid = true; }
+	void UnsetLockToGrid() { bLockToGrid = false; }
+	void ToggleLockToGrid() { bLockToGrid ^= true; }
+private:	
 	void DrawSideMenu();
 	void ProcessKeyboardEvents(double dDelta);
 	void ProcessMouseEvents(double dDelta);
@@ -64,6 +70,10 @@ private:
 	void CreateLayer(size_t uRoomNumber);
 	int afps = 0;
 	void BuildObjects(const wchar_t* sFilePath);
+	void LoadSprites();
+	void LoadPortraits();
+	void LoadImages();
+	void OutputImageLoadingStatus(unsigned int numloaded, unsigned int total, const std::wstring imagetype);
 	const std::wstring GetLineW(wchar_t* const buffer, wchar_t*& pos);
 	const std::wstring GetLineW(char* const buffer, char*& pos);
 	template<typename T> void RemoveEmptyPieces(T& pieces);

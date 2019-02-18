@@ -20,6 +20,7 @@ protected:
 	Keyboard* pKeyboard = nullptr;
 	Mouse* pMouse = nullptr;
 	bool bGridOnTop = false;
+	bool bLockToGrid = true;
 public:
 	virtual const std::string Trim(const std::string s);
 	virtual const std::string LTrim(const std::string s);

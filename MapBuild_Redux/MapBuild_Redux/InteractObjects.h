@@ -170,6 +170,7 @@ public:
 	virtual bool PointInSector(const Sector sector) { return PointInSector(sector, *pMouseCoordinates); }
 	virtual bool PointInSector(const Sector sector, const D2D1_POINT_2F p);
 	virtual void SetDest(const D2D1_RECT_F rect);
+	virtual void SetDestBottom(const float bottom);
 	virtual void MovePosition(const D2D1_POINT_2F p);
 	virtual void SetColor(const D2D1_COLOR_F color);
 	virtual void SetHighlightColor(const D2D1_COLOR_F color);

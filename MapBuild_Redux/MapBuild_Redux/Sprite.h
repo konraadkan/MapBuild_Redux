@@ -61,8 +61,12 @@ public:
 	bool IsSuccess() { return bLoadSuccess; }
 	void NextFrame();
 	D2D1_SIZE_F GetBitmapSize() { return fBitmapSize; }
-	D2D1_RECT_F GetFrame() { return vFrames.at(iCurrentFrame); }
-	D2D1_SIZE_F GetFrameSize() { return D2D1::SizeF(vFrames.at(iCurrentFrame).right - vFrames.at(iCurrentFrame).left, vFrames.at(iCurrentFrame).bottom - vFrames.at(iCurrentFrame).top); }
+	D2D1_RECT_F GetFrame() { if (vFrames.size()) return vFrames.at(iCurrentFrame); return D2D1::RectF(); }
+	D2D1_SIZE_F GetFrameSize()
+	{
+		if (vFrames.empty()) return D2D1::SizeF();
+		return D2D1::SizeF(vFrames.at(iCurrentFrame).right - vFrames.at(iCurrentFrame).left, vFrames.at(iCurrentFrame).bottom - vFrames.at(iCurrentFrame).top); 
+	}
 	ID2D1Bitmap* const GetBitmap() { return pBitmap; }
 private:
 	char* DecodeSPR3(const wchar_t* FilePath, unsigned int& ImageBufferLen);

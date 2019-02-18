@@ -7,9 +7,7 @@ class MenuSection : public InteractObjects
 {
 private:	
 	bool bIsScrollable = false;
-	D2D1_SIZE_F EntrySize = D2D1::SizeF(94.0f, 32.0f);
-	D2D1::Matrix3x2F Transforms = D2D1::Matrix3x2F::Identity();
-	D2D1::Matrix3x2F InvTransforms = D2D1::Matrix3x2F::Identity();
+	D2D1_SIZE_F EntrySize = D2D1::SizeF(94.0f, 32.0f);	
 	D2D1_POINT_2F TransformedPoint = D2D1::Point2F();
 	float ScrollStep = 100.0f;
 	BorderStyle Border = BorderStyle::Invisible;
@@ -58,6 +56,9 @@ public:
 	void SetLayer(const size_t pos) override;
 	void SetBorderStyle(const BorderStyle bs) override { Border = bs; }
 public:
+	D2D1::Matrix3x2F AllTransforms = D2D1::Matrix3x2F::Identity();
+	D2D1::Matrix3x2F Transforms = D2D1::Matrix3x2F::Identity();
+	D2D1::Matrix3x2F InvTransforms = D2D1::Matrix3x2F::Identity();
 	std::vector<MenuSection*> vSubsections;
 	std::vector< std::vector<InteractObjects*>> vChildObjects;
 	std::vector< std::vector< std::vector<SpritePointer*>>>** vSelectRoomsandLayers = nullptr;

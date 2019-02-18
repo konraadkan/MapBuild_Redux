@@ -147,6 +147,7 @@ public:
 	void SetSize(const std::wstring wsize) { mSize = StringToSize(wsize); }
 	void SetSize(const std::string ssize) { mSize = StringToSize(ssize); }
 	void SetSize(const CreatureSize size) { mSize = size; }
+	const CreatureSize GetSize() { return mSize; }
 	void SetDefault() { bDetaultInitOrder = true; }
 	void UnsetDefault() { bDetaultInitOrder = false; }
 	void ToggleDefault() { bDetaultInitOrder ^= true; }
@@ -184,12 +185,23 @@ private:
 	bool bSelected = false;
 	float fOpacity = 1.0f;
 	CreatureSize mSize = CreatureSize::Medium;
+	bool bKeepAspectRatioSprite = true;
+	bool bKeepAspectRatioPortrait = true;
 public:
-	SpritePointer(PiecesW* const p, const Location loc) : mLocation(loc), pPiece(p) {}
+	SpritePointer(PiecesW* const p, const Location loc, bool keepaspectsprite = true, bool keepaspectportrait = true) : 
+		mLocation(loc), pPiece(p), bKeepAspectRatioSprite(keepaspectsprite), bKeepAspectRatioPortrait(keepaspectportrait) {}
 	~SpritePointer() { }
 public:
-	void SetDestSprite(const D2D1_RECT_F d) { mLocation.mDestSprite = d; BuildResizedDestSprite(); }
-	void SetDestPortrait(const D2D1_RECT_F d) { mLocation.mDestPortrait = d; }
+	void MoveDestSprite(const D2D1_SIZE_F changes);
+	void MovePortraitSprite(const D2D1_SIZE_F changes);
+	void MoveResizedDestSprite(const D2D1_SIZE_F changes);
+	void SetDestSpritePosition(const D2D1_POINT_2F point);
+	void SetDestResizedSpritePosition(const D2D1_POINT_2F point);
+	void SetPortraitPosition(const D2D1_POINT_2F point);
+	void SetDestSprite(const D2D1_RECT_F d, bool ApplyRebuild = true);
+	void SetDestPortrait(const D2D1_RECT_F d);
+	const D2D1_RECT_F RectToAspectSprite(const D2D1_RECT_F d);
+	const D2D1_RECT_F RectToAspectPortrait(const D2D1_RECT_F d);
 	void SetLayer(const unsigned long layer) { mLocation.uLayer = layer; }
 	void SetRoom(const unsigned long room) { mLocation.uRoom = room; }
 	void SetSelected() { bSelected = true; }
@@ -201,9 +213,18 @@ public:
 	void DrawSprite(Graphics* const gfx, bool back = true);
 	void DrawPortrait(Graphics* const gfx, bool back = true);
 	void BuildResizedDestSprite();
+	void SetKeepAspectSprite() { bKeepAspectRatioSprite = true; }
+	void UnsetKeepAspectSprite() { bKeepAspectRatioSprite = false; }
+	void ToggleAspectRatioSprite() { bKeepAspectRatioSprite ^= true; }
+	void SetKeepAspectPortrait() { bKeepAspectRatioPortrait = true; }
+	void UnsetKeepAspectPortrait() { bKeepAspectRatioPortrait = false; }
+	void ToggleAspectRatioPortrait() { bKeepAspectRatioPortrait ^= true; }
 public:
 	const bool IsSelected() { return bSelected; }
+	const bool IsKeepAspectSprite() { return bKeepAspectRatioSprite; }
+	const bool IsKeepAspectPortrait() { return bKeepAspectRatioPortrait; }
 	const D2D1_RECT_F GetDestSprite() { return mLocation.mDestSprite; }
+	const D2D1_RECT_F GetDestResizedSprite() { return mLocation.mResizedDestSprite; }
 	const D2D1_RECT_F GetDestPortrait() { return mLocation.mDestPortrait; }
 	const D2D1_SIZE_F GetSpriteFrameSize() { return pPiece->GetSprite()->GetFrameSize(); }
 	const D2D1_SIZE_F GetPortraitFrameSize() { return pPiece->GetPortrait()->GetFrameSize(); }
