@@ -1,9 +1,13 @@
 #pragma once
 #include "Level.h"
 #include "SideMenu.h"
+#include "SizeMenu.h"
 #include "Pieces.h"
 #include "HPTimer.h"
 #include <vector>
+#include <thread>
+#include <mutex>
+#include <atomic>
 
 class BaseLevel : public Level
 {
@@ -63,6 +67,7 @@ public:
 	void ToggleLockToGrid() { bLockToGrid ^= true; }
 private:	
 	void DrawSideMenu();
+	void DrawSizeMenu();
 	void ProcessKeyboardEvents(double dDelta);
 	void ProcessMouseEvents(double dDelta);
 	void CreateRoom();
@@ -79,6 +84,7 @@ private:
 	template<typename T> void RemoveEmptyPieces(T& pieces);
 public:
 	SideMenu* pSideMenu = nullptr;
+	SizeMenu* pSizeMenu = nullptr;
 	std::vector<PiecesW> vPiecesW;
 	std::vector<Pieces> vPieces;
 	std::vector< std::vector< std::vector<SpritePointer*>>> vSprites;

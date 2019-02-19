@@ -85,7 +85,7 @@ public:
 	MenuSection* pLayersCheckMenu = nullptr;
 	MenuSection* CategoryMenu = nullptr;
 	MenuSection* SubcategoryMenu = nullptr;
-	MenuSection* SizeMenu = nullptr;
+	MenuSection* pSizeMenu = nullptr;
 	MenuSection* ItemMenu = nullptr;
 private:
 	std::vector<D2D1_RECT_F> CategoryStartPoints;

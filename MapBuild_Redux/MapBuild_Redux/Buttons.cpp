@@ -252,6 +252,8 @@ const bool SubsectionButtons::Interact(const D2D1_POINT_2F p)
 			}
 			parent->pChild.at(i)->UnsetIsSelected();
 			parent->vSubsections.at(i)->SetHidden();
+			for (auto& t : parent->vSubsections.at(i)->pChild)
+				t->UnsetIsSelected();
 		}
 		SetIsSelected();
 	}
@@ -329,4 +331,35 @@ bool SpriteItemButtons::PointInRect(const D2D1_POINT_2F p)
 	t.Invert();
 	D2D1_POINT_2F transformedPoint = t.TransformPoint(p);
 	return (transformedPoint.x >= m_Dest.left && transformedPoint.x <= m_Dest.right && transformedPoint.y >= m_Dest.top && transformedPoint.y <= m_Dest.bottom);
+}
+
+const bool SizeMenuButtons::Interact()
+{
+	if (IsHidden()) return true;
+	if (!pSizeMenu) return true;
+
+	for (auto& child : pChild)
+	{
+		if (child)
+		{
+			if (child->PointInRect())
+			{
+				if (!child->Interact()) return false;
+				return true;
+			}
+		}
+	}
+
+	if (bEnableSelection)
+	{
+		SizeMenu* parent = static_cast<SizeMenu*>(pSizeMenu);
+		for (unsigned int i = 0; i < parent->vpChild.size(); i++)
+		{
+			if (parent->vpChild.at(i) == this)
+				continue;
+			parent->vpChild.at(i)->UnsetIsSelected();
+		}
+		SetIsSelected();
+	}
+	return true;
 }

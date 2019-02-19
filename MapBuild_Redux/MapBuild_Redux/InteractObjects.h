@@ -1,45 +1,10 @@
 #pragma once
 #include "Graphics.h"
+#include "SafeReleaseMemory.h"
 #include <vector>
 #include <string>
 
-class SafeReleaseMemory
-{
-public:
-	template<typename T> void SafeRelease(T** ppT)
-	{
-		if (ppT)
-		{
-			if (*ppT)
-			{
-				(*ppT)->Release();
-				(*ppT) = nullptr;
-			}
-		}
-	}
-	template<typename T> void SafeDelete(T** ppT)
-	{
-		if (ppT)
-		{
-			if (*ppT)
-			{
-				delete (*ppT);
-				(*ppT) = nullptr;
-			}
-		}
-	}
-	template<typename T> void SafeDeleteArray(T** ppT)
-	{
-		if (ppT)
-		{
-			if (*ppT)
-			{
-				delete[](*ppT);
-				(*ppT) = nullptr;
-			}
-		}
-	}
-};
+
 //***** this virtual class may take the place of InteractObjects in the future to make the code cleaner
 //class InteractableObjects : public SafeReleaseMemory
 //{

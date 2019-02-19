@@ -281,3 +281,4 @@ MenuSection* const MenuSection::FindSubmenuSection(const wchar_t* wCategoryName)
 	}
 	return nullptr;
 }
+

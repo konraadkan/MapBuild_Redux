@@ -18,7 +18,7 @@ private:
 public:
 	ClassShapes(ShapeTypes Type, Graphics* const graphics, bool UseTransform, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, bool Back = false) : InteractObjects(graphics, Transform, area, p), ShapeType(Type), bBack(Back), bUseTransform(UseTransform)
 	{
-
+		
 	}
 	~ClassShapes()
 	{

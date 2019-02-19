@@ -70,8 +70,11 @@ const bool SideMenu::Interact()
 			{
 				for (auto& child : pMenuSections.at(i)->pChild)
 				{
-					if (!_wcsicmp(child->GetLabel(), L"Lock To Grid"))
-						if (pBaseLevel) static_cast<BaseLevel*>(pBaseLevel)->ToggleLockToGrid();
+					if (child->PointInRect())
+					{
+						if (!_wcsicmp(child->GetLabel(), L"Lock To Grid"))
+							if (pBaseLevel) static_cast<BaseLevel*>(pBaseLevel)->ToggleLockToGrid();
+					}
 				}
 			}
 			if (!pMenuSections.at(i)->Interact()) return false;			
@@ -150,7 +153,7 @@ void SideMenu::UpdateNextButtonRect(MenuItemType type)
 	}
 }
 
-SideMenu::SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, std::vector< std::vector<SpritePointer*>>** const ppRoom, std::vector<SpritePointer*>** const ppLayer, 
+SideMenu::SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, std::vector< std::vector<SpritePointer*>>** const ppRoom, std::vector<SpritePointer*>** const ppLayer,
 	std::vector< std::vector< std::vector<SpritePointer*>>>** const ppRL, std::vector<bool>* const VisibleRooms, std::vector< std::vector<bool>>* const VisibleLayers, SpritePointer** const ppsprite) : pSelectedRoom(ppRoom), pSelectedLayer(ppLayer), vSelectRoomsandLayers(ppRL), ppSelectedSprite(ppsprite), Buttons(graphics, Transform, area, p)
 {
 	pVisibleLayers = VisibleLayers;
@@ -204,6 +207,20 @@ SideMenu::SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1:
 	pChild.back()->pChild.back()->SetFill();
 	mRealRect = D2D1::RectF(m_Dest.left - 15.0f, m_Dest.top, m_Dest.right, m_Dest.bottom);
 
+	/*pMenuSections.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, D2D1::RectF(m_Dest.right, m_Dest.top + 3.0f, m_Dest.right + (m_Dest.right - m_Dest.left), OptionMenuSize.height + 3.0f), 0.0f, L"Sizes"));
+	const std::wstring wsizes[] =
+	{
+		L"Diminutive", L"Fine",	L"Tiny", L"Small",
+		L"Medium", L"Large", L"Huge", L"Gargantuan", L"Colossal"
+	};
+	for (auto string : wsizes)
+	{
+		pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, string.c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true, true), OptionMenuSize);
+	}
+	pMenuSections.back()->SetTranslation(D2D1::SizeF(m_Dest.left - m_Dest.right, 0.0f));
+	pSizeMenu = pMenuSections.back();
+	pSizeMenu->SetHidden();*/
+
 	pMenuSections.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, D2D1::RectF(m_Dest.right, m_Dest.top + 3.0f,m_Dest.right + (m_Dest.right - m_Dest.left), OptionMenuSize.height + 3.0f), 0.0f, L"Options", false));
 	pOptionsMenu = pMenuSections.back();
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Lock to Grid", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true, true), OptionMenuSize);
@@ -214,6 +231,7 @@ SideMenu::SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1:
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Keep Aspect", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Turn Counter", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
 	pMenuSections.back()->SetBorderStyle(BorderStyle::Solid);
+	//pOptionsMenu->SetHidden();
 
 	D2D1_RECT_F LastRect = pMenuSections.back()->GetTranslatedRect();
 	pMenuSections.back()->SetTranslation(D2D1::SizeF(m_Dest.left - m_Dest.right, 0.0f));

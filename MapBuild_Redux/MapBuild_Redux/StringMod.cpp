@@ -11,7 +11,7 @@ const std::wstring StringMod::GetLineW(wchar_t* const buffer, wchar_t*& pos)
 		pos = pos + wbuffer.size() + 1;
 		return wbuffer;
 	}
-	pos = buffer + p + 1;
+	pos = buffer + p + 2;
 
 	std::wstring tw(wbuffer.begin(), wbuffer.begin() + p);
 	return Trim(tw);

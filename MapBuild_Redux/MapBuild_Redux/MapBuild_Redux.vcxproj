@@ -128,6 +128,7 @@
     <ClCompile Include="Pieces.cpp" />
     <ClCompile Include="Shapes.cpp" />
     <ClCompile Include="SideMenu.cpp" />
+    <ClCompile Include="SizeMenu.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="StringMod.cpp" />
     <ClCompile Include="window.cpp" />
@@ -146,9 +147,11 @@
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Pieces.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SafeReleaseMemory.h" />
     <ClInclude Include="ShapeList.h" />
     <ClInclude Include="Shapes.h" />
     <ClInclude Include="SideMenu.h" />
+    <ClInclude Include="SizeMenu.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="StringMod.h" />
     <ClInclude Include="window.h" />

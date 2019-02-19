@@ -117,11 +117,25 @@ public:
 		target->DrawEllipse(D2D1::Ellipse(center, radiusX, radiusY), m_Brush, thickness);
 		return true;
 	}
+	template<typename T> bool DrawEllipse(T target, const D2D1_ELLIPSE ellipse, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f), float thickness = 1.0f)
+	{
+		if (!m_Brush) return false;
+		m_Brush->SetColor(color);
+		target->DrawEllipse(ellipse, m_Brush, thickness);
+		return true;
+	}
 	template<typename T> bool FillEllipse(T target, D2D1_POINT_2F center, float radiusX, float radiusY, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f))
 	{
 		if (!m_Brush) return false;
 		m_Brush->SetColor(color);
 		target->FillEllipse(D2D1::Ellipse(center, radiusX, radiusY), m_Brush);
+		return true;
+	}
+	template<typename T> bool FillEllipse(T target, const D2D1_ELLIPSE ellipse, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f))
+	{
+		if (!m_Brush) return false;
+		m_Brush->SetColor(color);
+		target->FillEllipse(ellipse, m_Brush);
 		return true;
 	}
 	template<typename T> bool FillEllipse(T target, const D2D1::Matrix3x2F Transforms, const D2D1_RECT_F ClientArea, D2D1_POINT_2F center, float radiusX, float radiusY, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f))

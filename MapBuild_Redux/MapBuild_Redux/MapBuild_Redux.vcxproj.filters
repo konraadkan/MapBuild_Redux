@@ -63,6 +63,9 @@
     <ClCompile Include="Sprite.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SizeMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="window.h">
@@ -120,6 +123,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CreatureSize.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SizeMenu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SafeReleaseMemory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

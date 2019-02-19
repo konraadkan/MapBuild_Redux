@@ -102,7 +102,7 @@ std::queue<std::wstring> Pieces::FillPiece(char* const Buffer, char*& pos)
 std::queue<std::wstring> PiecesW::FillPiece(wchar_t* const Buffer, wchar_t*& pos)
 {
 	std::queue<std::wstring> filepaths;
-	while (pos < Buffer + lstrlenW(Buffer))
+	while (pos <= Buffer + lstrlenW(Buffer))
 	{
 		std::wstring line = GetLineW(pos ? pos : Buffer, pos);
 		std::wstring front, back;
@@ -112,7 +112,7 @@ std::queue<std::wstring> PiecesW::FillPiece(wchar_t* const Buffer, wchar_t*& pos
 		{
 			if (GetType().size())
 			{
-				pos -= line.size() + 1;
+				pos -= (line.size() + 2);
 				break;
 			}
 			SetType(back);

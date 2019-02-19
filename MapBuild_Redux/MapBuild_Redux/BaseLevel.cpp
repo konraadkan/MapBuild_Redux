@@ -14,9 +14,8 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	IObjects.push_back(pSideMenu);
 	CreateRoom();
 	
-	BuildObjects(L"mainpcs-unicode.ini");
-	this->LoadImages();
-	//BuildObjects(L"mainpcs.ini");
+	//BuildObjects(L"mainpcs-unicode.ini");	
+	BuildObjects(L"mainpcs.ini");
 	while (vPieces.size())
 	{
 		PiecesW t(gfx, pTimer);
@@ -24,8 +23,13 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 		vPiecesW.push_back(t);
 		vPieces.pop_back();
 	}
+	this->LoadImages();
 	pSideMenu->BuildCategories(&vPiecesW);
 	pSideMenu->BuildSubcategories(&vPiecesW);
+
+	pSizeMenu = new SizeMenu(gfx, D2D1::RectF(WindowSize.width * 0.75f, WindowSize.height * 0.90f, WindowSize.width, WindowSize.height), pMouseCoordinate);
+	pSizeMenu->BuildMenuCreatureSize();
+	pSizeMenu->SetSelectedCreatureSize(vPiecesW.front().GetSize());
 	
 	sptest = new SpritePointer(&vPiecesW.front(), Location());
 	sptest->SetDestSprite(D2D1::RectF(-sptest->GetSpriteFrameSize().width, -sptest->GetSpriteFrameSize().height, 0.0f, 0.0f));
@@ -56,6 +60,7 @@ void BaseLevel::Unload()
 	//cleanup as necessary
 	SafeDelete(&sptest);
 	SafeDelete(&pSideMenu);
+	SafeDelete(&pSizeMenu);
 
 	while (vSprites.size())
 	{
@@ -138,6 +143,7 @@ void BaseLevel::Render()
 	gfx->BeginDraw(gfx->GetCompatibleTarget());
 	gfx->ClearScreen(gfx->GetCompatibleTarget(), D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.0f));
 	DrawSideMenu();
+	DrawSizeMenu();
 	gfx->EndDraw(gfx->GetCompatibleTarget());
 
 	gfx->SwapBuffer();
@@ -156,6 +162,11 @@ void BaseLevel::DrawSideMenu()
 	pSideMenu->Draw();
 	MenuCoordinates = gfx->GetTransformedPoint(gfx->GetCompatibleTarget(), *pMouseCoordinate);
 	if (pSideMenu->IsHidden()) gfx->GetCompatibleTarget()->SetTransform(oTransform);
+}
+
+void BaseLevel::DrawSizeMenu()
+{
+	pSizeMenu->Draw();
 }
 
 void BaseLevel::Update(double dDelta)
@@ -272,7 +283,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			break;
 		}
 		case Mouse::Event::Type::LPress:
-			if (pSelectedLayer && !pSideMenu->IsInRealRect())
+			if (pSelectedLayer && !pSideMenu->IsInRealRect() && !pSizeMenu->IsInRealRect())
 			{
 				pSelectedLayer->push_back(new SpritePointer(sptest->GetPieces(), Location()));
 				pSelectedLayer->back()->SetCreatureSize(sptest->GetCreatureSize());
@@ -285,13 +296,21 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			break;
 		case Mouse::Event::Type::LRelease:
 		{
-			for (auto& io : IObjects)
+			if (pSizeMenu->Interact())
 			{
-				if (io->PointInRect())
+				sptest->SetCreatureSize(pSizeMenu->GetSelectedCreatureSize());
+			}
+			else
+			{
+				for (auto& io : IObjects)
 				{
-					io->Interact();
-					break;
+					if (io->PointInRect())
+					{
+						io->Interact();						
+						break;
+					}
 				}
+				pSizeMenu->SetSelectedCreatureSize(sptest->GetCreatureSize());
 			}
 		}
 		break;
@@ -505,19 +524,19 @@ void BaseLevel::OutputImageLoadingStatus(unsigned int numloaded, unsigned int to
 
 void BaseLevel::LoadSprites()
 {
-	unsigned int totalnumbersprites = vPieces.size() + vPiecesW.size();
-	unsigned int spritesloaded = 0;
+	unsigned int totalnumbersprites = static_cast<unsigned int>(vPieces.size() + vPiecesW.size());
+	unsigned int numberfinished = 0;
 	for (auto& piece : vPieces)
 	{
-		OutputImageLoadingStatus(spritesloaded, totalnumbersprites, L"Sprite");
+		OutputImageLoadingStatus(numberfinished, totalnumbersprites, L"Sprite");
 		piece.LoadSprite();
-		spritesloaded++;
+		numberfinished++;
 	}
 	for (auto & piece : vPiecesW)
 	{
-		OutputImageLoadingStatus(spritesloaded, totalnumbersprites, L"Sprite");
+		OutputImageLoadingStatus(numberfinished, totalnumbersprites, L"Sprite");
 		piece.LoadSprite();
-		spritesloaded++;
+		numberfinished++;
 	}
 }
 
@@ -529,7 +548,7 @@ void BaseLevel::LoadImages()
 
 void BaseLevel::LoadPortraits()
 {
-	unsigned int totalnumbersprites = vPieces.size() + vPiecesW.size();
+	unsigned int totalnumbersprites = static_cast<unsigned int>(vPieces.size() + vPiecesW.size());
 	unsigned int spritesloaded = 0;
 	for (auto& piece : vPieces)
 	{
@@ -572,7 +591,7 @@ void BaseLevel::BuildObjects(const wchar_t* sFilePath)
 		fclose(file);
 		file = nullptr;
 		wchar_t* pos = buffer;
-		while (static_cast<size_t>(pos - buffer ) <= BufferSize)
+		while (static_cast<size_t>(pos - buffer) <= BufferSize)
 		{
 			vPiecesW.push_back(PiecesW(gfx, pTimer));
 			std::queue<std::wstring> temp = vPiecesW.back().FillPiece(pos, pos);
@@ -704,10 +723,21 @@ const D2D1_RECT_F BaseLevel::GetPreviewRect()
 	if (bLockToGrid)
 	{
 		D2D1_POINT_2F lockedPoint;
-		lockedPoint.x = static_cast<float>(static_cast<unsigned int>(sptest->GetDestSprite().left) / static_cast<unsigned int>(GridSquareSize.width * sizemod));
-		lockedPoint.x *= GridSquareSize.width * sizemod;
-		lockedPoint.y = static_cast<float>(static_cast<unsigned int>(sptest->GetDestSprite().top) / static_cast<unsigned int>(GridSquareSize.height * sizemod));
-		lockedPoint.y *= GridSquareSize.height * sizemod;
+		if (static_cast<int>(sptest->GetCreatureSize()) < static_cast<int>(CreatureSize::Medium))
+		{
+			lockedPoint.x = static_cast<float>(static_cast<unsigned int>(sptest->GetDestSprite().left) / static_cast<unsigned int>(GridSquareSize.width * sizemod));			
+			lockedPoint.y = static_cast<float>(static_cast<unsigned int>(sptest->GetDestSprite().top) / static_cast<unsigned int>(GridSquareSize.height * sizemod));
+			lockedPoint.x *= GridSquareSize.width * sizemod;
+			lockedPoint.y *= GridSquareSize.height * sizemod;
+		}
+		else
+		{
+			lockedPoint.x = static_cast<float>(static_cast<unsigned int>(sptest->GetDestSprite().left) / static_cast<unsigned int>(GridSquareSize.width));
+			lockedPoint.y = static_cast<float>(static_cast<unsigned int>(sptest->GetDestSprite().top) / static_cast<unsigned int>(GridSquareSize.height));
+			lockedPoint.x *= GridSquareSize.width;
+			lockedPoint.y *= GridSquareSize.height;
+		}
+		
 		return D2D1::RectF(lockedPoint.x, lockedPoint.y, lockedPoint.x + size.width, lockedPoint.y + size.height);
 	}
 	return D2D1::RectF(sptest->GetDestSprite().left, sptest->GetDestSprite().top, sptest->GetDestSprite().left + size.width, sptest->GetDestSprite().top + size.height);
