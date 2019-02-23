@@ -147,13 +147,16 @@ const bool AddItem::Interact(const D2D1_POINT_2F p)
 		//its a room
 		if (!parent) return true;
 		if (!*parent->vSelectRoomsandLayers) return true;
+		if (!parent->pSelectWallRoomsandLayers) return true;
 		if (!parent->pVisibleLayers) return true;
 		if (!parent->pVisibleRooms) return true;
 		(*parent->vSelectRoomsandLayers)->push_back(std::vector< std::vector<SpritePointer*>>());
+		(*parent->pSelectWallRoomsandLayers)->push_back(std::vector < std::vector<std::unique_ptr<Wall>>>());
 		parent->pVisibleRooms->push_back(true);
 		parent->pVisibleLayers->push_back(std::vector<bool>());
 		parent->CreateLayerMenuSection();
 		(*parent->vSelectRoomsandLayers)->back().push_back(std::vector<SpritePointer*>());
+		(*parent->pSelectWallRoomsandLayers)->back().push_back(std::vector<std::unique_ptr<Wall>>());
 		parent->pVisibleLayers->back().push_back(true);
 		parent->CreateLayer((*parent->vSelectRoomsandLayers)->size() - 1);
 		parent->CreateRoomButton(pParent->pTransforms, pParent->pClientRect);
@@ -171,9 +174,11 @@ const bool AddItem::Interact(const D2D1_POINT_2F p)
 		unsigned int uRoom = parent->GetSelectedRoomNumber();
 		unsigned int uLayer = parent->GetSelectedLayerNumber(uRoom);
 		if (!*parent->vSelectRoomsandLayers) return true;
+		if (!parent->pSelectWallRoomsandLayers) return true;
 		if (!parent->pVisibleLayers) return true;
 
 		if (uRoom < (*parent->vSelectRoomsandLayers)->size()) (*parent->vSelectRoomsandLayers)->at(uRoom).push_back(std::vector<SpritePointer*>());
+		if (uRoom < (*parent->pSelectWallRoomsandLayers)->size()) ((*parent->pSelectWallRoomsandLayers)->at(uRoom).push_back(std::vector<std::unique_ptr<Wall>>()));
 		parent->pVisibleLayers->at(uRoom).push_back(true);
 		parent->CreateLayer(uRoom);
 		parent->CreateLayerButton(parent->pTransforms, parent->pClientRect, uRoom);
@@ -304,13 +309,16 @@ void SpriteItemButtons::Draw()
 	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), m_Dest, D2D1::ColorF(0.0f, 0.0f, 0.0f), m_Radius.width, m_Radius.height, fThickness);
 	gfx->FillRoundedRect(gfx->GetCompatibleTarget(), m_Dest, m_Color, m_Radius.width, m_Radius.height);
 	gfx->OutputTextSmall(gfx->GetCompatibleTarget(), GetLabel(), m_Dest, TextColor, m_Alignment, m_pAlignment);
-	if (pPiecesW->GetPortrait())
+	if (pPiecesW)
 	{
-		gfx->DrawBitmap(gfx->GetCompatibleTarget(), pPiecesW->GetPortrait()->GetBitmap(), m_Dest, 1.0f, pPiecesW->GetPortrait()->GetFrame());
-	}
-	else if (pPiecesW->GetSprite())
-	{
-		gfx->DrawBitmap(gfx->GetCompatibleTarget(), pPiecesW->GetSprite()->GetBitmap(), m_Dest, 1.0f, pPiecesW->GetSprite()->GetFrame());
+		if (pPiecesW->GetPortrait())
+		{
+			gfx->DrawBitmap(gfx->GetCompatibleTarget(), pPiecesW->GetPortrait()->GetBitmap(), m_Dest, 1.0f, pPiecesW->GetPortrait()->GetFrame());
+		}
+		else if (pPiecesW->GetSprite())
+		{
+			gfx->DrawBitmap(gfx->GetCompatibleTarget(), pPiecesW->GetSprite()->GetBitmap(), m_Dest, 1.0f, pPiecesW->GetSprite()->GetFrame());
+		}
 	}
 	if (PointInRect()) gfx->FillRoundedRect(gfx->GetCompatibleTarget(), m_Dest, m_HighlightColor, m_Radius.width, m_Radius.height);
 	if (bSelected) gfx->FillRoundedRect(gfx->GetCompatibleTarget(), m_Dest, m_SelectedColor, m_Radius.width, m_Radius.height);
@@ -358,6 +366,30 @@ const bool SizeMenuButtons::Interact()
 			if (parent->vpChild.at(i) == this)
 				continue;
 			parent->vpChild.at(i)->UnsetIsSelected();
+		}
+		SetIsSelected();
+	}
+	return true;
+}
+
+void ColorButtons::Draw()
+{
+	if (bHide) return;
+	gfx->FillRoundedRect(gfx->GetCompatibleTarget(), m_Dest, DrawColor, m_Radius.width, m_Radius.height);
+	if (bSelected) gfx->FillRoundedRect(gfx->GetCompatibleTarget(), m_Dest, m_SelectedColor, m_Radius.width, m_Radius.height);
+	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), m_Dest, DrawColor, fThickness);
+}
+
+const bool ColorButtons::Interact()
+{
+	if (IsHidden()) return true;
+	
+	SafeDelete(&(*ppSelectedSprite));
+	if (bEnableSelection)
+	{
+		for (auto& child : pParent->pChild)
+		{
+			child->UnsetIsSelected();
 		}
 		SetIsSelected();
 	}

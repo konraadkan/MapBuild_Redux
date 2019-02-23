@@ -131,6 +131,7 @@
     <ClCompile Include="SizeMenu.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="StringMod.cpp" />
+    <ClCompile Include="walls.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -154,6 +155,7 @@
     <ClInclude Include="SizeMenu.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="StringMod.h" />
+    <ClInclude Include="Walls.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>
   <ItemGroup>

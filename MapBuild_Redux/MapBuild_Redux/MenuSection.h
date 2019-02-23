@@ -2,6 +2,7 @@
 #include<vector>
 #include "InteractObjects.h"
 #include "Pieces.h"
+#include "Walls.h"
 
 class MenuSection : public InteractObjects
 {
@@ -52,6 +53,8 @@ public:
 	void ResizeDest(const D2D1_SIZE_F r);
 	void SetSelectedRoomPointer(std::vector< std::vector<SpritePointer*>>** const p) { pSelectedRoom = p; }
 	void SetSelectedLayerPointer(std::vector<SpritePointer*>** const p) { pSelectedLayer = p; }
+	void SetSelectedWallLayerPointer(std::vector<std::unique_ptr<Wall>>** const p) { ppSelectedWallLayer = p; }
+	void SetSelectedWallRoomPointer(std::vector< std::vector<std::unique_ptr<Wall>>>** const p) { ppSelectedWallRoom = p; }
 	void SetRoom(const size_t pos) override;
 	void SetLayer(const size_t pos) override;
 	void SetBorderStyle(const BorderStyle bs) override { Border = bs; }
@@ -62,6 +65,9 @@ public:
 	std::vector<MenuSection*> vSubsections;
 	std::vector< std::vector<InteractObjects*>> vChildObjects;
 	std::vector< std::vector< std::vector<SpritePointer*>>>** vSelectRoomsandLayers = nullptr;
+	std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>>** pSelectWallRoomsandLayers = nullptr;
+	std::vector< std::vector<std::unique_ptr<Wall>>>** ppSelectedWallRoom = nullptr;
+	std::vector<std::unique_ptr<Wall>>** ppSelectedWallLayer = nullptr;
 	std::vector< std::vector<SpritePointer*>>** pSelectedRoom = nullptr;
 	std::vector<SpritePointer*>** pSelectedLayer = nullptr;
 	MenuSection* const FindSubmenuSection(const wchar_t* wCategoryName);

@@ -223,6 +223,7 @@ public:
 	const bool IsSelected() { return bSelected; }
 	const bool IsKeepAspectSprite() { return bKeepAspectRatioSprite; }
 	const bool IsKeepAspectPortrait() { return bKeepAspectRatioPortrait; }
+	const bool PointInSprite(D2D1_POINT_2F p) { return (p.x > mLocation.mDestSprite.left && p.x < mLocation.mDestSprite.right && p.y > mLocation.mDestSprite.top && p.y < mLocation.mDestSprite.bottom); }
 	const D2D1_RECT_F GetDestSprite() { return mLocation.mDestSprite; }
 	const D2D1_RECT_F GetDestResizedSprite() { return mLocation.mResizedDestSprite; }
 	const D2D1_RECT_F GetDestPortrait() { return mLocation.mDestPortrait; }

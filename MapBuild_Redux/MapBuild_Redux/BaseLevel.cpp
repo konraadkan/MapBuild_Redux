@@ -8,7 +8,7 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	m_ClientWindow = D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height);
 	RotationCenter = D2D1::Point2F(WindowSize.width * 0.5f, WindowSize.height * 0.5f);
 
-	pSideMenu = new SideMenu(D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow, &MenuCoordinates, &pSelectedRoom, &pSelectedLayer, &ppvSprites, &vVisibleRooms, &vVisibleLayers, &sptest);
+	pSideMenu = new SideMenu(D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow, &MenuCoordinates, &pSelectedRoom, &pSelectedLayer, &ppvSprites, &vVisibleRooms, &vVisibleLayers, &sptest, &pvWalls, &pSelectedRoomWall, &pSelectedLayerWall);
 	pSideMenu->pBaseLevel = this;
 	pSideMenu->SetMousePointer(&MenuCoordinates);
 	IObjects.push_back(pSideMenu);
@@ -26,19 +26,34 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	this->LoadImages();
 	pSideMenu->BuildCategories(&vPiecesW);
 	pSideMenu->BuildSubcategories(&vPiecesW);
+	pSideMenu->BuildWallMenu();
 
-	pSizeMenu = new SizeMenu(gfx, D2D1::RectF(WindowSize.width * 0.75f, WindowSize.height * 0.90f, WindowSize.width, WindowSize.height), pMouseCoordinate);
+	pSizeMenu = new SizeMenu(gfx, D2D1::RectF(WindowSize.width * 0.75f, WindowSize.height - 98.0f, WindowSize.width, WindowSize.height), pMouseCoordinate);
 	pSizeMenu->BuildMenuCreatureSize();
 	pSizeMenu->SetSelectedCreatureSize(vPiecesW.front().GetSize());
 	
 	sptest = new SpritePointer(&vPiecesW.front(), Location());
 	sptest->SetDestSprite(D2D1::RectF(-sptest->GetSpriteFrameSize().width, -sptest->GetSpriteFrameSize().height, 0.0f, 0.0f));
 	sptest->SetCreatureSize(vPiecesW.front().GetSize());
-//	sptest->SetCreatureSize(CreatureSize::Large); //example of how to set creature size for spritepointer objects
 	
 	ppvSprites = &vSprites;
 	pSelectedRoom = &vSprites.front();
 	pSelectedLayer = &pSelectedRoom->front();
+	pSideMenu->vSelectRoomsandLayers = &ppvSprites;
+	pSideMenu->SetSelectedRoomPointer(&pSelectedRoom);
+	pSideMenu->SetSelectedLayerPointer(&pSelectedLayer);
+
+	wptest = std::make_unique<Wall>(gfx, pMouseCoordinate);
+	wptest->SetColor(D2D1::ColorF(1, 0, 0));
+	wptest->SetThickness(15.0f);
+
+	pvWalls = &vWalls;
+	pSelectedRoomWall = &vWalls.front();
+	pSelectedLayerWall = &pSelectedRoomWall->front();
+
+	pSideMenu->pSelectWallRoomsandLayers = &pvWalls;
+	pSideMenu->ppSelectedWallLayer = &pSelectedLayerWall;
+	pSideMenu->ppSelectedWallRoom = &pSelectedRoomWall;
 }
 
 BaseLevel::~BaseLevel()
@@ -61,6 +76,20 @@ void BaseLevel::Unload()
 	SafeDelete(&sptest);
 	SafeDelete(&pSideMenu);
 	SafeDelete(&pSizeMenu);
+
+	while (vWalls.size())
+	{
+		while (vWalls.back().size())
+		{
+			while (vWalls.back().back().size())
+			{
+				vWalls.back().back().back().reset();
+				vWalls.back().back().pop_back();
+			}
+			vWalls.back().pop_back();
+		}
+		vWalls.pop_back();
+	}
 
 	while (vSprites.size())
 	{
@@ -110,6 +139,8 @@ void BaseLevel::Render()
 				{
 					for (auto& sprite : vSprites[i][w])
 						sprite->DrawSprite(gfx);
+					for (auto& wall : vWalls[i][w])
+						wall->Draw();
 				}
 			}
 		}
@@ -119,6 +150,11 @@ void BaseLevel::Render()
 	{
 		//sptest->DrawSprite(gfx);
 		gfx->DrawRect(gfx->GetCompatibleTarget(), mPreviewDest, D2D1::ColorF(1.0f, 0.1f, 0.05f, 1.0f), 5.0f);
+	}
+
+	if (wptest)
+	{
+		wptest->DrawPreview();
 	}
 
 	if (bGridOnTop) gfx->DrawDefaultGrid(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), GridSquareSize, D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.9f), 3.0f);
@@ -244,6 +280,18 @@ void BaseLevel::Update(double dDelta)
 	//		}
 	//	}
 	//}
+	if (pMouse->RightPressed())
+	{
+		for (size_t i =0; i < pSelectedLayer->size(); i++)
+		{
+			if (pSelectedLayer->at(i)->PointInSprite(TranslatedCoordinates))
+			{
+				pSelectedLayer->erase(pSelectedLayer->begin() + i);
+				pSelectedLayer->shrink_to_fit();
+				break;
+			}
+		}
+	}
 	if (pMouse->MiddlePressed())
 	{		
 		if (PushMouseCoordinate.x || PushMouseCoordinate.y)
@@ -277,28 +325,40 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 		case Mouse::Event::Type::Move:
 		{
 			//sptest->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + sptest->GetSpriteFrameSize().width, TranslatedCoordinates.y + sptest->GetSpriteFrameSize().height));
-			sptest->SetDestSpritePosition(TranslatedCoordinates);
-			sptest->SetDestResizedSpritePosition(TranslatedCoordinates);
-			mPreviewDest = GetPreviewRect();
+			if (sptest)
+			{
+				sptest->SetDestSpritePosition(TranslatedCoordinates);
+				sptest->SetDestResizedSpritePosition(TranslatedCoordinates);
+
+				mPreviewDest = GetPreviewRect();
+			}
 			break;
 		}
 		case Mouse::Event::Type::LPress:
 			if (pSelectedLayer && !pSideMenu->IsInRealRect() && !pSizeMenu->IsInRealRect())
 			{
-				pSelectedLayer->push_back(new SpritePointer(sptest->GetPieces(), Location()));
-				pSelectedLayer->back()->SetCreatureSize(sptest->GetCreatureSize());
-				//pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + pSelectedLayer->back()->GetSpriteFrameSize().width, TranslatedCoordinates.y + pSelectedLayer->back()->GetSpriteFrameSize().height));				
-				if (bLockToGrid)
-					pSelectedLayer->back()->SetDestSprite(mPreviewDest, false);
-				else
-					pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + GridSquareSize.width, TranslatedCoordinates.y + GridSquareSize.height));
+				if (sptest)
+				{
+					pSelectedLayer->push_back(new SpritePointer(sptest->GetPieces(), Location()));
+					pSelectedLayer->back()->SetCreatureSize(sptest->GetCreatureSize());
+					//pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + pSelectedLayer->back()->GetSpriteFrameSize().width, TranslatedCoordinates.y + pSelectedLayer->back()->GetSpriteFrameSize().height));				
+					if (bLockToGrid)
+						pSelectedLayer->back()->SetDestSprite(mPreviewDest, false);
+					else
+						pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + GridSquareSize.width, TranslatedCoordinates.y + GridSquareSize.height));
+				}
+				else if (wptest)
+				{
+					wptest->SetColor(pSideMenu->GetSelectedWallColor());
+					wptest->AddPoint(TranslatedCoordinates);
+				}
 			}
 			break;
 		case Mouse::Event::Type::LRelease:
 		{
 			if (pSizeMenu->Interact())
 			{
-				sptest->SetCreatureSize(pSizeMenu->GetSelectedCreatureSize());
+				if (sptest) sptest->SetCreatureSize(pSizeMenu->GetSelectedCreatureSize());
 			}
 			else
 			{
@@ -310,11 +370,12 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 						break;
 					}
 				}
-				pSizeMenu->SetSelectedCreatureSize(sptest->GetCreatureSize());
+				if (sptest) pSizeMenu->SetSelectedCreatureSize(sptest->GetCreatureSize());
 			}
 		}
 		break;
 		case Mouse::Event::Type::RPress:
+			if (!sptest) if (wptest) wptest->RemoveLastPoint();
 			break;
 		case Mouse::Event::Type::RRelease:
 			break;
@@ -472,6 +533,20 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 				break;
 			case VK_HOME:
 				bShowSideMenu ^= true;
+				break;
+			case VK_RETURN:
+				if (wptest)
+				{
+					wptest->SetGeometry();
+					if (pSelectedLayerWall)
+					{
+						pSelectedLayerWall->push_back(std::unique_ptr<Wall>(wptest.get()));
+					}
+					wptest.release();
+					wptest = std::make_unique<Wall>(gfx, pMouseCoordinate);
+					wptest->SetColor(D2D1::ColorF(1, 0, 0));
+					wptest->SetThickness(15.0f);
+				}
 				break;
 			}
 		}
@@ -671,6 +746,7 @@ const std::wstring BaseLevel::GetLineW(char* const buffer, char*& pos)
 void BaseLevel::CreateRoom()
 {
 	vSprites.push_back(std::vector< std::vector<SpritePointer*>>());
+	vWalls.push_back(std::vector< std::vector<std::unique_ptr<Wall>>>());
 	vVisibleRooms.push_back(true);
 	vVisibleLayers.push_back(std::vector<bool>());	
 	if (pSideMenu)
@@ -682,14 +758,10 @@ void BaseLevel::CreateRoom()
 	}
 }
 
-void BaseLevel::CreateLayer(std::vector< std::vector<SpritePointer*>>* const Room)
-{
-	Room->push_back(std::vector<SpritePointer*>());
-}
-
 void BaseLevel::CreateLayer(size_t uRoomNumber)
 {
 	vSprites[uRoomNumber].push_back(std::vector<SpritePointer*>());
+	vWalls[uRoomNumber].push_back(std::vector<std::unique_ptr<Wall>>());
 	vVisibleLayers[uRoomNumber].push_back(true);
 	if (pSideMenu)
 	{

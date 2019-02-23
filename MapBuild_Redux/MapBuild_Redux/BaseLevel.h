@@ -4,6 +4,7 @@
 #include "SizeMenu.h"
 #include "Pieces.h"
 #include "HPTimer.h"
+#include "Walls.h"
 #include <vector>
 #include <thread>
 #include <mutex>
@@ -71,7 +72,6 @@ private:
 	void ProcessKeyboardEvents(double dDelta);
 	void ProcessMouseEvents(double dDelta);
 	void CreateRoom();
-	void CreateLayer(std::vector< std::vector<SpritePointer*>>* const Room);
 	void CreateLayer(size_t uRoomNumber);
 	int afps = 0;
 	void BuildObjects(const wchar_t* sFilePath);
@@ -92,4 +92,10 @@ public:
 	std::vector<SpritePointer*>* pSelectedLayer = nullptr;
 	std::vector< std::vector<SpritePointer*>>* pSelectedRoom = nullptr;
 	std::vector< std::vector< std::vector<SpritePointer*>>>* ppvSprites;
+public:
+	std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>> vWalls;
+	std::vector<std::unique_ptr<Wall>>* pSelectedLayerWall = nullptr;
+	std::vector< std::vector<std::unique_ptr<Wall>>>* pSelectedRoomWall = nullptr;
+	std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>>* pvWalls = nullptr;
+	std::unique_ptr<Wall> wptest = nullptr;
 };

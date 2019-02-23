@@ -100,9 +100,10 @@ private:
 	void AddInitiativeObject(InteractObjects* const Io);
 	void AddBuildObject(InteractObjects* const Io);
 public:
-	SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, 
+	SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p,
 		std::vector< std::vector<SpritePointer*>>** const ppRoom, std::vector<SpritePointer*>** const ppLayer, std::vector< std::vector< std::vector<SpritePointer*>>>** const ppRL,
-		std::vector<bool>* const VisibleRooms, std::vector< std::vector<bool>>* const VisibleLayers, SpritePointer** const ppsprite);
+		std::vector<bool>* const VisibleRooms, std::vector< std::vector<bool>>* const VisibleLayers, SpritePointer** const ppsprite,
+		std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>>** const ppW, std::vector< std::vector<std::unique_ptr<Wall>>>** const ppSWR, std::vector<std::unique_ptr<Wall>>** const ppSWL);
 	~SideMenu()
 	{
 		SafeDeleteArray(&Buffer);
@@ -142,6 +143,9 @@ public:
 	const bool IsInRealRect() { return PointInTargetRect(mRealRect); }
 	void SetSelectedRoomPointer(std::vector< std::vector<SpritePointer*>>** const p) { pSelectedRoom = p; }
 	void SetSelectedLayerPointer(std::vector<SpritePointer*>** const p) { pSelectedLayer = p; }
+	void SetSelectedWallRoomPointer(std::vector< std::vector<std::unique_ptr<Wall>>>** const p) { ppSelectedWallRoom = p; for (auto& sections : pMenuSections) sections->SetSelectedWallRoomPointer(p); }
+	void SetSelectedWallLayerPointer(std::vector<std::unique_ptr<Wall>>** const p) { ppSelectedWallLayer = p; for (auto& sections : pMenuSections) sections->SetSelectedWallLayerPointer(p); }
+	void SetWallRoomandLayerPointer(std::vector < std::vector< std::vector<std::unique_ptr<Wall>>>>** const p) { pSelectWallRoomsandLayers = p; for (auto& sections : pMenuSections) sections->pSelectWallRoomsandLayers = p; }
 	void CreateRoomButton(D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area);
 	void CreateLayerButton(D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, size_t uRoomNumber);
 	void CreateLayerMenuSection();
@@ -155,12 +159,17 @@ public:
 	void SetLayer(size_t uLayerNumber) override;
 	void BuildCategories(std::vector<PiecesW>* const wPieces);
 	void BuildSubcategories(std::vector<PiecesW>* const wPieces);
+	void BuildWallMenu();
 	void RealignCategories();
 	void RealignSubcategory(MenuSection* const subcategory, const D2D1::Matrix3x2F parentTranforms);
+	const D2D1_COLOR_F GetSelectedWallColor();
 	
 	std::vector< std::vector<SpritePointer*>>** pSelectedRoom = nullptr;
+	std::vector< std::vector<std::unique_ptr<Wall>>>** ppSelectedWallRoom = nullptr;
 	std::vector<SpritePointer*>** pSelectedLayer = nullptr;
+	std::vector<std::unique_ptr<Wall>>** ppSelectedWallLayer = nullptr;
 	std::vector< std::vector< std::vector<SpritePointer*>>>** vSelectRoomsandLayers = nullptr;
+	std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>>** pSelectWallRoomsandLayers = nullptr;
 	std::vector<bool>* pVisibleRooms = nullptr;
 	std::vector< std::vector<bool>>* pVisibleLayers = nullptr;
 	MenuSection* pSelectedCategory = nullptr;

@@ -261,6 +261,8 @@ void MenuSection::SetRoom(const size_t pos)
 	{
 		*pSelectedRoom = &(*vSelectRoomsandLayers)->at(pos);
 		*pSelectedLayer = &(*pSelectedRoom)->front();
+		*ppSelectedWallRoom = &(*pSelectWallRoomsandLayers)->at(pos);
+		*ppSelectedWallLayer = &(*ppSelectedWallRoom)->front();
 	}
 	else MessageBoxW(nullptr, L"Failed to set room pointer.", L"Error", MB_OK | MB_ICONERROR);
 	//show layer buttons for proper layer; hide rest of layer buttons
@@ -269,6 +271,7 @@ void MenuSection::SetRoom(const size_t pos)
 void MenuSection::SetLayer(const size_t pos)
 {
 	if ((*pSelectedRoom)->size() > pos)	*pSelectedLayer = &(*pSelectedRoom)->at(pos);
+	if ((*ppSelectedWallRoom)->size() > pos) *ppSelectedWallLayer = &(*ppSelectedWallRoom)->at(pos);
 	else MessageBoxW(nullptr, L"Failed to set layer", L"Error", MB_OK | MB_ICONERROR);
 }
 
