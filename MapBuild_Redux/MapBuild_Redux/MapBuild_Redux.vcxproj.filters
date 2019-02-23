@@ -69,6 +69,9 @@
     <ClCompile Include="walls.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SliderBar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="window.h">
@@ -135,6 +138,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Walls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SliderBar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

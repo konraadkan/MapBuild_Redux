@@ -31,6 +31,8 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	pSizeMenu = new SizeMenu(gfx, D2D1::RectF(WindowSize.width * 0.75f, WindowSize.height - 98.0f, WindowSize.width, WindowSize.height), pMouseCoordinate);
 	pSizeMenu->BuildMenuCreatureSize();
 	pSizeMenu->SetSelectedCreatureSize(vPiecesW.front().GetSize());
+
+	pThicknessMenu = new ThicknessMenu(gfx, D2D1::RectF(WindowSize.width * 0.75f, WindowSize.height - 98.0f, WindowSize.width, WindowSize.height), pMouseCoordinate);
 	
 	sptest = new SpritePointer(&vPiecesW.front(), Location());
 	sptest->SetDestSprite(D2D1::RectF(-sptest->GetSpriteFrameSize().width, -sptest->GetSpriteFrameSize().height, 0.0f, 0.0f));
@@ -43,9 +45,9 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	pSideMenu->SetSelectedRoomPointer(&pSelectedRoom);
 	pSideMenu->SetSelectedLayerPointer(&pSelectedLayer);
 
-	wptest = std::make_unique<Wall>(gfx, pMouseCoordinate);
+	wptest = std::make_unique<Wall>(gfx, &TranslatedCoordinates);
 	wptest->SetColor(D2D1::ColorF(1, 0, 0));
-	wptest->SetThickness(15.0f);
+	wptest->SetThickness(pThicknessMenu->GetSelectedThickness());
 
 	pvWalls = &vWalls;
 	pSelectedRoomWall = &vWalls.front();
@@ -121,13 +123,13 @@ void BaseLevel::Render()
 	gfx->ClearScreen(gfx->GetCompatibleTarget(), GridBackgroundColor);
 	if (!bGridOnTop) gfx->DrawDefaultGrid(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), GridSquareSize, D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.9f), 3.0f);
 	
-	gfx->DrawCircle(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), D2D1::Point2F(500, 500), 40, D2D1::ColorF(0, 1, 0), 5.0f);
-	gfx->OutputTextSmall(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f,0.0f,WindowSize.width, WindowSize.height), L"Test Small", D2D1::RectF(0.0f, 64.0f, 64.0f, 128.0f));
-	gfx->OutputText(gfx->GetCompatibleTarget(), std::wstring(std::to_wstring(static_cast<long>(TranslatedCoordinates.x)) + L"," + std::to_wstring(static_cast<long>(TranslatedCoordinates.y))).c_str(), D2D1::RectF(0, 0, 128, 128));
-	gfx->FillCircle(gfx->GetCompatibleTarget(), D2D1::Point2F(800, 800), 100);
-	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), D2D1::RectF(1050, 100, 1900, 500), D2D1::ColorF(0,0,0), 25,25);
-	gfx->FillRoundedRect(gfx->GetCompatibleTarget(), D2D1::RectF(1050, 505, 1900, 905));
-	gfx->DrawRect(gfx->GetCompatibleTarget(), D2D1::RectF(500, 100, 1045, 500));
+	//gfx->DrawCircle(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), D2D1::Point2F(500, 500), 40, D2D1::ColorF(0, 1, 0), 5.0f);
+	//gfx->OutputTextSmall(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f,0.0f,WindowSize.width, WindowSize.height), L"Test Small", D2D1::RectF(0.0f, 64.0f, 64.0f, 128.0f));
+	//gfx->OutputText(gfx->GetCompatibleTarget(), std::wstring(std::to_wstring(static_cast<long>(TranslatedCoordinates.x)) + L"," + std::to_wstring(static_cast<long>(TranslatedCoordinates.y))).c_str(), D2D1::RectF(0, 0, 128, 128));
+	//gfx->FillCircle(gfx->GetCompatibleTarget(), D2D1::Point2F(800, 800), 100);
+	//gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), D2D1::RectF(1050, 100, 1900, 500), D2D1::ColorF(0,0,0), 25,25);
+	//gfx->FillRoundedRect(gfx->GetCompatibleTarget(), D2D1::RectF(1050, 505, 1900, 905));
+	//gfx->DrawRect(gfx->GetCompatibleTarget(), D2D1::RectF(500, 100, 1045, 500));
 
 	for (size_t i = 0; i < vVisibleRooms.size(); i++)
 	{
@@ -202,7 +204,15 @@ void BaseLevel::DrawSideMenu()
 
 void BaseLevel::DrawSizeMenu()
 {
-	pSizeMenu->Draw();
+	switch (mSizeMenuType)
+	{
+	case MeasurementMenu::SizeMenuType::CreatureSize:
+		if (pSizeMenu) pSizeMenu->Draw();
+		break;
+	case MeasurementMenu::SizeMenuType::ThicknessSize:
+		if (pThicknessMenu) pThicknessMenu->Draw();
+		break;
+	}
 }
 
 void BaseLevel::Update(double dDelta)
@@ -332,6 +342,11 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 
 				mPreviewDest = GetPreviewRect();
 			}
+			if (pThicknessMenu->IsSelected())
+			{
+				pThicknessMenu->UpdateSlider();
+				wptest->SetThickness(pThicknessMenu->GetSelectedThickness());
+			}
 			break;
 		}
 		case Mouse::Event::Type::LPress:
@@ -353,14 +368,34 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 					wptest->AddPoint(TranslatedCoordinates);
 				}
 			}
+			else if (pSideMenu->IsInRealRect())
+			{
+				if (mSizeMenuType == MeasurementMenu::SizeMenuType::ThicknessSize)
+				{
+					if (!pThicknessMenu->IsHidden())
+					{
+						if (pThicknessMenu->PointInSlider())
+						{
+							pThicknessMenu->SetSelected();
+						}
+					}
+				}
+			}
 			break;
 		case Mouse::Event::Type::LRelease:
 		{
-			if (pSizeMenu->Interact())
+			if (mSizeMenuType == MeasurementMenu::SizeMenuType::CreatureSize && pSizeMenu->Interact())
 			{
 				if (sptest) sptest->SetCreatureSize(pSizeMenu->GetSelectedCreatureSize());
 			}
-			else
+			else if (mSizeMenuType == MeasurementMenu::SizeMenuType::ThicknessSize && pThicknessMenu->Interact())
+			{
+				if (pThicknessMenu->IsSelected())
+				{
+					pThicknessMenu->UnsetSelected();					
+				}
+			}
+			else 
 			{
 				for (auto& io : IObjects)
 				{
@@ -371,6 +406,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 					}
 				}
 				if (sptest) pSizeMenu->SetSelectedCreatureSize(sptest->GetCreatureSize());
+				if (pSideMenu) mSizeMenuType = pSideMenu->GetSizeMenuType();
 			}
 		}
 		break;
@@ -543,9 +579,9 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 						pSelectedLayerWall->push_back(std::unique_ptr<Wall>(wptest.get()));
 					}
 					wptest.release();
-					wptest = std::make_unique<Wall>(gfx, pMouseCoordinate);
+					wptest = std::make_unique<Wall>(gfx, &TranslatedCoordinates);
 					wptest->SetColor(D2D1::ColorF(1, 0, 0));
-					wptest->SetThickness(15.0f);
+					wptest->SetThickness(pThicknessMenu->GetSelectedThickness());
 				}
 				break;
 			}

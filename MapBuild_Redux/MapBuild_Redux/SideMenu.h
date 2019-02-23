@@ -163,6 +163,7 @@ public:
 	void RealignCategories();
 	void RealignSubcategory(MenuSection* const subcategory, const D2D1::Matrix3x2F parentTranforms);
 	const D2D1_COLOR_F GetSelectedWallColor();
+	const MeasurementMenu::SizeMenuType GetSizeMenuType();
 	
 	std::vector< std::vector<SpritePointer*>>** pSelectedRoom = nullptr;
 	std::vector< std::vector<std::unique_ptr<Wall>>>** ppSelectedWallRoom = nullptr;

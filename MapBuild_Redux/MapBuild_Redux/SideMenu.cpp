@@ -408,6 +408,10 @@ const unsigned int SideMenu::GetSelectedRoomNumber()
 
 void SideMenu::SetRoom(size_t uRoomNumber)
 {
+	if (!pSelectedRoom || !pSelectedLayer || !ppSelectedWallLayer || !ppSelectedWallRoom)
+	{
+		MessageBoxW(nullptr, L"Could not update room pointer.", L"Error", MB_OK | MB_ICONERROR);
+	}
 	if (uRoomNumber < (*vSelectRoomsandLayers)->size())
 	{
 		*pSelectedRoom = &((*vSelectRoomsandLayers)->at(uRoomNumber));
@@ -423,6 +427,10 @@ void SideMenu::SetRoom(size_t uRoomNumber)
 
 void SideMenu::SetLayer(size_t uLayerNumber)
 {
+	if (!pSelectedRoom || !pSelectedLayer || !ppSelectedWallLayer || !ppSelectedWallRoom)
+	{
+		MessageBoxW(nullptr, L"Could not update room pointer.", L"Error", MB_OK | MB_ICONERROR);
+	}
 	if (uLayerNumber < (*pSelectedRoom)->size())
 	{
 		*pSelectedLayer = &((*pSelectedRoom)->at(uLayerNumber));
@@ -609,4 +617,20 @@ void SideMenu::RealignSubcategory(MenuSection* const subcategory, const D2D1::Ma
 		if (category->vSubsections.size())
 			RealignSubcategory(category, parentTransforms * category->GetTransforms());
 	}
+}
+
+const MeasurementMenu::SizeMenuType SideMenu::GetSizeMenuType()
+{
+	for (auto& category : CategoryMenu->pChild)
+	{
+		if (category->IsSelected())
+		{
+			if (!_wcsicmp(category->GetLabel(), L"Walls"))
+			{
+				return MeasurementMenu::SizeMenuType::ThicknessSize;
+			}
+			break;
+		}
+	}
+	return MeasurementMenu::SizeMenuType::CreatureSize;
 }

@@ -45,7 +45,7 @@ void Wall::Draw()
 
 	if (vPoints.empty()) return;
 	if (vPoints.size() == 1)
-		gfx->FillCircle(gfx->GetCompatibleTarget(), vPoints.front(), fThickness, mColor);
+		gfx->FillCircle(gfx->GetCompatibleTarget(), vPoints.front(), fRadius, mColor);
 	else
 	{
 		if (vGeometryPathHistory.size())

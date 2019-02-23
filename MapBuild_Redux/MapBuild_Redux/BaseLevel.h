@@ -55,6 +55,7 @@ private:
 	HPTimer* const pTimer;
 	D2D1_POINT_2F PushMouseCoordinate = D2D1::Point2F();
 	const D2D1_RECT_F GetPreviewRect();
+	MeasurementMenu::SizeMenuType mSizeMenuType = MeasurementMenu::SizeMenuType::CreatureSize;
 public:
 	BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePosition, int WindowX, int WindowY, HPTimer* const timer);
 	~BaseLevel();
@@ -85,6 +86,7 @@ private:
 public:
 	SideMenu* pSideMenu = nullptr;
 	SizeMenu* pSizeMenu = nullptr;
+	ThicknessMenu* pThicknessMenu = nullptr;
 	std::vector<PiecesW> vPiecesW;
 	std::vector<Pieces> vPieces;
 	std::vector< std::vector< std::vector<SpritePointer*>>> vSprites;

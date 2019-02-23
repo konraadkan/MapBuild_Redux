@@ -129,6 +129,7 @@
     <ClCompile Include="Shapes.cpp" />
     <ClCompile Include="SideMenu.cpp" />
     <ClCompile Include="SizeMenu.cpp" />
+    <ClCompile Include="SliderBar.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="StringMod.cpp" />
     <ClCompile Include="walls.cpp" />
@@ -153,6 +154,7 @@
     <ClInclude Include="Shapes.h" />
     <ClInclude Include="SideMenu.h" />
     <ClInclude Include="SizeMenu.h" />
+    <ClInclude Include="SliderBar.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="StringMod.h" />
     <ClInclude Include="Walls.h" />
