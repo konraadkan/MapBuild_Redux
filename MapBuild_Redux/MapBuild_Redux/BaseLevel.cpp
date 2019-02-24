@@ -378,6 +378,12 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 						{
 							pThicknessMenu->SetSelected();
 						}
+						else if (pThicknessMenu->PointOnSlideLine())
+						{
+							pThicknessMenu->JumpPosition();
+							pThicknessMenu->SetPreviewRadius(pThicknessMenu->CalcRadius());
+							wptest->SetThickness(pThicknessMenu->GetSelectedThickness());
+						}
 					}
 				}
 			}
@@ -573,7 +579,7 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 			case VK_RETURN:
 				if (wptest)
 				{
-					wptest->SetGeometry();
+					wptest->SetGeometry(pKeyboard->KeyIsPressed(VK_SHIFT));
 					if (pSelectedLayerWall)
 					{
 						pSelectedLayerWall->push_back(std::unique_ptr<Wall>(wptest.get()));

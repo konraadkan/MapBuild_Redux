@@ -1,6 +1,6 @@
 #include "Walls.h"
 
-void Wall::BuildGeometry()
+void Wall::BuildGeometry(const bool bClose)
 {
 	ID2D1PathGeometry* pG = nullptr;
 	if (!SUCCEEDED(gfx->GetFactory()->CreatePathGeometry(&pG)))
@@ -19,7 +19,7 @@ void Wall::BuildGeometry()
 			if (&p == &vPoints.front()) continue;
 			pSink->AddLine(p);
 		}
-		pSink->EndFigure(D2D1_FIGURE_END_OPEN);
+		bClose ? pSink->EndFigure(D2D1_FIGURE_END_CLOSED) : pSink->EndFigure(D2D1_FIGURE_END_OPEN);
 		pSink->Close();
 		SafeRelease(&pSink);
 		return;
@@ -61,9 +61,10 @@ void Wall::DrawPreview()
 	if (vPoints.size() > 1) gfx->DrawLine(gfx->GetCompatibleTarget(), vPoints.back(), *pMouseCoordinates, D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.5f), fThickness);
 }
 
-void Wall::SetGeometry()
+void Wall::SetGeometry(const bool bClose)
 {
 	if (vGeometryPathHistory.empty()) return;
+	if (bClose) BuildGeometry(true);
 
 	pSetGeometry = vGeometryPathHistory.back();
 	vGeometryPathHistory.pop_back();

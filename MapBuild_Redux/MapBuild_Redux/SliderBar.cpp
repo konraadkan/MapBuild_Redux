@@ -47,9 +47,24 @@ void SliderBar::MoveSlider(const float x)
 	mSliderPosition.right = mSliderPosition.left + LineDimensions.fSliderSize;
 }
 
+void SliderBar::ShiftSlider(const float x)
+{
+	mSliderPosition.left += x;
+	if (mSliderPosition.left < LineDimensions.LeftBar[0].x - LineDimensions.fSliderSizeHalf)
+		mSliderPosition.left = LineDimensions.LeftBar[0].x - LineDimensions.fSliderSizeHalf;
+	else if (mSliderPosition.left > LineDimensions.RightBar[0].x - LineDimensions.fSliderSizeHalf)
+		mSliderPosition.left = LineDimensions.RightBar[0].x - LineDimensions.fSliderSizeHalf;
+	mSliderPosition.right = mSliderPosition.left + LineDimensions.fSliderSize;
+}
+
 const bool SliderBar::PointOnSlider(const D2D1_POINT_2F p)
 {
 	return (p.x > mSliderPosition.left && p.x < mSliderPosition.right && p.y > mSliderPosition.top && p.y < mSliderPosition.bottom);
+}
+
+const bool SliderBar::PointOnLine(const D2D1_POINT_2F p)
+{
+	return (p.x > mDest.left && p.x < mDest.right && p.y > mDest.top && p.y < mDest.bottom);
 }
 
 void SliderBar::UpdateSize()

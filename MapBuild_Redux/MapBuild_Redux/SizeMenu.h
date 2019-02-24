@@ -90,7 +90,7 @@ protected:
 	D2D1_POINT_2F mPreviewCenter = D2D1::Point2F();
 	SliderBar* pSliderBar = nullptr;
 public:
-	ThicknessMenu(Graphics* const graphics, const D2D1_RECT_F dest, D2D1_POINT_2F* const p) : MeasurementMenu(graphics, dest, p) 
+	ThicknessMenu(Graphics* const graphics, const D2D1_RECT_F dest, D2D1_POINT_2F* const p) : MeasurementMenu(graphics, dest, p)
 	{
 		pSliderBar = new SliderBar(graphics, D2D1::RectF(dest.left + (dest.right - dest.left) * 0.25f, dest.top + (dest.bottom - dest.top) * 0.10f, dest.right - (dest.right - dest.left) * 0.25f, dest.bottom - (dest.bottom - dest.top) * 0.30f),
 			D2D1::ColorF(1, 0, 0));
@@ -112,8 +112,12 @@ public:
 	void SetSelected() { pSliderBar->SetSelected(); }
 	void UnsetSelected() { pSliderBar->UnsetSelected(); }
 	void UpdateSlider();
+	void JumpPosition();
+	void SetPreviewRadius(const float r) { fPreviewCirlceRadius = r; }
+	const float CalcRadius() { return pSliderBar->GetSize() * 0.5f; }
 	const bool Interact() override;
 	const bool PointInSlider() { return pSliderBar->PointOnSlider(*pMouseCoordinates); }
+	const bool PointOnSlideLine() { return pSliderBar->PointOnLine(*pMouseCoordinates); }
 	const bool IsSelected() { return pSliderBar->IsSelected(); }
 public:
 	const float GetSelectedThickness() { return pSliderBar->GetSize(); }

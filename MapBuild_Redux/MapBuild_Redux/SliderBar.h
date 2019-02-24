@@ -65,9 +65,12 @@ public:
 	void UpdateSliderPosition(const D2D1_POINT_2F p);
 	void UpdateSize();
 	void MoveSlider(const float x);
+	void ShiftSlider(const float x);
 	const bool IsSelected() { return bSelected; }
 	const bool IsHidden() { return bHidden; }
 	const bool PointOnSlider(const D2D1_POINT_2F p);
+	const bool PointOnLine(const D2D1_POINT_2F p);
 	const float GetSize() { return fCurrentSize; }
+	const D2D1_RECT_F GetSliderPosition() { return mSliderPosition; }
 	const D2D1_RECT_F GetDest() { return mDest; }
 };

@@ -252,3 +252,17 @@ void ThicknessMenu::UpdateSlider()
 	pSliderBar->UpdateSliderPosition(*pMouseCoordinates);
 	fPreviewCirlceRadius = pSliderBar->GetSize() * 0.5f;
 }
+
+void ThicknessMenu::JumpPosition()
+{
+	if (pMouseCoordinates->x > pSliderBar->GetSliderPosition().right)
+	{
+		pSliderBar->ShiftSlider(10.0f);
+		pSliderBar->UpdateSize();
+	}
+	else if (pMouseCoordinates->x < pSliderBar->GetSliderPosition().left)
+	{
+		pSliderBar->ShiftSlider(-10.0f);
+		pSliderBar->UpdateSize();
+	}
+}

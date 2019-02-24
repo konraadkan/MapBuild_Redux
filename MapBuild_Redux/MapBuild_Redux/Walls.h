@@ -22,10 +22,10 @@ public:
 	void AddPoint(const D2D1_POINT_2F p) { vPoints.push_back(p); if (vPoints.size() > 1) BuildGeometry(); }
 	void RemoveLastPoint() { if (vPoints.size()) vPoints.pop_back(); RemoveLastGeometry(); }
 	void RemoveLastGeometry();
-	void BuildGeometry();
+	void BuildGeometry(const bool bClose = false);
 	void Draw();
 	void DrawPreview();
 	void SetThickness(const float thickness) { fThickness = thickness; fRadius = fThickness * 0.5f; }
 	void SetColor(const D2D1_COLOR_F color) { mColor = color; }
-	void SetGeometry();
+	void SetGeometry(const bool bClose = false);
 };
