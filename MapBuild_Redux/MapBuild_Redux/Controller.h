@@ -4,6 +4,9 @@
 class Controller
 {
 	Controller() { bLoading = true; }
+	~Controller() {}
+	Controller(const Controller&) = delete;
+	Controller& operator=(const Controller&) = delete;
 public:
 	static Keyboard m_Keyboard;
 	static Mouse m_Mouse;

@@ -49,6 +49,8 @@ protected:
 public:
 	Sprite(const wchar_t* sFilePath, Graphics* const graphics, HPTimer* const timer);
 	~Sprite();
+	Sprite(const Sprite&) = delete;
+	Sprite& operator=(const Sprite&) = delete;
 	bool InitFromMemory(char* const Buffer, size_t BufferLen);
 public:
 	void TranslateLine(std::string sLine);

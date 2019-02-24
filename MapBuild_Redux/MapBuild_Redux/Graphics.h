@@ -45,6 +45,8 @@ private:
 public:
 	Graphics();
 	~Graphics();
+	Graphics(const Graphics&) = delete;
+	Graphics& operator=(const Graphics&) = delete;
 
 	bool Init(HWND hWnd, D2D1_SIZE_F CompatibleRenderSize = D2D1::SizeF());
 	void SwapBuffer();	

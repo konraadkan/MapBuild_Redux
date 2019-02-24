@@ -43,6 +43,8 @@ public:
 		UpdateTransform();
 	}
 	~MeasurementMenu() {}
+	MeasurementMenu(const MeasurementMenu&) = delete;
+	MeasurementMenu& operator=(const MeasurementMenu&) = delete;
 public:
 	virtual void SetDest(const D2D1_RECT_F dest);
 	virtual void UpdateTransform();
@@ -69,6 +71,8 @@ private:
 public:
 	SizeMenu(Graphics* const graphics, const D2D1_RECT_F dest, D2D1_POINT_2F* const p) : MeasurementMenu(graphics, dest, p) {}
 	~SizeMenu();
+	SizeMenu(const SizeMenu&) = delete;
+	SizeMenu& operator=(const SizeMenu&) = delete;
 public:
 	void Draw() override;
 	const bool Interact() override;
@@ -107,6 +111,8 @@ public:
 		mPreviewCenter.y = mPreviewDest.top + (mPreviewDest.bottom - mPreviewDest.top) * 0.5f;
 	}
 	~ThicknessMenu();
+	ThicknessMenu(const ThicknessMenu&) = delete;
+	ThicknessMenu& operator=(const ThicknessMenu&) = delete;
 public:
 	void Draw() override;
 	void SetSelected() { pSliderBar->SetSelected(); }

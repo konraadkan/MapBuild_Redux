@@ -43,6 +43,7 @@ protected:
 public:
 	Pieces(Graphics* const graphics, HPTimer* const timer) : gfx(graphics), pTimer(timer) {}
 	Pieces(std::string Buffer, Graphics* const graphics, HPTimer* const timer) : pTimer(timer), gfx(graphics) { char* p = nullptr; FillPiece(Buffer, p); }
+	~Pieces() {}
 	std::queue<std::string> FillPiece(std::string& Buffer, char*& pos);
 	std::queue<std::wstring> FillPiece(char* const Buffer, char*& pos);
 public:
@@ -123,6 +124,7 @@ protected:
 public:
 	PiecesW(Graphics* const graphics, HPTimer* const timer) : gfx(graphics), pTimer(timer) {}
 	PiecesW(std::wstring Buffer, Graphics* const graphics, HPTimer* const timer) : gfx(graphics), pTimer(timer) { wchar_t* p = nullptr; FillPiece(Buffer, p); }
+	~PiecesW() {}
 	std::queue<std::wstring> FillPiece(std::wstring& Buffer, wchar_t*& pos);
 	std::queue<std::wstring> FillPiece(wchar_t* const Buffer, wchar_t*& pos);
 public:
@@ -191,6 +193,8 @@ public:
 	SpritePointer(PiecesW* const p, const Location loc, bool keepaspectsprite = true, bool keepaspectportrait = true) : 
 		mLocation(loc), pPiece(p), bKeepAspectRatioSprite(keepaspectsprite), bKeepAspectRatioPortrait(keepaspectportrait) {}
 	~SpritePointer() { }
+	SpritePointer(const SpritePointer&) = delete;
+	SpritePointer& operator=(const SpritePointer&) = delete;
 public:
 	void MoveDestSprite(const D2D1_SIZE_F changes);
 	void MovePortraitSprite(const D2D1_SIZE_F changes);

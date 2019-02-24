@@ -17,6 +17,9 @@ public:
 
 		Reset();
 	}
+	~HPTimer() {}
+	HPTimer(const HPTimer&) = delete;
+	HPTimer& operator=(const HPTimer&) = delete;
 
 	void Reset()
 	{

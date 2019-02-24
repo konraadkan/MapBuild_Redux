@@ -18,6 +18,8 @@ private:
 public:
 	Wall(Graphics* const graphics, D2D1_POINT_2F* const MouseCoordinates) : pMouseCoordinates(MouseCoordinates), gfx(graphics) {}
 	~Wall() { while (vGeometryPathHistory.size()) RemoveLastGeometry(); }
+	Wall(const Wall&) = delete;
+	Wall& operator=(const Wall&) = delete;
 public:
 	void AddPoint(const D2D1_POINT_2F p) { vPoints.push_back(p); if (vPoints.size() > 1) BuildGeometry(); }
 	void RemoveLastPoint() { if (vPoints.size()) vPoints.pop_back(); RemoveLastGeometry(); }

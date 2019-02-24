@@ -131,6 +131,8 @@ public:
 			pChild.pop_back();
 		}
 	}
+	SideMenu(const SideMenu&) = delete;
+	SideMenu& operator=(const SideMenu&) = delete;
 	void Draw() override;
 	const bool Interact(const D2D1_POINT_2F p) override;
 	const bool Interact() override;

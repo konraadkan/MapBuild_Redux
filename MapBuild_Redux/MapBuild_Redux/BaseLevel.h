@@ -58,6 +58,8 @@ private:
 	MeasurementMenu::SizeMenuType mSizeMenuType = MeasurementMenu::SizeMenuType::CreatureSize;
 public:
 	BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePosition, int WindowX, int WindowY, HPTimer* const timer);
+	BaseLevel(const BaseLevel&) = delete;
+	BaseLevel& operator=(const BaseLevel&) = delete;
 	~BaseLevel();
 	void Load(Keyboard* const keyboard, Mouse* const mouse) override;
 	void Unload() override;

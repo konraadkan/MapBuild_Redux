@@ -33,6 +33,8 @@ public:
 		pParent = parent;
 		SetSelectionColor(D2D1::ColorF(1, 0, 0, 0.5f));
 	}
+	Buttons(const Buttons&) = delete;
+	Buttons& operator=(const Buttons&) = delete;
 	const bool Interact(const D2D1_POINT_2F p) override;
 	const bool Interact() override;
 	void Draw() override;
@@ -58,6 +60,8 @@ public:
 		uRoomNumber = visibleroomnumber;
 		uLayerNumber = visiblelayernumber;
 	}
+	RoomLayerBox(const RoomLayerBox&) = delete;
+	RoomLayerBox& operator=(const RoomLayerBox&) = delete;
 	const bool Interact() override;
 	const bool Interact(const D2D1_POINT_2F p) override;
 };
@@ -70,6 +74,8 @@ public:
 	Checkbox(Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, bool enableselection = false, bool selected = false,
 		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), bool room = true, DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : bRoom(room), Buttons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
 	const bool Interact() override;
+	Checkbox(const Checkbox&) = delete;
+	Checkbox& operator=(const Checkbox&) = delete;
 };
 
 class AddItem : public Buttons
@@ -80,6 +86,8 @@ public:
 	AddItem(bool room, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, bool enableselection = false, bool selected = false,
 		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : bRoom(room), Buttons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
 	const bool Interact(const D2D1_POINT_2F p) override;
+	AddItem(const AddItem&) = delete;
+	AddItem& operator=(const AddItem&) = delete;
 };
 
 class TypeButtons : public Buttons
@@ -87,6 +95,8 @@ class TypeButtons : public Buttons
 public:
 	TypeButtons(Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, bool enableselection = false, bool selected = false,
 		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : Buttons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
+	TypeButtons(const TypeButtons&) = delete;
+	TypeButtons& operator=(const TypeButtons&) = delete;
 	const bool Interact(const D2D1_POINT_2F p) override;
 };
 
@@ -95,6 +105,8 @@ class SubsectionButtons : public Buttons
 public:
 	SubsectionButtons(Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, bool enableselection = false, bool selected = false,
 		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : Buttons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
+	SubsectionButtons(const SubsectionButtons&) = delete;
+	SubsectionButtons& operator=(const SubsectionButtons&) = delete;
 	const bool Interact(const D2D1_POINT_2F p) override;
 };
 
@@ -107,6 +119,8 @@ private:
 public:
 	SpriteItemButtons(Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, PiecesW* const piecew = nullptr, SpritePointer** const ppsp = nullptr, bool enableselection = false, bool selected = false,
 		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : pPiecesW(piecew), ppSelectedSprite(ppsp), Buttons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
+	SpriteItemButtons(const SpriteItemButtons&) = delete;
+	SpriteItemButtons& operator=(const SpriteItemButtons&) = delete;
 	void SetMatrixPointer(D2D1::Matrix3x2F* p) { pMatrix = p; }
 	const bool Interact(const D2D1_POINT_2F p) override;
 	void Draw() override;
@@ -121,6 +135,8 @@ private:
 public:
 	SizeMenuButtons(void* const psizemenu, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, bool enableselection = false, bool selected = false,
 		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : pSizeMenu(psizemenu), Buttons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
+	SizeMenuButtons(const SizeMenuButtons&) = delete;
+	SizeMenuButtons& operator=(const SizeMenuButtons&) = delete;
 	const bool Interact() override;
 };
 
@@ -133,6 +149,8 @@ private:
 public:
 	ColorButtons(D2D1_COLOR_F drawcolor, SpritePointer** ppsp, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, bool enableselection = false, bool selected = false,
 		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : ppSelectedSprite(ppsp), DrawColor(drawcolor), Buttons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
+	ColorButtons(const ColorButtons&) = delete;
+	ColorButtons& operator=(const ColorButtons&) = delete;
 	void Draw() override;
 	void SetMatrixPointer(D2D1::Matrix3x2F* const matrix) { pMatrix = matrix; }
 	const bool Interact() override;
@@ -144,4 +162,6 @@ class WallTextureButtons : public Buttons
 public:
 	WallTextureButtons(Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, bool enableselection = false, bool selected = false,
 		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : Buttons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
+	WallTextureButtons(const WallTextureButtons&) = delete;
+	WallTextureButtons& operator=(const WallTextureButtons&) = delete;
 };

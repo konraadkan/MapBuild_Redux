@@ -24,6 +24,8 @@ public:
 	{
 		Unload();
 	}
+	MenuSection(const MenuSection&) = delete;
+	MenuSection& operator=(const MenuSection&) = delete;
 public:
 	void ShiftTranslation(D2D1_SIZE_F distance);
 	const D2D1_RECT_F GetTranslatedRect() override;

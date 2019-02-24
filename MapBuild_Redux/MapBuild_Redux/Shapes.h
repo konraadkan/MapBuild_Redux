@@ -29,6 +29,8 @@ public:
 			pPathGeometry.pop_back();
 		}
 	}
+	ClassShapes(const ClassShapes&) = delete;
+	ClassShapes& operator=(const ClassShapes&) = delete;
 	void Draw() override;
 	void SetCenter(const D2D1_POINT_2F p) override;
 	const bool Interact(const D2D1_POINT_2F p) override;

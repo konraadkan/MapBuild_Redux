@@ -118,6 +118,8 @@ protected:
 public:
 	InteractObjects(Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p) : gfx(graphics), pTransforms(Transform), pClientRect(area), pMouseCoordinates(p) {}
 	~InteractObjects();
+	InteractObjects(const InteractObjects&) = delete;
+	InteractObjects& operator=(const InteractObjects&) = delete;
 	virtual const bool Interact(const D2D1_POINT_2F p);
 	virtual const bool Interact();
 	virtual void Draw() = 0;

@@ -30,6 +30,7 @@ public:
 	Keyboard() = default;
 	Keyboard(const Keyboard&) = delete;
 	Keyboard& operator=(const Keyboard&) = delete;
+	~Keyboard() {}
 	bool KeyIsPressed(unsigned char code) const;
 	Event ReadKey();
 	bool KeyIsEmpty() const;

@@ -56,6 +56,9 @@ public:
 		LineDimensions.CalcDistance();
 		mSliderPosition = D2D1::RectF(LineDimensions.LeftBar[0].x - LineDimensions.fSliderSizeHalf + (1.0f / LineDimensions.fValueIncrease) * fCurrentSize, LineDimensions.LeftBar[0].y, LineDimensions.LeftBar[0].x + LineDimensions.fSliderSizeHalf + (1.0f / LineDimensions.fValueIncrease) * fCurrentSize, LineDimensions.LeftBar[1].y);
 	}
+	~SliderBar() {}
+	SliderBar(const SliderBar&) = delete;
+	SliderBar& operator=(const SliderBar&) = delete;
 	void Draw();
 	void SetSelected() { bSelected = true; }
 	void UnsetSelected() { bSelected = false; }
