@@ -209,7 +209,7 @@ void ThicknessMenu::Draw()
 	if (!gfx) return;
 	ShowHide->Draw();
 
-	gfx->FillRect(gfx->GetCompatibleTarget(), mDest, D2D1::ColorF(0.75f, 0.75f, 0.75f));
+	gfx->FillRect(gfx->GetCompatibleTarget(), mDest, D2D1::ColorF(0.75f, 0.75f, 0.75f));	
 	std::wostringstream out;
 	out.precision(4);
 	out << std::fixed << pSliderBar->GetSize();

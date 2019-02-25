@@ -150,13 +150,14 @@ void BaseLevel::Render()
 	
 	if (sptest)
 	{
-		//sptest->DrawSprite(gfx);
 		gfx->DrawRect(gfx->GetCompatibleTarget(), mPreviewDest, D2D1::ColorF(1.0f, 0.1f, 0.05f, 1.0f), 5.0f);
 	}
 
 	if (wptest)
 	{
-		wptest->DrawPreview();
+		if (bLockToGrid) wptest->DrawPreview(mPreviewPoint);
+		else wptest->DrawPreview();
+		if (bLockToGrid) gfx->FillCircle(gfx->GetCompatibleTarget(), mPreviewPoint, 3.0f, D2D1::ColorF(1.0f, 0.0f, 0.0f));
 	}
 
 	if (bGridOnTop) gfx->DrawDefaultGrid(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), GridSquareSize, D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.9f), 3.0f);
@@ -342,10 +343,14 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 
 				mPreviewDest = GetPreviewRect();
 			}
+			if (wptest)
+			{
+				if (bLockToGrid) mPreviewPoint = GetNearestCorner();
+			}
 			if (pThicknessMenu->IsSelected())
 			{
 				pThicknessMenu->UpdateSlider();
-				wptest->SetThickness(pThicknessMenu->GetSelectedThickness());
+				wptest->SetThickness(pThicknessMenu->GetSelectedThickness());								
 			}
 			break;
 		}
@@ -365,7 +370,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 				else if (wptest)
 				{
 					wptest->SetColor(pSideMenu->GetSelectedWallColor());
-					wptest->AddPoint(TranslatedCoordinates);
+					wptest->AddPoint(bLockToGrid ? mPreviewPoint : TranslatedCoordinates);
 				}
 			}
 			else if (pSideMenu->IsInRealRect())
@@ -855,4 +860,25 @@ const D2D1_RECT_F BaseLevel::GetPreviewRect()
 		return D2D1::RectF(lockedPoint.x, lockedPoint.y, lockedPoint.x + size.width, lockedPoint.y + size.height);
 	}
 	return D2D1::RectF(sptest->GetDestSprite().left, sptest->GetDestSprite().top, sptest->GetDestSprite().left + size.width, sptest->GetDestSprite().top + size.height);
+}
+
+const D2D1_POINT_2F BaseLevel::GetNearestCorner()
+{
+	if (bLockToGrid)
+	{
+		D2D1_POINT_2F closecorner;
+		closecorner.x = static_cast<float>(static_cast<int>(TranslatedCoordinates.x) / static_cast<int>(GridSquareSize.width));
+		closecorner.y = static_cast<float>(static_cast<int>(TranslatedCoordinates.y) / static_cast<int>(GridSquareSize.height));
+		closecorner.x *= GridSquareSize.width;
+		closecorner.y *= GridSquareSize.height;
+
+		float val = TranslatedCoordinates.x - closecorner.x;
+		if (val > GridSquareSize.width * 0.5f)
+			closecorner.x += GridSquareSize.width;
+		val = TranslatedCoordinates.y - closecorner.y;
+		if (val > GridSquareSize.height * 0.5f)
+			closecorner.y += GridSquareSize.height;
+		return closecorner;
+	}
+	return TranslatedCoordinates;
 }

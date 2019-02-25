@@ -43,6 +43,7 @@ private:
 	D2D1_SIZE_F ScreenSize = D2D1::SizeF();
 	D2D1_RECT_F m_ClientWindow = D2D1::RectF();
 	D2D1_RECT_F mPreviewDest = D2D1::RectF();
+	D2D1_POINT_2F mPreviewPoint = D2D1::Point2F();
 	float RotationAngle = 0.0f;
 	float RotationSpeed = 30.0f;
 	float MovementSpeed = 100.0f;
@@ -69,6 +70,7 @@ public:
 	void SetLockToGrid() { bLockToGrid = true; }
 	void UnsetLockToGrid() { bLockToGrid = false; }
 	void ToggleLockToGrid() { bLockToGrid ^= true; }
+	const D2D1_POINT_2F GetNearestCorner();
 private:	
 	void DrawSideMenu();
 	void DrawSizeMenu();

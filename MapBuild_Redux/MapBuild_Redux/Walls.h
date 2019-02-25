@@ -27,6 +27,7 @@ public:
 	void BuildGeometry(const bool bClose = false);
 	void Draw();
 	void DrawPreview();
+	void DrawPreview(const D2D1_POINT_2F p);
 	void SetThickness(const float thickness) { fThickness = thickness; fRadius = fThickness * 0.5f; }
 	void SetColor(const D2D1_COLOR_F color) { mColor = color; }
 	void SetGeometry(const bool bClose = false);

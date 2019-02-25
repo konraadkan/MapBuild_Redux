@@ -58,7 +58,13 @@ void Wall::Draw()
 void Wall::DrawPreview()
 {
 	Draw();
-	if (vPoints.size() > 1) gfx->DrawLine(gfx->GetCompatibleTarget(), vPoints.back(), *pMouseCoordinates, D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.5f), fThickness);
+	if (vPoints.size()) gfx->DrawLine(gfx->GetCompatibleTarget(), vPoints.back(), *pMouseCoordinates, D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.5f), fThickness);
+}
+
+void Wall::DrawPreview(const D2D1_POINT_2F p)
+{
+	Draw();
+	if (vPoints.size()) gfx->DrawLine(gfx->GetCompatibleTarget(), vPoints.back(), p, D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.5f), fThickness);
 }
 
 void Wall::SetGeometry(const bool bClose)
