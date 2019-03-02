@@ -1,4 +1,22 @@
 #include "BaseLevel.h"
+#include <thread>
+#include <mutex>
+
+
+const bool AlphaSortSubType(PiecesW& p1, PiecesW& p2)
+{
+	return (toupper(p1.GetSubMenu().front()) < toupper(p2.GetSubMenu().front()));
+}
+
+const bool AlphaSortType(PiecesW& p1, PiecesW& p2)
+{
+	return (toupper(p1.GetType().front()) < toupper(p2.GetType().front()));
+}
+
+const bool AlphaSortName(PiecesW& p1, PiecesW& p2)
+{
+	return (toupper(p1.GetName().front()) < toupper(p2.GetName().front()));
+}
 
 BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePosition, int WindowX, int WindowY, HPTimer* const timer) : pTimer(timer)
 {
@@ -15,7 +33,8 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	CreateRoom();
 	
 	//BuildObjects(L"mainpcs-unicode.ini");	
-	BuildObjects(L"mainpcs.ini");
+	//BuildObjects(L"mainpcs.ini");
+	BuildObjects(L"init.ini");
 	while (vPieces.size())
 	{
 		PiecesW t(gfx, pTimer);
@@ -23,12 +42,16 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 		vPiecesW.push_back(t);
 		vPieces.pop_back();
 	}
+	//std::sort(vPiecesW.begin(), vPiecesW.end(), AlphaSortSubType);
+	
 	this->LoadImages();
+	std::sort(vPiecesW.begin(), vPiecesW.end(), AlphaSortType);
 	pSideMenu->BuildCategories(&vPiecesW);
-	pSideMenu->BuildSubcategories(&vPiecesW);
 	pSideMenu->BuildWallMenu();
+	std::sort(vPiecesW.begin(), vPiecesW.end(), AlphaSortSubType);
+	pSideMenu->BuildSubcategories(&vPiecesW);	
 
-	pSizeMenu = new SizeMenu(gfx, D2D1::RectF(WindowSize.width * 0.75f, WindowSize.height - 98.0f, WindowSize.width, WindowSize.height), pMouseCoordinate);
+	pSizeMenu = new SizeMenu(gfx, D2D1::RectF(WindowSize.width * 0.75f, WindowSize.height - 133.0f, WindowSize.width, WindowSize.height), pMouseCoordinate);
 	pSizeMenu->BuildMenuCreatureSize();
 	pSizeMenu->SetSelectedCreatureSize(vPiecesW.front().GetSize());
 
@@ -335,7 +358,6 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 		{
 		case Mouse::Event::Type::Move:
 		{
-			//sptest->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + sptest->GetSpriteFrameSize().width, TranslatedCoordinates.y + sptest->GetSpriteFrameSize().height));
 			if (sptest)
 			{
 				sptest->SetDestSpritePosition(TranslatedCoordinates);
@@ -360,12 +382,14 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 				if (sptest)
 				{
 					pSelectedLayer->push_back(new SpritePointer(sptest->GetPieces(), Location()));
-					pSelectedLayer->back()->SetCreatureSize(sptest->GetCreatureSize());
-					//pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + pSelectedLayer->back()->GetSpriteFrameSize().width, TranslatedCoordinates.y + pSelectedLayer->back()->GetSpriteFrameSize().height));				
+					pSelectedLayer->back()->SetCreatureSize(sptest->GetCreatureSize());				
+					bKeepAspect ? pSelectedLayer->back()->SetKeepAspectSprite() : pSelectedLayer->back()->UnsetKeepAspectSprite();
+					
 					if (bLockToGrid)
-						pSelectedLayer->back()->SetDestSprite(mPreviewDest, false);
+						pSelectedLayer->back()->SetDestSprite(mPreviewDest);
 					else
-						pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + GridSquareSize.width, TranslatedCoordinates.y + GridSquareSize.height));
+						pSelectedLayer->back()->SetDestSprite(mPreviewDest);
+						//pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + sptest->GetDestResizedSpriteSize().width, TranslatedCoordinates.y + sptest->GetDestResizedSpriteSize().height));
 				}
 				else if (wptest)
 				{
@@ -478,8 +502,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 						for (auto& sub : categories->vSubsections)
 						{
 							if (!sub->IsHidden())
-								//if (sub->PointInRect())
-									sub->WheelDown();
+								sub->WheelDown();
 						}
 					}
 				}
@@ -498,7 +521,6 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 	Keyboard::Event keyEvents = {};
 	if (!pKeyboard->CharIsEmpty())
 	{
-		//this is for character entry; at first will use for zoom probably; most likely make it a setting in the keys.ini once thats implemented
 		switch (pKeyboard->ReadChar())
 		{
 		case L'*':
@@ -550,7 +572,6 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 			case 'A':
 				if (GetAsyncKeyState(VK_SHIFT) < 0)
 				{
-					//RotationAngle -= RotationSpeed * dDelta;
 					Movement.bMove = true;
 					Movement.vDirection.push_back(Move::Direction::RotateNegative);
 				}
@@ -644,22 +665,45 @@ void BaseLevel::OutputImageLoadingStatus(unsigned int numloaded, unsigned int to
 	gfx->EndDraw(gfx->GetRenderTarget());
 }
 
+void BaseLevel::OutputImageLoadingStatusM(std::atomic<unsigned int>& numloaded, unsigned int total, const std::wstring imagetype)
+{
+	std::mutex m;
+	double dtTimeout = 120.0;
+	pTimer->Update();
+	double ttime = pTimer->GetTimeTotal();
+	while (numloaded < total)
+	{		
+		m.lock();
+		std::wstring msg = L"Loading " + imagetype + L" " + std::to_wstring(numloaded + 1) + L" of " + std::to_wstring(total);
+		m.unlock();
+		gfx->BeginDraw(gfx->GetRenderTarget());
+		gfx->ClearScreen(gfx->GetRenderTarget(), D2D1::ColorF(0.75f, 0.75f, 0.75f));
+		gfx->OutputText(gfx->GetRenderTarget(), msg.c_str(), m_ClientWindow, D2D1::ColorF(0.0f, 0.0f, 0.0f), DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+		gfx->EndDraw(gfx->GetRenderTarget());
+		if (pTimer->GetTimeTotal() - ttime > dtTimeout)
+			break;
+	}
+}
+
 void BaseLevel::LoadSprites()
 {
 	unsigned int totalnumbersprites = static_cast<unsigned int>(vPieces.size() + vPiecesW.size());
-	unsigned int numberfinished = 0;
-	for (auto& piece : vPieces)
+	std::atomic<unsigned int> numberfinished = 0;
+	std::vector<std::thread> tthreads;
+
+	std::thread temp([this, &numberfinished, &totalnumbersprites]() { this->OutputImageLoadingStatusM(numberfinished, totalnumbersprites, L"Sprites"); });
+	for (auto& p : vPieces)
 	{
-		OutputImageLoadingStatus(numberfinished, totalnumbersprites, L"Sprite");
-		piece.LoadSprite();
-		numberfinished++;
+		tthreads.push_back(std::thread([&p, &numberfinished]() { p.LoadSpriteM(numberfinished); }));
 	}
-	for (auto & piece : vPiecesW)
+	for (auto& p : vPiecesW)
 	{
-		OutputImageLoadingStatus(numberfinished, totalnumbersprites, L"Sprite");
-		piece.LoadSprite();
-		numberfinished++;
+		tthreads.push_back(std::thread([&p, &numberfinished]() { p.LoadSpriteM(numberfinished); }));
 	}
+
+	for (auto& t : tthreads)
+		t.join();
+	temp.join();
 }
 
 void BaseLevel::LoadImages()
@@ -672,18 +716,22 @@ void BaseLevel::LoadPortraits()
 {
 	unsigned int totalnumbersprites = static_cast<unsigned int>(vPieces.size() + vPiecesW.size());
 	unsigned int spritesloaded = 0;
-	for (auto& piece : vPieces)
+	std::atomic<unsigned int> numberfinished = 0;
+	std::vector<std::thread> tthreads;
+	
+	std::thread temp([this, &numberfinished, &totalnumbersprites]() { this->OutputImageLoadingStatusM(numberfinished, totalnumbersprites - 1, L"Portraits"); });
+	for (auto& p : vPieces)
 	{
-		OutputImageLoadingStatus(spritesloaded, totalnumbersprites, L"Portrait");
-		piece.LoadPortrait();
-		spritesloaded++;
+		tthreads.push_back(std::thread([&p, &numberfinished]() { p.LoadPortraitM(numberfinished); }));
 	}
-	for (auto & piece : vPiecesW)
+	for (auto& p : vPiecesW)
 	{
-		OutputImageLoadingStatus(spritesloaded, totalnumbersprites, L"Portrait");
-		piece.LoadPortrait();
-		spritesloaded++;
+		tthreads.push_back(std::thread([&p, &numberfinished]() { p.LoadPortraitM(numberfinished); }));
 	}
+
+	for (auto& t : tthreads)
+		t.join();
+	temp.join();
 }
 
 void BaseLevel::BuildObjects(const wchar_t* sFilePath)
@@ -835,9 +883,16 @@ const D2D1_RECT_F BaseLevel::GetPreviewRect()
 	case CreatureSize::Medium:
 		size = GridSquareSize;
 		break;
-	default:
+	case CreatureSize::Large:
+	case CreatureSize::Huge:
+	case CreatureSize::Gargantuan:
+	case CreatureSize::Colossal:	
 		sizemod = static_cast<float>(1 + static_cast<unsigned int>(sptest->GetCreatureSize()) - static_cast<unsigned int>(CreatureSize::Medium));
 		size = D2D1::SizeF(GridSquareSize.width * sizemod, GridSquareSize.height * sizemod);
+		break;
+	default:
+		sizemod = static_cast<float>(sptest->GetCreatureSize()) - static_cast<float>(CreatureSize::Colossal);
+		size = D2D1::SizeF(sptest->GetSpriteFrameSize().width * sizemod, sptest->GetSpriteFrameSize().height * sizemod);
 	}
 	if (bLockToGrid)
 	{

@@ -6,8 +6,6 @@
 #include "HPTimer.h"
 #include "Walls.h"
 #include <vector>
-#include <thread>
-#include <mutex>
 #include <atomic>
 
 class BaseLevel : public Level
@@ -70,7 +68,14 @@ public:
 	void SetLockToGrid() { bLockToGrid = true; }
 	void UnsetLockToGrid() { bLockToGrid = false; }
 	void ToggleLockToGrid() { bLockToGrid ^= true; }
+	void ToggleKeepAspect() { bKeepAspect ^= true; }
+	void SetKeepAspect() { bKeepAspect = true; }
+	void UnsetKeepAspect() { bKeepAspect = false; }
+	void ToggleGridOnTop() { bGridOnTop ^= true; }
+	void SetGridOnTop() { bGridOnTop = true; }
+	void UnsetGridOnTop() { bGridOnTop = false; }
 	const D2D1_POINT_2F GetNearestCorner();
+	void OutputImageLoadingStatusM(std::atomic<unsigned int>& numloaded, unsigned int total, const std::wstring imagetype);
 private:	
 	void DrawSideMenu();
 	void DrawSizeMenu();

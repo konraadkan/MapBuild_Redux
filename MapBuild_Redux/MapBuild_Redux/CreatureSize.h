@@ -10,5 +10,11 @@ enum class CreatureSize
 	Large,
 	Huge,
 	Gargantuan,
-	Colossal
+	Colossal,
+	OneX,
+	TwoX,
+	ThreeX,
+	FourX,
+	FiveX,
+	Invalid
 };

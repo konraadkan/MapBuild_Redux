@@ -73,7 +73,17 @@ const bool SideMenu::Interact()
 					if (child->PointInRect())
 					{
 						if (!_wcsicmp(child->GetLabel(), L"Lock To Grid"))
+						{
 							if (pBaseLevel) static_cast<BaseLevel*>(pBaseLevel)->ToggleLockToGrid();
+						}
+						else if (!_wcsicmp(child->GetLabel(), L"Toggle Keep Aspect"))
+						{
+							if (pBaseLevel) static_cast<BaseLevel*>(pBaseLevel)->ToggleKeepAspect();
+						}
+						else if (!_wcsicmp(child->GetLabel(), L"Grid on Top"))
+						{
+							if (pBaseLevel) static_cast<BaseLevel*>(pBaseLevel)->ToggleGridOnTop();
+						}
 					}
 				}
 			}
@@ -104,6 +114,7 @@ const bool SideMenu::Interact(const D2D1_POINT_2F p)
 						{
 							c->Interact(p);
 							if (!_wcsicmp(c->GetLabel(), L"Lock To Grid")) static_cast<BaseLevel*>(pBaseLevel)->ToggleLockToGrid();
+							else if (!_wcsicmp(c->GetLabel(), L"Toggle Keep Aspect")) static_cast<BaseLevel*>(pBaseLevel)->ToggleKeepAspect();
 						}
 					}
 				}
@@ -215,7 +226,7 @@ SideMenu::SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1:
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle PC Colors", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Add Custom Colors", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Initiative", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
-	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Keep Aspect", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
+	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Keep Aspect", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true, true), OptionMenuSize);
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Turn Counter", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
 	pMenuSections.back()->SetBorderStyle(BorderStyle::Solid);
 	//pOptionsMenu->SetHidden();
@@ -532,12 +543,13 @@ void SideMenu::BuildSubcategories(std::vector<PiecesW>* const wPieces)
 		MenuSection* targetSubSubmenu = targetSubmenu->FindSubmenuSection(piece.GetSubMenu().c_str());
 		if (!targetSubSubmenu)
 		{
-			//targetSubmenu->AddChild(new Buttons(gfx, pTransforms, pClientRect, pMouseCoordinates, piece.GetSubMenu().c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), SubMenuSize);
 			targetSubmenu->AddChild(new SubsectionButtons(gfx, pTransforms, pClientRect, pMouseCoordinates, piece.GetSubMenu().c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubmenu), true), SubMenuSize, 2.0f);
 			targetSubmenu->CreateSubsection(piece.GetSubMenu().c_str(), D2D1::RectF(pClientRect->right, pClientRect->top + 3.0f, pClientRect->right + GetSize().width, pClientRect->top + MainMenuSize.height + 3.0f), true, ItemMenuSize.height);
 			targetSubmenu->SetBorderStyle(BorderStyle::Dotted);
 			targetSubSubmenu = targetSubmenu->vSubsections.back();
 		}
+		targetSubmenu->SetTranslation(D2D1::SizeF(0.0f, CategoryMenu->GetSize().height + 5.0f));
+		targetSubmenu->UpdateInvTranforms(CategoryMenu->GetTransforms() * CategoryMenu->vSubsections.back()->GetTransforms());
 		targetSubSubmenu->AddChild(new SpriteItemButtons(gfx, pTransforms, pClientRect, pMouseCoordinates, piece.GetName().c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), &piece, ppSelectedSprite, true), ItemMenuSize);
 		targetSubSubmenu->SetTranslation(D2D1::SizeF(0.0f, targetSubmenu->GetSize().height + 5.0f));
 		targetSubSubmenu->UpdateInvTranforms(CategoryMenu->GetTransforms() * targetSubmenu->GetTransforms() * targetSubmenu->vSubsections.back()->GetTransforms());
@@ -545,6 +557,13 @@ void SideMenu::BuildSubcategories(std::vector<PiecesW>* const wPieces)
 		targetSubSubmenu->pParent = targetSubmenu;
 		targetSubSubmenu->SetDestBottom(targetSubSubmenu->pChild.back()->GetRect().bottom + targetSubSubmenu->pChild.back()->GetSize().height);
 		static_cast<SpriteItemButtons*>(targetSubSubmenu->pChild.back())->SetMatrixPointer(&targetSubSubmenu->AllTransforms);
+	}
+	for (auto& piece : *wPieces)
+	{
+		MenuSection* targetSubmenu = CategoryMenu->FindSubmenuSection(piece.GetType().c_str());
+		MenuSection* targetSubSubmenu = targetSubmenu->FindSubmenuSection(piece.GetSubMenu().c_str());
+		targetSubSubmenu->SetTranslation(D2D1::SizeF(0.0f, targetSubmenu->GetSize().height + 5.0f));
+		targetSubSubmenu->UpdateInvTranforms(CategoryMenu->GetTransforms() * targetSubmenu->GetTransforms() * targetSubmenu->vSubsections.back()->GetTransforms());
 	}
 }
 

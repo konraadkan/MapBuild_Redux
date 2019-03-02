@@ -1,5 +1,6 @@
 #include "Sprite.h"
 #include <comdef.h>
+#include <mutex>
 
 Sprite::Sprite(const wchar_t* sFilePath, Graphics* const graphics, HPTimer* const timer) : gfx(graphics), sFilePathW(sFilePath), pTimer(timer)
 {
@@ -214,14 +215,18 @@ bool Sprite::InitFromMemory(char* const Buffer, size_t BufferLen)
 	HRESULT hr;
 
 	IWICImagingFactory* pWicFactory = nullptr;
-	hr = CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, (LPVOID*)&pWicFactory); linenum = __LINE__;
+	CoInitializeEx(NULL, COINIT_MULTITHREADED);
+	hr = CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, (LPVOID*)&pWicFactory); linenum = __LINE__;
 	if (!SUCCEEDED(hr))
 	{
 		SendErrorMessage(hr, linenum);
 		return false;
 	}
 
+	std::mutex m;
+	m.lock();
 	unsigned int MaxBitmapSize = gfx->GetRenderTarget()->GetMaximumBitmapSize();
+	m.unlock();
 	//create stream
 	IWICStream* pIWICStream = nullptr;
 	hr = pWicFactory->CreateStream(&pIWICStream); linenum = __LINE__;
@@ -315,17 +320,35 @@ bool Sprite::InitFromMemory(char* const Buffer, size_t BufferLen)
 	}
 
 	//use converter to create bitmap
+	m.lock();
 	hr = gfx->GetRenderTarget()->CreateBitmapFromWicBitmap(pWicConverter, nullptr, &pBitmap); linenum = __LINE__;
+	m.unlock();
 	if (!SUCCEEDED(hr))
 	{
-		SendErrorMessage(hr, linenum);
-		SafeRelease(&pWicConverter);
-		SafeRelease(&pWICFrame);
-		SafeRelease(&pIWICDecoder);
-		SafeRelease(&pIWICStream);
-		SafeRelease(&pWicFactory);
-		return false;
-	}
+		pTimer->Update();
+		double ttime = pTimer->GetTimeTotal();
+		while (hr == E_OUTOFMEMORY)
+		{
+			m.lock();
+			hr = gfx->GetRenderTarget()->CreateBitmapFromWicBitmap(pWicConverter, nullptr, &pBitmap); linenum = __LINE__;
+			m.unlock();
+			pTimer->Update();
+			if (pTimer->GetTimeTotal() - ttime > dTimeout)
+			{
+				break;
+			}
+		}
+		if (!SUCCEEDED(hr))
+		{
+			SendErrorMessage(hr, linenum);
+			SafeRelease(&pWicConverter);
+			SafeRelease(&pWICFrame);
+			SafeRelease(&pIWICDecoder);
+			SafeRelease(&pIWICStream);
+			SafeRelease(&pWicFactory);
+			return false;
+		}
+	}	
 	fBitmapSize = pBitmap->GetSize();
 
 	SafeRelease(&pWicConverter);

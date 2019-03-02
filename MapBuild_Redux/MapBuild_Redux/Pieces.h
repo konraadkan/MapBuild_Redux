@@ -1,6 +1,7 @@
 #pragma once
 #include <d2d1_1.h>
 #include <queue>
+#include <atomic>
 #include "StringMod.h"
 #include "Sprite.h"
 #include "HPTimer.h"
@@ -62,6 +63,7 @@ public:
 	void SetSize(const std::wstring wsize) { mSize = StringToSize(wsize); }
 	void SetSize(const std::string ssize) { mSize = StringToSize(ssize); }
 	void SetSize(const CreatureSize size) { mSize = size; }
+	const CreatureSize GetSize() { return mSize; }
 	void SetType(const std::string type) { sType = type; }
 	void SetName(const std::string name) { sName = name; }
 	void SetIconPath(const std::string spath) { sIconPath = spath; }
@@ -82,7 +84,9 @@ public:
 	void SetBackgroundB(const float b) { BackgroundColor.b = b; }
 	void SetBackgroundA(const float a) { BackgroundColor.a = a; }
 	void LoadSprite();
+	void LoadSpriteM(std::atomic<unsigned int>& numberfinished);
 	void LoadPortrait();
+	void LoadPortraitM(std::atomic<unsigned int>& numberfinished);
 	Sprite* const GetSprite() { return pSprite; }
 	Sprite* const GetPortrait() { return pPortrait; }
 };
@@ -165,7 +169,9 @@ public:
 	void SetBackgroundB(const float b) { BackgroundColor.b = b; }
 	void SetBackgroundA(const float a) { BackgroundColor.a = a; }
 	void LoadSprite();
+	void LoadSpriteM(std::atomic<unsigned int>& numberfinished);
 	void LoadPortrait();
+	void LoadPortraitM(std::atomic<unsigned int>& numberfinished);
 	Sprite* const GetSprite() { return pSprite; }
 	Sprite* const GetPortrait() { return pPortrait; }
 };
@@ -233,6 +239,7 @@ public:
 	const D2D1_RECT_F GetDestPortrait() { return mLocation.mDestPortrait; }
 	const D2D1_SIZE_F GetSpriteFrameSize() { return pPiece->GetSprite()->GetFrameSize(); }
 	const D2D1_SIZE_F GetPortraitFrameSize() { return pPiece->GetPortrait()->GetFrameSize(); }
+	const D2D1_SIZE_F GetDestResizedSpriteSize() { return D2D1::SizeF(mLocation.mResizedDestSprite.right - mLocation.mResizedDestSprite.left, mLocation.mResizedDestSprite.bottom - mLocation.mResizedDestSprite.top); }
 	const unsigned long GetLayer() { return mLocation.uLayer; }
 	const unsigned long GetRoom() { return mLocation.uRoom; }
 	const Location GetLocation() { return mLocation; }
@@ -240,3 +247,4 @@ public:
 	Sprite* const GetSprite() { return pPiece->GetSprite(); }
 	Sprite* const GetPortrait() { return pPiece->GetPortrait(); }
 };
+

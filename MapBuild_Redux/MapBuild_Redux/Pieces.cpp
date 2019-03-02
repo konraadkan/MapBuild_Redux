@@ -1,4 +1,5 @@
 #include "Pieces.h"
+#include<mutex>
 
 std::queue<std::wstring> Pieces::FillPiece(char* const Buffer, char*& pos)
 {
@@ -310,6 +311,7 @@ void PiecesW::Convert(Pieces Piece)
 	Piece.KeepAspectSprite() ? SetKeepAspectSprite() : UnsetKeepAspectSprite();
 	Piece.KeepAspectIcon() ? SetKeepAspectIcon() : UnsetKeepAspectIcon();
 	SetBackgroundColor(Piece.GetBackgroundColor());
+	SetSize(Piece.GetSize());
 }
 
 const CreatureSize PiecesW::StringToSize(const std::wstring wsize)
@@ -410,12 +412,48 @@ void PiecesW::LoadSprite()
 	pSprite = new Sprite(GetSpritePath().c_str(), gfx, pTimer);
 }
 
+void PiecesW::LoadSpriteM(std::atomic<unsigned int>& numberfinished)
+{
+	std::mutex m;
+	if (GetSpritePath().empty())
+	{
+		m.lock();
+		numberfinished++;
+		m.unlock();
+		return;
+	}
+	pSprite = new Sprite(GetSpritePath().c_str(), gfx, pTimer);
+	
+	m.lock();
+	numberfinished++;
+	m.unlock();
+}
+
 void PiecesW::LoadPortrait()
 {
 	if (GetIconPath().empty()) return;
 	pPortrait = new Sprite(GetIconPath().c_str(), gfx, pTimer);
 	if (!pPortrait->IsSuccess())
 		SafeDelete(&pPortrait);
+}
+
+void PiecesW::LoadPortraitM(std::atomic<unsigned int>& numberfinished)
+{
+	std::mutex m;
+	if (GetIconPath().empty())
+	{
+		m.lock();
+		numberfinished++;
+		m.unlock();
+		return;
+	}
+	pPortrait = new Sprite(GetIconPath().c_str(), gfx, pTimer);
+	if (!pPortrait->IsSuccess())
+		SafeDelete(&pPortrait);
+
+	m.lock();
+	numberfinished++;
+	m.unlock();
 }
 
 void Pieces::LoadSprite()
@@ -425,6 +463,45 @@ void Pieces::LoadSprite()
 	pSprite = new Sprite(SpritePathW.c_str(), gfx, pTimer);
 	if (!pSprite->IsSuccess())
 		SafeDelete(&pSprite);
+}
+
+void Pieces::LoadSpriteM(std::atomic<unsigned int>& numberfinished)
+{
+	std::mutex m;
+	if (GetSpritePath().empty())
+	{
+		m.lock();
+		numberfinished++;
+		m.unlock();
+		return;
+	}
+	std::wstring SpritePathW(sSpritePath.begin(), sSpritePath.end());
+	pSprite = new Sprite(SpritePathW.c_str(), gfx, pTimer);
+	if (!pSprite->IsSuccess())
+		SafeDelete(&pSprite);
+	m.lock();
+	numberfinished++;
+	m.unlock();
+}
+
+void Pieces::LoadPortraitM(std::atomic<unsigned int>& numberfinished)
+{
+	std::mutex m;
+	if (GetIconPath().empty())
+	{
+		m.lock();
+		numberfinished++;
+		m.unlock();
+		return;
+	}
+	std::wstring IconPathW(sIconPath.begin(), sIconPath.end());
+	pPortrait = new Sprite(IconPathW.c_str(), gfx, pTimer);
+	if (!pPortrait->IsSuccess())
+		SafeDelete(&pPortrait);
+
+	m.lock();
+	numberfinished++;
+	m.unlock();
 }
 
 void Pieces::LoadPortrait()
@@ -439,16 +516,8 @@ void Pieces::LoadPortrait()
 void SpritePointer::DrawSprite(Graphics* const gfx, bool back)
 {
 	if (!GetSprite()) return;
-	if (mLocation.mResizedDestSprite.right - mLocation.mResizedDestSprite.left > 0)
-	{
-		if (back) gfx->DrawBitmap(gfx->GetCompatibleTarget(), GetSprite()->GetBitmap(), mLocation.mResizedDestSprite, fOpacity, GetSprite()->GetFrame());
-		else gfx->DrawBitmap(gfx->GetRenderTarget(), GetSprite()->GetBitmap(), mLocation.mResizedDestSprite, fOpacity, GetSprite()->GetFrame());
-	}
-	else
-	{
-		if (back) gfx->DrawBitmap(gfx->GetCompatibleTarget(), GetSprite()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetSprite()->GetFrame());
-		else gfx->DrawBitmap(gfx->GetRenderTarget(), GetSprite()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetSprite()->GetFrame());
-	}
+	if (back) gfx->DrawBitmap(gfx->GetCompatibleTarget(), GetSprite()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetSprite()->GetFrame());
+	else gfx->DrawBitmap(gfx->GetRenderTarget(), GetSprite()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetSprite()->GetFrame());
 	GetSprite()->NextFrame();
 }
 
@@ -473,12 +542,17 @@ void SpritePointer::BuildResizedDestSprite()
 				mLocation.mDestSprite.left + (mLocation.mDestSprite.right - mLocation.mDestSprite.left) * sizemod,
 				mLocation.mDestSprite.top + (mLocation.mDestSprite.bottom - mLocation.mDestSprite.top) * sizemod);
 		}
-		else
+		else if (mSize < CreatureSize::OneX)
 		{
 			float sizemod = static_cast<float>(static_cast<unsigned long>(mSize) - static_cast<unsigned long>(CreatureSize::Medium) + 1);
 			mLocation.mResizedDestSprite = D2D1::RectF(mLocation.mDestSprite.left, mLocation.mDestSprite.top,
 				mLocation.mDestSprite.left + (mLocation.mDestSprite.right - mLocation.mDestSprite.left) * sizemod,
 				mLocation.mDestSprite.top + (mLocation.mDestSprite.bottom - mLocation.mDestSprite.top) * sizemod);
+		}
+		else
+		{
+			float sizemod = static_cast<float>(mSize) - static_cast<float>(CreatureSize::Colossal);
+			mLocation.mResizedDestSprite = D2D1::RectF(mLocation.mDestSprite.left, mLocation.mDestSprite.top, mLocation.mDestSprite.left + GetSpriteFrameSize().width * sizemod, mLocation.mDestSprite.top + GetSpriteFrameSize().height * sizemod);
 		}
 	}
 }

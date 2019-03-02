@@ -42,7 +42,8 @@ bool Graphics::ResizeCompatibleRenderTarget(D2D1_SIZE_F newsize)
 
 bool Graphics::Init(HWND hWnd, D2D1_SIZE_F CompatibleRenderSize)
 {
-	HRESULT result = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_Factory);
+	//HRESULT result = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_Factory);
+	HRESULT result = D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &m_Factory);
 	if (result != S_OK) return false;
 
 	RECT rect;

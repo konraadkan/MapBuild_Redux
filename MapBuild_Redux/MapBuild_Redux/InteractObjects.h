@@ -176,4 +176,9 @@ public:
 public:
 	std::vector<InteractObjects*> pChild;
 	InteractObjects* pParent = nullptr;
+public:
+	static bool AlphaSort(InteractObjects* o1, InteractObjects* o2)
+	{
+		return (toupper(o1->GetLabel()[0]) < toupper(o2->GetLabel()[0]));
+	}
 };

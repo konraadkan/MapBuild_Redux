@@ -33,6 +33,7 @@ private:
 		}
 	}
 private:
+	double dTimeout = 30.0;
 	HPTimer* const pTimer;
 	float cTime = 0.0f;
 	float pTime = 0.0f;

@@ -140,6 +140,11 @@ void SizeMenu::BuildMenuCreatureSize()
 	vpChild.push_back(new SizeMenuButtons(this, gfx, &mTransform, &mDest, pMouseCoordinates, L"Huge", D2D1::RectF(vpChild.back()->GetRect().left, vpChild.back()->GetRect().bottom + 3.0f, vpChild.back()->GetRect().right, vpChild.back()->GetRect().bottom + 3.0f + 32.0f), D2D1::ColorF(0.0f, 0.0f, 0.0f), nullptr, true, false));
 	vpChild.push_back(new SizeMenuButtons(this, gfx, &mTransform, &mDest, pMouseCoordinates, L"Gargantuan", D2D1::RectF(vpChild.back()->GetRect().right + 2.0f, mDest.top + 3.0f, vpChild.back()->GetRect().right + 2.0f + 94.0f, mDest.top + 2.0f + 32.0f), D2D1::ColorF(0.0f, 0.0f, 0.0f), nullptr, true, false));
 	vpChild.push_back(new SizeMenuButtons(this, gfx, &mTransform, &mDest, pMouseCoordinates, L"Colossal", D2D1::RectF(vpChild.back()->GetRect().left, vpChild.back()->GetRect().bottom + 3.0f, vpChild.back()->GetRect().right, vpChild.back()->GetRect().bottom + 3.0f + 32.0f), D2D1::ColorF(0.0f, 0.0f, 0.0f), nullptr, true, false));
+	vpChild.push_back(new SizeMenuButtons(this, gfx, &mTransform, &mDest, pMouseCoordinates, L"1x", D2D1::RectF(mDest.left + 2.0f, vpChild.back()->GetRect().bottom + 3.0f, mDest.left + 2.0f + 94.0f, vpChild.back()->GetRect().bottom + 3.0f + 32.0f), D2D1::ColorF(0.0f, 0.0f, 0.0f), nullptr, true, false));
+	vpChild.push_back(new SizeMenuButtons(this, gfx, &mTransform, &mDest, pMouseCoordinates, L"2x", D2D1::RectF(vpChild.back()->GetRect().right + 2.0f, vpChild.back()->GetRect().top, vpChild.back()->GetRect().right + 2.0f + 94.0f, vpChild.back()->GetRect().bottom), D2D1::ColorF(0.0f, 0.0f, 0.0f), nullptr, true, false));
+	vpChild.push_back(new SizeMenuButtons(this, gfx, &mTransform, &mDest, pMouseCoordinates, L"3x", D2D1::RectF(vpChild.back()->GetRect().right + 2.0f, vpChild.back()->GetRect().top, vpChild.back()->GetRect().right + 2.0f + 94.0f, vpChild.back()->GetRect().bottom), D2D1::ColorF(0.0f, 0.0f, 0.0f), nullptr, true, false));
+	vpChild.push_back(new SizeMenuButtons(this, gfx, &mTransform, &mDest, pMouseCoordinates, L"4x", D2D1::RectF(vpChild.back()->GetRect().right + 2.0f, vpChild.back()->GetRect().top, vpChild.back()->GetRect().right + 2.0f + 94.0f, vpChild.back()->GetRect().bottom), D2D1::ColorF(0.0f, 0.0f, 0.0f), nullptr, true, false));
+	vpChild.push_back(new SizeMenuButtons(this, gfx, &mTransform, &mDest, pMouseCoordinates, L"5x", D2D1::RectF(vpChild.back()->GetRect().right + 2.0f, vpChild.back()->GetRect().top, vpChild.back()->GetRect().right + 2.0f + 94.0f, vpChild.back()->GetRect().bottom), D2D1::ColorF(0.0f, 0.0f, 0.0f), nullptr, true, false));
 }
 
 void SizeMenu::FindSelectedCreatureSize()
@@ -174,6 +179,16 @@ const CreatureSize SizeMenu::WstringToCreatureSize(const std::wstring wSize)
 		return CreatureSize::Gargantuan;
 	if (!_wcsicmp(wSize.c_str(), L"Colossal"))
 		return CreatureSize::Colossal;
+	if (!_wcsicmp(wSize.c_str(), L"1x"))
+		return CreatureSize::OneX;
+	if (!_wcsicmp(wSize.c_str(), L"2x"))
+		return CreatureSize::TwoX;
+	if (!_wcsicmp(wSize.c_str(), L"3x"))
+		return CreatureSize::ThreeX;
+	if (!_wcsicmp(wSize.c_str(), L"4x"))
+		return CreatureSize::FourX;
+	if (!_wcsicmp(wSize.c_str(), L"5x"))
+		return CreatureSize::FiveX;
 	return CreatureSize::Medium;
 }
 

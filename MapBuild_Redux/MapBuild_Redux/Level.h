@@ -21,6 +21,7 @@ protected:
 	Mouse* pMouse = nullptr;
 	bool bGridOnTop = false;
 	bool bLockToGrid = true;
+	bool bKeepAspect = true;
 public:
 	virtual const std::string Trim(const std::string s);
 	virtual const std::string LTrim(const std::string s);
