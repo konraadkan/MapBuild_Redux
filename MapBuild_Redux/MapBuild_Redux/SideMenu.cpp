@@ -84,10 +84,6 @@ const bool SideMenu::Interact()
 						{
 							if (pBaseLevel) static_cast<BaseLevel*>(pBaseLevel)->ToggleGridOnTop();
 						}
-						else if (!_wcsicmp(child->GetLabel(), L"Use Texture"))
-						{
-							if (pBaseLevel)	static_cast<BaseLevel*>(pBaseLevel)->ToggleUseTexture();
-						}
 					}
 				}
 			}
@@ -232,7 +228,6 @@ SideMenu::SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1:
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Initiative", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Keep Aspect", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true, true), OptionMenuSize);
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Turn Counter", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
-	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Use Texture", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
 	pMenuSections.back()->SetBorderStyle(BorderStyle::Solid);
 	//pOptionsMenu->SetHidden();
 
@@ -584,7 +579,7 @@ void SideMenu::BuildWallMenu(std::vector<PiecesW>* const wPieces)
 
 	//Wall Type options
 	targetSubmenu->CreateSubsection(L"Solid Color", D2D1::RectF(pClientRect->right, pClientRect->top + 3.0f, pClientRect->right + GetSize().width, pClientRect->top + MainMenuSize.height + 3.0f), true, ItemMenuSize.height);
-	targetSubmenu->AddChild(new SubsectionButtons(gfx, pTransforms, pClientRect, pMouseCoordinates, L"Solid Color", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubmenu), true), SubMenuSize, 2.0f);
+	targetSubmenu->AddChild(new WallSubsectionButtons(&bUseTexture, false, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Solid Color", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubmenu), true), SubMenuSize, 2.0f);
 	targetSubmenu->SetBorderStyle(BorderStyle::Dotted);
 	MenuSection* targetSubSubmenu = targetSubmenu->vSubsections.back();
 
@@ -603,7 +598,7 @@ void SideMenu::BuildWallMenu(std::vector<PiecesW>* const wPieces)
 	static_cast<ColorButtons*>(targetSubSubmenu->pChild.back())->SetMatrixPointer(&targetSubSubmenu->AllTransforms);
 
 	targetSubmenu->CreateSubsection(L"Texture", D2D1::RectF(pClientRect->right, pClientRect->top + 3.0f, pClientRect->right + GetSize().width, pClientRect->top + MainMenuSize.height + 3.0f), true, ItemMenuSize.height);
-	targetSubmenu->AddChild(new SubsectionButtons(gfx, pTransforms, pClientRect, pMouseCoordinates, L"Texture", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubmenu), true), SubMenuSize, 2.0f);
+	targetSubmenu->AddChild(new WallSubsectionButtons(&bUseTexture, true, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Texture", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubmenu), true), SubMenuSize, 2.0f);
 	targetSubSubmenu = targetSubmenu->vSubsections.back();
 
 	for (auto& piece : *wPieces)

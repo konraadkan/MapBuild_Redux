@@ -442,6 +442,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 				}
 				if (sptest) pSizeMenu->SetSelectedCreatureSize(sptest->GetCreatureSize());
 				if (pSideMenu) mSizeMenuType = pSideMenu->GetSizeMenuType();
+				if (wptest) bUseTexture ? wptest->SetUseTexture() : wptest->UnsetUseTexture();
 			}
 		}
 		break;
@@ -605,8 +606,8 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 			case VK_RETURN:
 				if (pSideMenu->WallSelected())
 				{
-					bool close = pKeyboard->KeyIsPressed(VK_SHIFT) | bUseTexture;
-					if (bUseTexture)
+					bool close = pKeyboard->KeyIsPressed(VK_SHIFT) | pSideMenu->UseTexture();
+					if (pSideMenu->UseTexture())
 					{
 						//need to define which texture to use somehow
 						ID2D1Bitmap* t = sptest->GetSprite()->GetFrameBitmap();
@@ -623,7 +624,7 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 						pSelectedLayerWall->push_back(std::unique_ptr<Wall>(wptest.get()));
 					}
 					wptest.release();
-					wptest = std::make_unique<Wall>(gfx, &TranslatedCoordinates, bUseTexture);
+					wptest = std::make_unique<Wall>(gfx, &TranslatedCoordinates, pSideMenu->UseTexture());
 					wptest->SetColor(D2D1::ColorF(1, 0, 0));
 					wptest->SetThickness(pThicknessMenu->GetSelectedThickness());
 				}

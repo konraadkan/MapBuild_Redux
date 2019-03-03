@@ -266,6 +266,44 @@ const bool SubsectionButtons::Interact(const D2D1_POINT_2F p)
 	return true;
 }
 
+const bool WallSubsectionButtons::Interact(const D2D1_POINT_2F p)
+{
+	if (IsHidden()) return true;
+	if (!pParent) return true;
+
+	for (auto& child : pChild)
+	{
+		if (child)
+		{
+			if (child->PointInRect(p))
+			{
+				if (!child->Interact(p)) return false;
+				return true;
+			}
+		}
+	}
+
+	if (bEnableSelection)
+	{
+		MenuSection* parent = static_cast<MenuSection*>(pParent);
+		for (unsigned int i = 0; i < parent->pChild.size(); i++)
+		{
+			if (parent->pChild.at(i) == this)
+			{
+				parent->vSubsections.at(i)->SetUnhidden();
+				continue;
+			}
+			parent->pChild.at(i)->UnsetIsSelected();
+			parent->vSubsections.at(i)->SetHidden();
+			for (auto& t : parent->vSubsections.at(i)->pChild)
+				t->UnsetIsSelected();
+		}
+		SetIsSelected();
+		if (pUseTexture) *pUseTexture = bUseTexture;
+	}
+	return true;
+}
+
 const bool SpriteItemButtons::Interact(const D2D1_POINT_2F p)
 {
 	if (IsHidden()) return true;

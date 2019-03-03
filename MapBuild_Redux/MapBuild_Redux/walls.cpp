@@ -90,4 +90,5 @@ void Wall::SetTexture(ID2D1Bitmap* const bitmap)
 	{
 		pBitmapBrush = nullptr;
 	}
+	bUseTexture = true;
 }
