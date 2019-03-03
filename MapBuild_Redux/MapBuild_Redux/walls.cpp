@@ -79,7 +79,7 @@ void Wall::SetGeometry(const bool bClose)
 	pSetGeometry = vGeometryPathHistory.back();
 	vGeometryPathHistory.pop_back();
 	while (vGeometryPathHistory.size()) RemoveLastGeometry();
-	while (vPoints.size()) RemoveLastPoint();
+	//while (vPoints.size()) RemoveLastPoint(); need the points for the ability to erase...
 }
 
 void Wall::SetTexture(ID2D1Bitmap* const bitmap)
@@ -91,4 +91,19 @@ void Wall::SetTexture(ID2D1Bitmap* const bitmap)
 		pBitmapBrush = nullptr;
 	}
 	bUseTexture = true;
+}
+
+const bool Wall::PointTouching(const D2D1_POINT_2F p)
+{
+	for (auto point : vPoints)
+	{
+		if (static_cast<int>(p.x) == static_cast<int>(point.x))
+		{
+			if (static_cast<int>(p.y) == static_cast<int>(point.y))
+			{
+				return true;
+			}
+		}
+	}
+	return false;
 }

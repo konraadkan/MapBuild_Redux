@@ -314,7 +314,7 @@ void BaseLevel::Update(double dDelta)
 	//		}
 	//	}
 	//}
-	if (pMouse->RightPressed())
+	if (pMouse->RightPressed() && wptest->PointsEmpty())
 	{
 		for (size_t i =0; i < pSelectedLayer->size(); i++)
 		{
@@ -322,6 +322,15 @@ void BaseLevel::Update(double dDelta)
 			{
 				pSelectedLayer->erase(pSelectedLayer->begin() + i);
 				pSelectedLayer->shrink_to_fit();
+				break;
+			}
+		}
+		for (size_t i = 0; i < pSelectedLayerWall->size(); i++)
+		{
+			if (pSelectedLayerWall->at(i)->PointTouching(TranslatedCoordinates))
+			{
+				pSelectedLayerWall->erase(pSelectedLayerWall->begin() + i);
+				pSelectedLayerWall->shrink_to_fit();
 				break;
 			}
 		}

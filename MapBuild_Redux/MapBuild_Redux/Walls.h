@@ -36,4 +36,6 @@ public:
 	void SetUseTexture() { bUseTexture = true; }
 	void UnsetUseTexture() { bUseTexture = false; }
 	void SetTexture(ID2D1Bitmap* const bitmap);
+	const bool PointTouching(const D2D1_POINT_2F p);
+	const bool PointsEmpty() { return vPoints.empty(); }
 };
