@@ -39,7 +39,11 @@ void Wall::Draw()
 {
 	if (pSetGeometry)
 	{
-		gfx->DrawGeometry(gfx->GetCompatibleTarget(), pSetGeometry, mColor, fThickness);
+		if (bUseTexture && pBitmapBrush)
+		{
+			gfx->DrawGeometry(gfx->GetCompatibleTarget(), pSetGeometry, pBitmapBrush);
+		}
+		else gfx->DrawGeometry(gfx->GetCompatibleTarget(), pSetGeometry, mColor, fThickness);
 		return;
 	}
 
@@ -70,10 +74,20 @@ void Wall::DrawPreview(const D2D1_POINT_2F p)
 void Wall::SetGeometry(const bool bClose)
 {
 	if (vGeometryPathHistory.empty()) return;
-	if (bClose) BuildGeometry(true);
+	if (bClose | bUseTexture) BuildGeometry(true);
 
 	pSetGeometry = vGeometryPathHistory.back();
 	vGeometryPathHistory.pop_back();
 	while (vGeometryPathHistory.size()) RemoveLastGeometry();
 	while (vPoints.size()) RemoveLastPoint();
+}
+
+void Wall::SetTexture(ID2D1Bitmap* const bitmap)
+{
+	SafeRelease(&pBitmapBrush);
+	D2D1_BITMAP_BRUSH_PROPERTIES brushProperties = D2D1::BitmapBrushProperties(D2D1_EXTEND_MODE_WRAP, D2D1_EXTEND_MODE_WRAP, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR);
+	if (FAILED(gfx->GetCompatibleTarget()->CreateBitmapBrush(bitmap, brushProperties, &pBitmapBrush)))
+	{
+		pBitmapBrush = nullptr;
+	}
 }

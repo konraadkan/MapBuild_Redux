@@ -43,12 +43,14 @@ private:
 	std::wstring sFilePathW;
 	std::vector<D2D1_RECT_F> vFrames;
 	ID2D1Bitmap* pBitmap = nullptr;
+	ID2D1Bitmap* pFrameBitmap = nullptr;
 	D2D1_SIZE_F fBitmapSize = D2D1::SizeF();
 	int iCurrentFrame = 0;
+	D2D1_SIZE_F* pGridSize = nullptr;
 protected:
 	float fFrameSpeed = 0.33f;
 public:
-	Sprite(const wchar_t* sFilePath, Graphics* const graphics, HPTimer* const timer);
+	Sprite(const wchar_t* sFilePath, Graphics* const graphics, HPTimer* const timer, D2D1_SIZE_F* const gridsize);
 	~Sprite();
 	Sprite(const Sprite&) = delete;
 	Sprite& operator=(const Sprite&) = delete;
@@ -63,6 +65,7 @@ public:
 	bool IsSpr3() { return bIsSPR3; }
 	bool IsSuccess() { return bLoadSuccess; }
 	void NextFrame();
+	void CreateFrameBitmap();
 	D2D1_SIZE_F GetBitmapSize() { return fBitmapSize; }
 	D2D1_RECT_F GetFrame() { if (vFrames.size()) return vFrames.at(iCurrentFrame); return D2D1::RectF(); }
 	D2D1_SIZE_F GetFrameSize()
@@ -71,6 +74,7 @@ public:
 		return D2D1::SizeF(vFrames.at(iCurrentFrame).right - vFrames.at(iCurrentFrame).left, vFrames.at(iCurrentFrame).bottom - vFrames.at(iCurrentFrame).top); 
 	}
 	ID2D1Bitmap* const GetBitmap() { return pBitmap; }
+	ID2D1Bitmap* const GetFrameBitmap() { return pFrameBitmap; }
 private:
 	char* DecodeSPR3(const wchar_t* FilePath, unsigned int& ImageBufferLen);
 	char* DecodeSPR(const wchar_t* FilePath);

@@ -41,9 +41,10 @@ protected:
 	bool bKeepAspect = false;
 	bool bKeepIconAspect = false;
 	D2D1_COLOR_F BackgroundColor = D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.0f);
+	D2D1_SIZE_F* pGridSize = nullptr;
 public:
-	Pieces(Graphics* const graphics, HPTimer* const timer) : gfx(graphics), pTimer(timer) {}
-	Pieces(std::string Buffer, Graphics* const graphics, HPTimer* const timer) : pTimer(timer), gfx(graphics) { char* p = nullptr; FillPiece(Buffer, p); }
+	Pieces(Graphics* const graphics, HPTimer* const timer, D2D1_SIZE_F* const gridsize) : gfx(graphics), pTimer(timer), pGridSize(gridsize) {}
+	Pieces(std::string Buffer, Graphics* const graphics, HPTimer* const timer, D2D1_SIZE_F* const gridsize) : pTimer(timer), gfx(graphics), pGridSize(gridsize) { char* p = nullptr; FillPiece(Buffer, p); }
 	~Pieces() {}
 	std::queue<std::string> FillPiece(std::string& Buffer, char*& pos);
 	std::queue<std::wstring> FillPiece(char* const Buffer, char*& pos);
@@ -125,9 +126,10 @@ protected:
 	bool bKeepAspect = false;
 	bool bKeepIconAspect = false;
 	D2D1_COLOR_F BackgroundColor = D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.0f);
+	D2D1_SIZE_F* pGridSize = nullptr;
 public:
-	PiecesW(Graphics* const graphics, HPTimer* const timer) : gfx(graphics), pTimer(timer) {}
-	PiecesW(std::wstring Buffer, Graphics* const graphics, HPTimer* const timer) : gfx(graphics), pTimer(timer) { wchar_t* p = nullptr; FillPiece(Buffer, p); }
+	PiecesW(Graphics* const graphics, HPTimer* const timer, D2D1_SIZE_F* const gridsize) : gfx(graphics), pTimer(timer), pGridSize(gridsize) {}
+	PiecesW(std::wstring Buffer, Graphics* const graphics, HPTimer* const timer, D2D1_SIZE_F* const gridsize) : gfx(graphics), pTimer(timer), pGridSize(gridsize) { wchar_t* p = nullptr; FillPiece(Buffer, p); }
 	~PiecesW() {}
 	std::queue<std::wstring> FillPiece(std::wstring& Buffer, wchar_t*& pos);
 	std::queue<std::wstring> FillPiece(wchar_t* const Buffer, wchar_t*& pos);

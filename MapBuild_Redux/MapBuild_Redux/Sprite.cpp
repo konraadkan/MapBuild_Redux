@@ -2,7 +2,7 @@
 #include <comdef.h>
 #include <mutex>
 
-Sprite::Sprite(const wchar_t* sFilePath, Graphics* const graphics, HPTimer* const timer) : gfx(graphics), sFilePathW(sFilePath), pTimer(timer)
+Sprite::Sprite(const wchar_t* sFilePath, Graphics* const graphics, HPTimer* const timer, D2D1_SIZE_F* const gridsize) : gfx(graphics), sFilePathW(sFilePath), pTimer(timer), pGridSize(gridsize)
 {
 	auto p = sFilePathW.find_last_of(L'.');
 	std::wstring ext(sFilePathW.begin() + p + 1, sFilePathW.end());
@@ -408,6 +408,25 @@ void Sprite::NextFrame()
 	{
 		pTime = cTime;
 		iCurrentFrame = iCurrentFrame == vFrames.size() - 1 ? 0 : iCurrentFrame + 1;
+		CreateFrameBitmap();
 	}
 	cTime = static_cast<float>(pTimer->GetTimeTotal());
+}
+
+void Sprite::CreateFrameBitmap()
+{
+	SafeRelease(&pFrameBitmap);
+	ID2D1BitmapRenderTarget* tcompatibletarget;
+	if (SUCCEEDED(gfx->GetRenderTarget()->CreateCompatibleRenderTarget(*pGridSize, &tcompatibletarget)))
+	{
+		tcompatibletarget->BeginDraw();
+		tcompatibletarget->Clear(D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.0f));
+		tcompatibletarget->DrawBitmap(pBitmap, D2D1::RectF(0.0f, 0.0f, pGridSize->width, pGridSize->height), 1.0f, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, vFrames.at(iCurrentFrame));
+		tcompatibletarget->EndDraw();
+		if (FAILED(tcompatibletarget->GetBitmap(&pFrameBitmap)))
+		{
+			pFrameBitmap = nullptr;
+		}
+		SafeRelease(&tcompatibletarget);
+	}
 }

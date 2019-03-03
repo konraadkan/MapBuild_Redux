@@ -22,6 +22,7 @@ protected:
 	bool bGridOnTop = false;
 	bool bLockToGrid = true;
 	bool bKeepAspect = true;
+	bool bUseTexture = false;
 public:
 	virtual const std::string Trim(const std::string s);
 	virtual const std::string LTrim(const std::string s);
@@ -40,6 +41,10 @@ public:
 	}
 	virtual void SetGridOnTop() { bGridOnTop = true; }
 	virtual void UnsetGridOnTop() { bGridOnTop = false; }
+	virtual void SetUseTexture() { bUseTexture = true; }
+	virtual void UnsetUseTexture() { bUseTexture = false; }
+	virtual void ToggleUseTexture() { bUseTexture ^= true; }
+	virtual const bool UseTexture() { return bUseTexture; }
 public:
 	struct Move
 	{

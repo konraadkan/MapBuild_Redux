@@ -37,7 +37,7 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	BuildObjects(L"init.ini");
 	while (vPieces.size())
 	{
-		PiecesW t(gfx, pTimer);
+		PiecesW t(gfx, pTimer, &GridSquareSize);
 		t.Convert(vPieces.back());
 		vPiecesW.push_back(t);
 		vPieces.pop_back();
@@ -47,8 +47,8 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	this->LoadImages();
 	std::sort(vPiecesW.begin(), vPiecesW.end(), AlphaSortType);
 	pSideMenu->BuildCategories(&vPiecesW);
-	pSideMenu->BuildWallMenu();
 	std::sort(vPiecesW.begin(), vPiecesW.end(), AlphaSortSubType);
+	pSideMenu->BuildWallMenu(&vPiecesW);	
 	pSideMenu->BuildSubcategories(&vPiecesW);	
 
 	pSizeMenu = new SizeMenu(gfx, D2D1::RectF(WindowSize.width * 0.75f, WindowSize.height - 133.0f, WindowSize.width, WindowSize.height), pMouseCoordinate);
@@ -68,7 +68,7 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	pSideMenu->SetSelectedRoomPointer(&pSelectedRoom);
 	pSideMenu->SetSelectedLayerPointer(&pSelectedLayer);
 
-	wptest = std::make_unique<Wall>(gfx, &TranslatedCoordinates);
+	wptest = std::make_unique<Wall>(gfx, &TranslatedCoordinates, bUseTexture);
 	wptest->SetColor(D2D1::ColorF(1, 0, 0));
 	wptest->SetThickness(pThicknessMenu->GetSelectedThickness());
 
@@ -171,12 +171,12 @@ void BaseLevel::Render()
 		}
 	}
 	
-	if (sptest)
+	if (sptest && !pSideMenu->WallSelected())
 	{
 		gfx->DrawRect(gfx->GetCompatibleTarget(), mPreviewDest, D2D1::ColorF(1.0f, 0.1f, 0.05f, 1.0f), 5.0f);
 	}
 
-	if (wptest)
+	if (wptest && pSideMenu->WallSelected())
 	{
 		if (bLockToGrid) wptest->DrawPreview(mPreviewPoint);
 		else wptest->DrawPreview();
@@ -379,7 +379,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 		case Mouse::Event::Type::LPress:
 			if (pSelectedLayer && !pSideMenu->IsInRealRect() && !pSizeMenu->IsInRealRect())
 			{
-				if (sptest)
+				if (sptest && !pSideMenu->WallSelected())
 				{
 					pSelectedLayer->push_back(new SpritePointer(sptest->GetPieces(), Location()));
 					pSelectedLayer->back()->SetCreatureSize(sptest->GetCreatureSize());				
@@ -393,7 +393,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 				}
 				else if (wptest)
 				{
-					wptest->SetColor(pSideMenu->GetSelectedWallColor());
+					sptest ? wptest->SetColor(D2D1::ColorF(0.0f, 0.0f, 0.0f)) : wptest->SetColor(pSideMenu->GetSelectedWallColor());
 					wptest->AddPoint(bLockToGrid ? mPreviewPoint : TranslatedCoordinates);
 				}
 			}
@@ -446,7 +446,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 		}
 		break;
 		case Mouse::Event::Type::RPress:
-			if (!sptest) if (wptest) wptest->RemoveLastPoint();
+			if (pSideMenu->WallSelected()) if (wptest) wptest->RemoveLastPoint();
 			break;
 		case Mouse::Event::Type::RRelease:
 			break;
@@ -603,15 +603,27 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 				bShowSideMenu ^= true;
 				break;
 			case VK_RETURN:
-				if (wptest)
+				if (pSideMenu->WallSelected())
 				{
-					wptest->SetGeometry(pKeyboard->KeyIsPressed(VK_SHIFT));
+					bool close = pKeyboard->KeyIsPressed(VK_SHIFT) | bUseTexture;
+					if (bUseTexture)
+					{
+						//need to define which texture to use somehow
+						ID2D1Bitmap* t = sptest->GetSprite()->GetFrameBitmap();
+						if (!t)
+						{
+							sptest->GetSprite()->CreateFrameBitmap();
+							t = sptest->GetSprite()->GetFrameBitmap();
+						}
+						if (t) wptest->SetTexture(t);
+					}
+					wptest->SetGeometry(close);
 					if (pSelectedLayerWall)
 					{
 						pSelectedLayerWall->push_back(std::unique_ptr<Wall>(wptest.get()));
 					}
 					wptest.release();
-					wptest = std::make_unique<Wall>(gfx, &TranslatedCoordinates);
+					wptest = std::make_unique<Wall>(gfx, &TranslatedCoordinates, bUseTexture);
 					wptest->SetColor(D2D1::ColorF(1, 0, 0));
 					wptest->SetThickness(pThicknessMenu->GetSelectedThickness());
 				}
@@ -763,7 +775,7 @@ void BaseLevel::BuildObjects(const wchar_t* sFilePath)
 		wchar_t* pos = buffer;
 		while (static_cast<size_t>(pos - buffer) <= BufferSize)
 		{
-			vPiecesW.push_back(PiecesW(gfx, pTimer));
+			vPiecesW.push_back(PiecesW(gfx, pTimer, &GridSquareSize));
 			std::queue<std::wstring> temp = vPiecesW.back().FillPiece(pos, pos);
 			while (temp.size())
 			{
@@ -787,7 +799,7 @@ void BaseLevel::BuildObjects(const wchar_t* sFilePath)
 		char* pos = buffer;
 		while (static_cast<size_t>(pos - buffer + 1) <= BufferSize)
 		{
-			vPieces.push_back(Pieces(gfx, pTimer));
+			vPieces.push_back(Pieces(gfx, pTimer, &GridSquareSize));
 			std::queue<std::wstring> temp = vPieces.back().FillPiece(pos, pos);
 			while (temp.size())
 			{

@@ -409,7 +409,7 @@ const CreatureSize Pieces::StringToSize(const std::string ssize)
 void PiecesW::LoadSprite()
 {
 	if (GetSpritePath().empty()) return;
-	pSprite = new Sprite(GetSpritePath().c_str(), gfx, pTimer);
+	pSprite = new Sprite(GetSpritePath().c_str(), gfx, pTimer, pGridSize);
 }
 
 void PiecesW::LoadSpriteM(std::atomic<unsigned int>& numberfinished)
@@ -422,7 +422,7 @@ void PiecesW::LoadSpriteM(std::atomic<unsigned int>& numberfinished)
 		m.unlock();
 		return;
 	}
-	pSprite = new Sprite(GetSpritePath().c_str(), gfx, pTimer);
+	pSprite = new Sprite(GetSpritePath().c_str(), gfx, pTimer, pGridSize);
 	
 	m.lock();
 	numberfinished++;
@@ -432,7 +432,7 @@ void PiecesW::LoadSpriteM(std::atomic<unsigned int>& numberfinished)
 void PiecesW::LoadPortrait()
 {
 	if (GetIconPath().empty()) return;
-	pPortrait = new Sprite(GetIconPath().c_str(), gfx, pTimer);
+	pPortrait = new Sprite(GetIconPath().c_str(), gfx, pTimer, pGridSize);
 	if (!pPortrait->IsSuccess())
 		SafeDelete(&pPortrait);
 }
@@ -447,7 +447,7 @@ void PiecesW::LoadPortraitM(std::atomic<unsigned int>& numberfinished)
 		m.unlock();
 		return;
 	}
-	pPortrait = new Sprite(GetIconPath().c_str(), gfx, pTimer);
+	pPortrait = new Sprite(GetIconPath().c_str(), gfx, pTimer, pGridSize);
 	if (!pPortrait->IsSuccess())
 		SafeDelete(&pPortrait);
 
@@ -460,7 +460,7 @@ void Pieces::LoadSprite()
 {
 	if (GetSpritePath().empty()) return;
 	std::wstring SpritePathW(sSpritePath.begin(), sSpritePath.end());
-	pSprite = new Sprite(SpritePathW.c_str(), gfx, pTimer);
+	pSprite = new Sprite(SpritePathW.c_str(), gfx, pTimer, pGridSize);
 	if (!pSprite->IsSuccess())
 		SafeDelete(&pSprite);
 }
@@ -476,7 +476,7 @@ void Pieces::LoadSpriteM(std::atomic<unsigned int>& numberfinished)
 		return;
 	}
 	std::wstring SpritePathW(sSpritePath.begin(), sSpritePath.end());
-	pSprite = new Sprite(SpritePathW.c_str(), gfx, pTimer);
+	pSprite = new Sprite(SpritePathW.c_str(), gfx, pTimer, pGridSize);
 	if (!pSprite->IsSuccess())
 		SafeDelete(&pSprite);
 	m.lock();
@@ -495,7 +495,7 @@ void Pieces::LoadPortraitM(std::atomic<unsigned int>& numberfinished)
 		return;
 	}
 	std::wstring IconPathW(sIconPath.begin(), sIconPath.end());
-	pPortrait = new Sprite(IconPathW.c_str(), gfx, pTimer);
+	pPortrait = new Sprite(IconPathW.c_str(), gfx, pTimer, pGridSize);
 	if (!pPortrait->IsSuccess())
 		SafeDelete(&pPortrait);
 
@@ -508,7 +508,7 @@ void Pieces::LoadPortrait()
 {
 	if (GetIconPath().empty()) return;
 	std::wstring IconPathW(sIconPath.begin(), sIconPath.end());
-	pPortrait = new Sprite(IconPathW.c_str(), gfx, pTimer);
+	pPortrait = new Sprite(IconPathW.c_str(), gfx, pTimer, pGridSize);
 	if (!pPortrait->IsSuccess())
 		SafeDelete(&pPortrait);	
 }

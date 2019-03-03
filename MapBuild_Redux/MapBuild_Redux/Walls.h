@@ -15,9 +15,11 @@ private:
 	D2D1_POINT_2F* const pMouseCoordinates = nullptr;
 	Graphics* const gfx;
 	ID2D1PathGeometry* pSetGeometry = nullptr;
+	bool bUseTexture = false;
+	ID2D1BitmapBrush* pBitmapBrush = nullptr;
 public:
-	Wall(Graphics* const graphics, D2D1_POINT_2F* const MouseCoordinates) : pMouseCoordinates(MouseCoordinates), gfx(graphics) {}
-	~Wall() { while (vGeometryPathHistory.size()) RemoveLastGeometry(); }
+	Wall(Graphics* const graphics, D2D1_POINT_2F* const MouseCoordinates, const bool useTexture) : bUseTexture(useTexture), pMouseCoordinates(MouseCoordinates), gfx(graphics) {}
+	~Wall() { while (vGeometryPathHistory.size()) RemoveLastGeometry(); SafeRelease(&pBitmapBrush); }
 	Wall(const Wall&) = delete;
 	Wall& operator=(const Wall&) = delete;
 public:
@@ -31,4 +33,7 @@ public:
 	void SetThickness(const float thickness) { fThickness = thickness; fRadius = fThickness * 0.5f; }
 	void SetColor(const D2D1_COLOR_F color) { mColor = color; }
 	void SetGeometry(const bool bClose = false);
+	void SetUseTexture() { bUseTexture = true; }
+	void UnsetUseTexture() { bUseTexture = false; }
+	void SetTexture(ID2D1Bitmap* const bitmap);
 };

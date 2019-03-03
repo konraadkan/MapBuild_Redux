@@ -224,6 +224,7 @@ const bool TypeButtons::Interact(const D2D1_POINT_2F p)
 		}
 
 		SetIsSelected();
+		if (pWallMenuSelected) *pWallMenuSelected = bIsWall;
 	}
 	return true;
 }

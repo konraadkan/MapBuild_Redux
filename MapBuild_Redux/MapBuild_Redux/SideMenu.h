@@ -99,6 +99,7 @@ private:
 	void DrawInitiativeMode();
 	void AddInitiativeObject(InteractObjects* const Io);
 	void AddBuildObject(InteractObjects* const Io);
+	bool bWallMenuSelected = false;
 public:
 	SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p,
 		std::vector< std::vector<SpritePointer*>>** const ppRoom, std::vector<SpritePointer*>** const ppLayer, std::vector< std::vector< std::vector<SpritePointer*>>>** const ppRL,
@@ -161,11 +162,12 @@ public:
 	void SetLayer(size_t uLayerNumber) override;
 	void BuildCategories(std::vector<PiecesW>* const wPieces);
 	void BuildSubcategories(std::vector<PiecesW>* const wPieces);
-	void BuildWallMenu();
+	void BuildWallMenu(std::vector<PiecesW>* const wPieces);
 	void RealignCategories();
 	void RealignSubcategory(MenuSection* const subcategory, const D2D1::Matrix3x2F parentTranforms);
 	const D2D1_COLOR_F GetSelectedWallColor();
 	const MeasurementMenu::SizeMenuType GetSizeMenuType();
+	const bool WallSelected() { return bWallMenuSelected; }
 	
 	std::vector< std::vector<SpritePointer*>>** pSelectedRoom = nullptr;
 	std::vector< std::vector<std::unique_ptr<Wall>>>** ppSelectedWallRoom = nullptr;

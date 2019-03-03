@@ -389,6 +389,16 @@ public:
 		}
 		target->DrawGeometry(path, m_Brush, thickness);
 	}
+	template<typename T> void DrawGeometry(T target, ID2D1PathGeometry* path, ID2D1BitmapBrush* const pBitmapBrush, float thickness = 1.0f)
+	{
+		if (!m_Brush) return;
+		m_Brush->SetColor(D2D1::ColorF(0.0f, 0.0f, 0.0f));
+		if (!pBitmapBrush) DrawGeometry(target, path, D2D1::ColorF(0.0f, 0.0f, 0.0f), thickness, true);
+		else
+		{
+			target->FillGeometry(path, pBitmapBrush);
+		}
+	}
 	template<typename T> void DrawBitmap(T target, ID2D1Bitmap* const pBitmap, const D2D1_RECT_F destrect, const float opacity, const D2D1_RECT_F srcrect)
 	{
 		if (!pBitmap) return;
