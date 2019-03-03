@@ -19,7 +19,7 @@ private:
 	ID2D1BitmapBrush* pBitmapBrush = nullptr;
 public:
 	Wall(Graphics* const graphics, D2D1_POINT_2F* const MouseCoordinates, const bool useTexture) : bUseTexture(useTexture), pMouseCoordinates(MouseCoordinates), gfx(graphics) {}
-	~Wall() { while (vGeometryPathHistory.size()) RemoveLastGeometry(); SafeRelease(&pBitmapBrush); }
+	~Wall() { while (vGeometryPathHistory.size()) RemoveLastGeometry(); SafeRelease(&pBitmapBrush); SafeRelease(&pSetGeometry); }
 	Wall(const Wall&) = delete;
 	Wall& operator=(const Wall&) = delete;
 public:

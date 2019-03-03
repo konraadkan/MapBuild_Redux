@@ -275,45 +275,8 @@ void BaseLevel::Update(double dDelta)
 			if (value) *value = *value + size * static_cast<float>(dDelta) * direction;
 		}
 	}
-	//if (pMouse->LeftPressed())
-	//{
-	//	if (pSelectedLayer && !pSideMenu->IsInRealRect())
-	//	{
-	//		bool bAdd = true;
-	//		for (auto& sl : *pSelectedLayer)
-	//		{
-	//			if (sl->GetSprite() == sptest->GetPieces()->GetSprite())
-	//			{
-	//				if (bLockToGrid)
-	//				{
-	//					if (static_cast<int>(mPreviewDest.left) == static_cast<int>(sptest->GetDestSprite().left) && static_cast<int>(mPreviewDest.top) == static_cast<int>(sptest->GetDestSprite().top))
-	//					{
-	//						bAdd = false;
-	//						break;
-	//					}
-	//				}
-	//				else
-	//				{
-	//					if (static_cast<int>(sl->GetDestSprite().left) == static_cast<int>(sptest->GetDestSprite().left) && static_cast<int>(sl->GetDestSprite().top) == static_cast<int>(sptest->GetDestSprite().top))
-	//					{
-	//						bAdd = false;
-	//						break;
-	//					}
-	//				}
-	//			}
-	//		}
-	//		if (bAdd)
-	//		{
-	//			pSelectedLayer->push_back(new SpritePointer(sptest->GetPieces(), Location()));
-	//			pSelectedLayer->back()->SetCreatureSize(sptest->GetCreatureSize());
-	//			//pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + pSelectedLayer->back()->GetSpriteFrameSize().width, TranslatedCoordinates.y + pSelectedLayer->back()->GetSpriteFrameSize().height));				
-	//			if (bLockToGrid)
-	//				pSelectedLayer->back()->SetDestSprite(mPreviewDest, false);
-	//			else
-	//				pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + GridSquareSize.width, TranslatedCoordinates.y + GridSquareSize.height));
-	//		}
-	//	}
-	//}
+
+	//----- Eraser Logic-----
 	if (pMouse->RightPressed() && wptest->PointsEmpty())
 	{
 		for (size_t i =0; i < pSelectedLayer->size(); i++)
@@ -335,6 +298,8 @@ void BaseLevel::Update(double dDelta)
 			}
 		}
 	}
+
+	//----- Alternate method to move the screen ------
 	if (pMouse->MiddlePressed())
 	{		
 		if (PushMouseCoordinate.x || PushMouseCoordinate.y)
