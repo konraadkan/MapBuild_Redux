@@ -39,6 +39,7 @@ Sprite::Sprite(const wchar_t* sFilePath, Graphics* const graphics, HPTimer* cons
 Sprite::~Sprite()
 {
 	SafeRelease(&pBitmap);
+	SafeRelease(&pFrameBitmap);
 }
 
 char* Sprite::DecodeSPR(const wchar_t* FilePath)
