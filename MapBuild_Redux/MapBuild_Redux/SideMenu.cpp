@@ -152,10 +152,15 @@ const bool SideMenu::Interact()
 						{
 							ChangeMode();
 						}
+						else if (!_wcsicmp(child->GetLabel(), L"Toggle PC Colors"))
+						{
+							ToggleColors();
+						}
 					}
 				}
 			}
-			if (bBuildMode) if (!pMenuSections.at(i)->Interact()) return false;
+			if (bBuildMode) { if (!pMenuSections.at(i)->Interact()) return false; }
+			else if (!pOptionsMenu->Interact()) return false;
 		}
 	}
 	return true;
@@ -272,10 +277,10 @@ SideMenu::SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1:
 	pOptionsMenu = pMenuSections.back();
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Lock to Grid", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true, true), OptionMenuSize);
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Grid on Top", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
-	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle PC Colors", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), false), OptionMenuSize);
+	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle PC Colors", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Add Custom Colors", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), false), OptionMenuSize);
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Initiative", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), false), OptionMenuSize);
-	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Keep Aspect", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), false), OptionMenuSize);
+	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Keep Aspect", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true, true), OptionMenuSize);
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Turn Counter", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
 	pMenuSections.back()->SetBorderStyle(BorderStyle::Solid);
 	//pOptionsMenu->SetHidden();

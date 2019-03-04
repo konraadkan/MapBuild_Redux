@@ -148,6 +148,9 @@ public:
 	void WheelDown() override;
 	void Unload() override;
 	void ChangeMode() override { bBuildMode ^= true; }
+	void ToggleColors() { bShowPieceColors ^= true; }
+	void SetUseColors() { bShowPieceColors = true; }
+	void UnsetUseColors() { bShowPieceColors = false; }
 	void SetInvTransform(D2D1::Matrix3x2F* const inv) { pInvTransforms = inv; }
 	const bool IsInRealRect() { return PointInTargetRect(mRealRect); }
 	const bool IsBuildMode() { return bBuildMode; }
