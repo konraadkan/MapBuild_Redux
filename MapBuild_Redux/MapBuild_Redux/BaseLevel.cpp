@@ -79,6 +79,15 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	pSideMenu->pSelectWallRoomsandLayers = &pvWalls;
 	pSideMenu->ppSelectedWallLayer = &pSelectedLayerWall;
 	pSideMenu->ppSelectedWallRoom = &pSelectedRoomWall;
+
+	for (auto& p : vPiecesW)
+	{
+		if (p.IsDefault())
+		{
+			pSideMenu->vInitativeList.push_back(&p);
+		}
+	}
+	pSideMenu->BuildInitativeList();
 }
 
 BaseLevel::~BaseLevel()
@@ -163,13 +172,19 @@ void BaseLevel::Render()
 				if (vVisibleLayers[i][w])
 				{
 					for (auto& sprite : vSprites[i][w])
+					{
+						if (pSideMenu->ShowPieceColors()) gfx->FillRect(gfx->GetCompatibleTarget(), sprite->GetDestSprite(), sprite->GetPieces()->GetBackgroundColor());
 						sprite->DrawSprite(gfx);
+					}
 					for (auto& wall : vWalls[i][w])
 						wall->Draw();
 				}
 			}
 		}
 	}
+
+	if (pSelectedObject) 
+		gfx->DrawRect(gfx->GetCompatibleTarget(), pSelectedObject->GetDestSprite(), D2D1::ColorF(1.0f, 0.0f, 1.0f), 3.0f);
 	
 	if (sptest && !pSideMenu->WallSelected())
 	{
@@ -283,6 +298,7 @@ void BaseLevel::Update(double dDelta)
 		{
 			if (pSelectedLayer->at(i)->PointInSprite(TranslatedCoordinates))
 			{
+				if (pSelectedLayer->at(i) == pSelectedObject) pSelectedObject = nullptr;
 				pSelectedLayer->erase(pSelectedLayer->begin() + i);
 				pSelectedLayer->shrink_to_fit();
 				break;
@@ -351,7 +367,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			break;
 		}
 		case Mouse::Event::Type::LPress:
-			if (pSelectedLayer && !pSideMenu->IsInRealRect() && !pSizeMenu->IsInRealRect())
+			if (pSelectedLayer && !pSideMenu->IsInRealRect() && !pSizeMenu->IsInRealRect() && pSideMenu->IsBuildMode())
 			{
 				if (sptest && !pSideMenu->WallSelected())
 				{
@@ -387,6 +403,40 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 							pThicknessMenu->SetPreviewRadius(pThicknessMenu->CalcRadius());
 							wptest->SetThickness(pThicknessMenu->GetSelectedThickness());
 						}
+					}
+				}
+			}
+			else if (!pSideMenu->IsBuildMode())
+			{
+				bool move = true;
+				if (pSelectedLayer)
+				{
+					for (auto& c : *pSelectedLayer)
+					{
+						if (c->PointInSprite(TranslatedCoordinates))
+						{
+							if (!pSelectedObject)
+							{
+								pSelectedObject = c;								
+							}
+							/*else
+							{
+								if (c == pSelectedObject) pSelectedObject = nullptr;
+								else
+								{
+									D2D1_RECT_F temp = c->GetDestSprite();
+									c->SetDestSprite(pSelectedObject->GetDestSprite());
+									pSelectedObject->SetDestSprite(temp);
+									pSelectedObject = nullptr;
+								}
+							}*/
+							move = false;
+						}
+					}
+					if (pSelectedObject && move)
+					{
+						pSelectedObject->SetDestSprite(GetPreviewRect());
+						pSelectedObject = nullptr;
 					}
 				}
 			}

@@ -108,4 +108,5 @@ public:
 	std::vector< std::vector<std::unique_ptr<Wall>>>* pSelectedRoomWall = nullptr;
 	std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>>* pvWalls = nullptr;
 	std::unique_ptr<Wall> wptest = nullptr;
+	SpritePointer* pSelectedObject = nullptr;
 };

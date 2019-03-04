@@ -97,9 +97,9 @@ const bool Wall::PointTouching(const D2D1_POINT_2F p)
 {
 	for (auto point : vPoints)
 	{
-		if (static_cast<int>(p.x) == static_cast<int>(point.x))
+		if (static_cast<int>(p.x) >= static_cast<int>(point.x - 3.0f) && static_cast<int>(p.x) <= static_cast<int>(point.x + 3.0f))
 		{
-			if (static_cast<int>(p.y) == static_cast<int>(point.y))
+			if (static_cast<int>(p.y) >= static_cast<int>(point.y - 3.0f) && static_cast<int>(p.y) <= static_cast<int>(point.y + 3.0f))
 			{
 				return true;
 			}

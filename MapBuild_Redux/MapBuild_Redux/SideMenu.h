@@ -103,6 +103,7 @@ private:
 	void AddBuildObject(InteractObjects* const Io);
 	bool bWallMenuSelected = false;
 	bool bUseTexture = false;
+	bool bShowPieceColors = false;
 public:
 	SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p,
 		std::vector< std::vector<SpritePointer*>>** const ppRoom, std::vector<SpritePointer*>** const ppLayer, std::vector< std::vector< std::vector<SpritePointer*>>>** const ppRL,
@@ -175,6 +176,7 @@ public:
 	const MeasurementMenu::SizeMenuType GetSizeMenuType();
 	const bool WallSelected() { return bWallMenuSelected; }
 	const bool UseTexture() { return bUseTexture; }
+	const bool ShowPieceColors() { return bShowPieceColors; }
 	const unsigned int GetInitativeListSize() { return static_cast<unsigned int>(vInitativeList.size()); }
 	void BuildInitativeList();
 	
