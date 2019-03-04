@@ -62,6 +62,7 @@ private:
 	}
 private:
 	const D2D1_SIZE_F OptionMenuSize = D2D1::SizeF(94.0f, 32.0f);
+	const D2D1_SIZE_F InitativeMenuSize = D2D1::SizeF(477.0f, 125.0f);
 	const D2D1_SIZE_F MainMenuSize = D2D1::SizeF(94.0f, 32.0f);
 	const D2D1_SIZE_F SubMenuSize = D2D1::SizeF(94.0f, 32.0f);
 	const D2D1_SIZE_F SizeMenuSize = D2D1::SizeF(94.0f, 32.0f);
@@ -87,6 +88,7 @@ public:
 	MenuSection* SubcategoryMenu = nullptr;
 	MenuSection* pSizeMenu = nullptr;
 	MenuSection* ItemMenu = nullptr;
+	MenuSection* InitiativeList = nullptr;
 private:
 	std::vector<D2D1_RECT_F> CategoryStartPoints;
 	std::vector<MenuSection*> pMenuSections;
@@ -138,6 +140,8 @@ public:
 	void Draw() override;
 	const bool Interact(const D2D1_POINT_2F p) override;
 	const bool Interact() override;
+	const bool AlternateInteract() override;
+	const bool AlternateInteract(const D2D1_POINT_2F p) override;
 	bool PointInRect(const D2D1_POINT_2F p) override;
 	void WheelUp() override;
 	void WheelDown() override;
@@ -145,6 +149,7 @@ public:
 	void ChangeMode() override { bBuildMode ^= true; }
 	void SetInvTransform(D2D1::Matrix3x2F* const inv) { pInvTransforms = inv; }
 	const bool IsInRealRect() { return PointInTargetRect(mRealRect); }
+	const bool IsBuildMode() { return bBuildMode; }
 	void SetSelectedRoomPointer(std::vector< std::vector<SpritePointer*>>** const p) { pSelectedRoom = p; }
 	void SetSelectedLayerPointer(std::vector<SpritePointer*>** const p) { pSelectedLayer = p; }
 	void SetSelectedWallRoomPointer(std::vector< std::vector<std::unique_ptr<Wall>>>** const p) { ppSelectedWallRoom = p; for (auto& sections : pMenuSections) sections->SetSelectedWallRoomPointer(p); }
@@ -170,6 +175,8 @@ public:
 	const MeasurementMenu::SizeMenuType GetSizeMenuType();
 	const bool WallSelected() { return bWallMenuSelected; }
 	const bool UseTexture() { return bUseTexture; }
+	const unsigned int GetInitativeListSize() { return static_cast<unsigned int>(vInitativeList.size()); }
+	void BuildInitativeList();
 	
 	std::vector< std::vector<SpritePointer*>>** pSelectedRoom = nullptr;
 	std::vector< std::vector<std::unique_ptr<Wall>>>** ppSelectedWallRoom = nullptr;
@@ -183,4 +190,5 @@ public:
 	MenuSection* pSelectedSubcategory = nullptr;	
 	SpritePointer** ppSelectedSprite = nullptr;
 	void* pBaseLevel = nullptr;
+	std::vector<PiecesW*> vInitativeList;
 };

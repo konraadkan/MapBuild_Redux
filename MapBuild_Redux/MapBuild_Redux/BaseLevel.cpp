@@ -410,8 +410,32 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 				{
 					if (io->PointInRect())
 					{
-						io->Interact();						
+						io->Interact();
 						break;
+					}
+				}
+				if (!pSideMenu->IsBuildMode())
+				{
+					if (pSideMenu->InitiativeList)
+					{
+						pSideMenu->InitiativeList->Interact();
+						int selectedpos = -1;
+						for (size_t i = 0; i < pSideMenu->InitiativeList->pChild.size(); i++)
+						{
+							if (pSideMenu->InitiativeList->pChild.at(i)->IsSelected())
+							{
+								if (selectedpos < 0)
+								{
+									selectedpos = static_cast<int>(i);
+								}
+								else
+								{
+									std::iter_swap(pSideMenu->vInitativeList.begin() + i, pSideMenu->vInitativeList.begin() + selectedpos);
+									pSideMenu->BuildInitativeList();
+									break;
+								}
+							}
+						}
 					}
 				}
 				if (sptest) pSizeMenu->SetSelectedCreatureSize(sptest->GetCreatureSize());
@@ -424,13 +448,80 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			if (pSideMenu->WallSelected()) if (wptest) wptest->RemoveLastPoint();
 			break;
 		case Mouse::Event::Type::RRelease:
+		{
+			if (pSideMenu->IsInRealRect() && pSideMenu->IsBuildMode())
+			{
+				unsigned int uInitativeListSize = pSideMenu->GetInitativeListSize();
+				for (auto& io : IObjects)
+				{
+					if (io->PointInRect())
+					{
+						io->AlternateInteract();
+						break;
+					}
+				}
+				if (uInitativeListSize != pSideMenu->GetInitativeListSize())
+				{
+					pSideMenu->BuildInitativeList();
+				}
+			}
+			if (pSideMenu->IsInRealRect() && !pSideMenu->IsBuildMode())
+			{
+				if (pSideMenu->InitiativeList)
+				{
+					for (size_t i = 0; i < pSideMenu->InitiativeList->pChild.size(); i++)
+					{
+						if (pSideMenu->InitiativeList->pChild.at(i)->PointInRect())
+						{
+							pSideMenu->vInitativeList.erase(pSideMenu->vInitativeList.begin() + i);
+							pSideMenu->vInitativeList.shrink_to_fit();
+							pSideMenu->BuildInitativeList();
+							break;
+						}
+					}
+				}
+			}
 			break;
+		}
 		case Mouse::Event::Type::MPress:
 			if(!pSideMenu->PointInRect(*pMouseCoordinate) || pSideMenu->IsHidden())
 				PushMouseCoordinate = e.GetPos();
 			break;
 		case Mouse::Event::Type::MRelease:
 			PushMouseCoordinate = D2D1::Point2F();
+			if (pSideMenu->IsInRealRect() && !pSideMenu->IsBuildMode())
+			{
+				int selectedid = -1;
+				PiecesW* tempP = nullptr;
+				if (pSideMenu->InitiativeList)
+				{
+					for (size_t i = 0; i < pSideMenu->InitiativeList->pChild.size(); i++)
+					{
+						if (pSideMenu->InitiativeList->pChild.at(i)->IsSelected())
+						{
+							selectedid = static_cast<int>(i);
+							tempP = pSideMenu->vInitativeList.at(i);
+							pSideMenu->vInitativeList.erase(pSideMenu->vInitativeList.begin() + i);
+							break;
+						}
+					}
+				}
+				if (selectedid >= 0)
+				{
+					for (size_t i = 0; i < pSideMenu->InitiativeList->pChild.size(); i++)
+					{
+						if (i == selectedid) continue;
+						if (pSideMenu->InitiativeList->pChild.at(i)->PointInRect())
+						{
+							if (tempP)
+							{
+								pSideMenu->vInitativeList.insert(pSideMenu->vInitativeList.begin() + i, tempP);
+								pSideMenu->BuildInitativeList();
+							}
+						}
+					}
+				}
+			}
 			break;
 		case Mouse::Event::Type::WheelUp:
 		{
@@ -444,16 +535,23 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			}
 			if (pSideMenu->IsInRealRect())
 			{
-				for (auto& categories : pSideMenu->CategoryMenu->vSubsections)
+				if (pSideMenu->IsBuildMode())
 				{
-					if (!categories->IsHidden())
+					for (auto& categories : pSideMenu->CategoryMenu->vSubsections)
 					{
-						for (auto& sub : categories->vSubsections)
+						if (!categories->IsHidden())
 						{
-							if (!sub->IsHidden()) //if (sub->PointInRect())
-								sub->WheelUp();
+							for (auto& sub : categories->vSubsections)
+							{
+								if (!sub->IsHidden()) //if (sub->PointInRect())
+									sub->WheelUp();
+							}
 						}
 					}
+				}
+				else
+				{
+					pSideMenu->InitiativeList->WheelUp();
 				}
 			}
 		}
@@ -470,16 +568,23 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			}
 			if (pSideMenu->IsInRealRect())
 			{
-				for (auto& categories : pSideMenu->CategoryMenu->vSubsections)
+				if (pSideMenu->IsBuildMode())
 				{
-					if (!categories->IsHidden())
+					for (auto& categories : pSideMenu->CategoryMenu->vSubsections)
 					{
-						for (auto& sub : categories->vSubsections)
+						if (!categories->IsHidden())
 						{
-							if (!sub->IsHidden())
-								sub->WheelDown();
+							for (auto& sub : categories->vSubsections)
+							{
+								if (!sub->IsHidden())
+									sub->WheelDown();
+							}
 						}
 					}
+				}
+				else
+				{
+					pSideMenu->InitiativeList->WheelDown();
 				}
 			}
 		}
@@ -522,6 +627,32 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 			temp.height -= GridSquareSize.height;
 			temp.width -= GridSquareSize.width;
 			gfx->ResizeCompatibleRenderTarget(temp);
+			break;
+		}
+		case L' ':
+		{
+			if (!pSideMenu->IsBuildMode())
+			{
+				if (pSideMenu->InitiativeList)
+				{
+					auto temp = pSideMenu->vInitativeList.begin();
+					std::rotate(temp, temp + 1, pSideMenu->vInitativeList.end());
+					pSideMenu->BuildInitativeList();
+				}
+			}
+			break;
+		}
+		case VK_BACK:
+		{
+			if (!pSideMenu->IsBuildMode())
+			{
+				if (pSideMenu->InitiativeList)
+				{
+					auto temp = pSideMenu->vInitativeList.begin() + pSideMenu->vInitativeList.size() - 1;
+					std::rotate(pSideMenu->vInitativeList.begin(), temp, pSideMenu->vInitativeList.end());
+					pSideMenu->BuildInitativeList();
+				}
+			}
 			break;
 		}
 		}

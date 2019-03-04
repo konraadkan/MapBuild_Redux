@@ -6,9 +6,17 @@ void SideMenu::Draw()
 	if (bBuildMode) DrawBuildMode();
 	if (!bBuildMode) DrawInitiativeMode();
 
-	for (auto& c : pMenuSections)
+	if (bBuildMode)
 	{
-		c->Draw();
+		for (auto& c : pMenuSections)
+		{
+			c->Draw();
+		}
+	}
+	else
+	{
+		pOptionsMenu->Draw();
+		if (InitiativeList) InitiativeList->Draw();
 	}
 }
 
@@ -42,6 +50,62 @@ void SideMenu::DrawInitiativeMode()
 		if (child)
 			if (!child->IsBack()) child->Draw();
 	}
+}
+
+const bool SideMenu::AlternateInteract()
+{
+	std::vector<InteractObjects*>* vIo = bBuildMode ? &BuildModeObjects : &InitiativeModeObjects;
+	for (auto& child : *vIo)
+	{
+		if (child->PointInRect())
+		{
+			if (!_wcsicmp(child->GetLabel(), L"ShowHide"))
+			{
+				if (child->PointInSector(Sector::West)) bHide ? SetUnhidden() : SetHidden();
+			}
+			else if (!_wcsicmp(child->GetLabel(), L"Toggle Initiative"))
+			{
+				ChangeMode();
+			}
+			else if (!child->Interact()) return false;
+		}
+	}
+	for (size_t i = 0; i < pMenuSections.size(); i++)
+	{
+		if (pMenuSections.at(i)->PointInRect())
+		{
+			if (bBuildMode) if (!pMenuSections.at(i)->AlternateInteract()) return false;
+		}
+	}
+	return true;
+}
+
+const bool SideMenu::AlternateInteract(const D2D1_POINT_2F p)
+{
+	std::vector<InteractObjects*>* vIo = bBuildMode ? &BuildModeObjects : &InitiativeModeObjects;
+	for (auto& child : *vIo)
+	{
+		if (child->PointInRect(p))
+		{
+			if (!_wcsicmp(child->GetLabel(), L"ShowHide"))
+			{
+				if (child->PointInSector(Sector::West)) bHide ? SetUnhidden() : SetHidden();
+			}
+			else if (!_wcsicmp(child->GetLabel(), L"Toggle Initiative"))
+			{
+				ChangeMode();
+			}
+			else if (!child->Interact()) return false;
+		}
+	}
+	for (size_t i = 0; i < pMenuSections.size(); i++)
+	{
+		if (pMenuSections.at(i)->PointInRect(p))
+		{
+			if (bBuildMode) if (!pMenuSections.at(i)->AlternateInteract()) return false;
+		}
+	}
+	return true;
 }
 
 const bool SideMenu::Interact()
@@ -84,10 +148,14 @@ const bool SideMenu::Interact()
 						{
 							if (pBaseLevel) static_cast<BaseLevel*>(pBaseLevel)->ToggleGridOnTop();
 						}
+						else if (!_wcsicmp(child->GetLabel(), L"Toggle Initiative"))
+						{
+							ChangeMode();
+						}
 					}
 				}
 			}
-			if (!pMenuSections.at(i)->Interact()) return false;			
+			if (bBuildMode) if (!pMenuSections.at(i)->Interact()) return false;
 		}
 	}
 	return true;
@@ -550,7 +618,7 @@ void SideMenu::BuildSubcategories(std::vector<PiecesW>* const wPieces)
 		}
 		targetSubmenu->SetTranslation(D2D1::SizeF(0.0f, CategoryMenu->GetSize().height + 5.0f));
 		targetSubmenu->UpdateInvTranforms(CategoryMenu->GetTransforms() * CategoryMenu->vSubsections.back()->GetTransforms());
-		targetSubSubmenu->AddChild(new SpriteItemButtons(gfx, pTransforms, pClientRect, pMouseCoordinates, piece.GetName().c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), &piece, ppSelectedSprite, true), ItemMenuSize);
+		targetSubSubmenu->AddChild(new SpriteItemButtons(&vInitativeList, gfx, pTransforms, pClientRect, pMouseCoordinates, piece.GetName().c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), &piece, ppSelectedSprite, true), ItemMenuSize);
 		targetSubSubmenu->SetTranslation(D2D1::SizeF(0.0f, targetSubmenu->GetSize().height + 5.0f));
 		targetSubSubmenu->UpdateInvTranforms(CategoryMenu->GetTransforms() * targetSubmenu->GetTransforms() * targetSubmenu->vSubsections.back()->GetTransforms());
 		targetSubSubmenu->SetHidden();
@@ -605,7 +673,7 @@ void SideMenu::BuildWallMenu(std::vector<PiecesW>* const wPieces)
 	{
 		if (!_wcsicmp(piece.GetType().c_str(), L"Texture"))
 		{
-			targetSubSubmenu->AddChild(new SpriteItemButtons(gfx, pTransforms, pClientRect, pMouseCoordinates, piece.GetName().c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), &piece, ppSelectedSprite, true), ItemMenuSize);
+			targetSubSubmenu->AddChild(new SpriteItemButtons(&vInitativeList, gfx, pTransforms, pClientRect, pMouseCoordinates, piece.GetName().c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), &piece, ppSelectedSprite, true), ItemMenuSize);
 			targetSubSubmenu->SetTranslation(D2D1::SizeF(0.0f, targetSubmenu->GetSize().height + 5.0f));
 			targetSubSubmenu->UpdateInvTranforms(CategoryMenu->GetTransforms() * targetSubmenu->GetTransforms() * targetSubmenu->vSubsections.back()->GetTransforms());
 			targetSubSubmenu->SetHidden();
@@ -670,4 +738,20 @@ const MeasurementMenu::SizeMenuType SideMenu::GetSizeMenuType()
 		}
 	}
 	return MeasurementMenu::SizeMenuType::CreatureSize;
+}
+
+void SideMenu::BuildInitativeList()
+{
+	SafeDelete(&InitiativeList);
+	D2D1_RECT_F LastRect = pOptionsMenu->GetTranslatedRect();
+	InitiativeList = new MenuSection(gfx, pTransforms, pClientRect, pMouseCoordinates, D2D1::RectF(m_Dest.right, m_Dest.top + 3.0f, m_Dest.right + (m_Dest.right - m_Dest.left), InitativeMenuSize.height + 3.0f), InitativeMenuSize.height, L"Initative", true);
+	InitiativeList->SetBorderStyle(BorderStyle::Invisible);
+	InitiativeList->pParent = this;
+	InitiativeList->SetTranslation(D2D1::SizeF(m_Dest.left - m_Dest.right, LastRect.bottom + SeperationDistance));
+	for (auto& piece : vInitativeList)
+	{
+		//D2D1_RECT_F lastrect = InitiativeModeObjects
+		InitiativeList->AddChild(new InitiativeListButtons(nullptr, gfx, pTransforms, pClientRect, pMouseCoordinates, piece->GetName().c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(InitiativeList), piece, nullptr, true, false, D2D1::ColorF(1.0f, 0.0f, 0.0f, 0.6f), DWRITE_TEXT_ALIGNMENT_LEADING), InitativeMenuSize);
+		static_cast<InitiativeListButtons*>(InitiativeList->pChild.back())->SetMatrixPointer(&InitiativeList->AllTransforms);
+	}
 }

@@ -122,6 +122,8 @@ public:
 	InteractObjects& operator=(const InteractObjects&) = delete;
 	virtual const bool Interact(const D2D1_POINT_2F p);
 	virtual const bool Interact();
+	virtual const bool AlternateInteract();
+	virtual const bool AlternateInteract(const D2D1_POINT_2F p);
 	virtual void Draw() = 0;
 public:
 	virtual void SetSelectionColor(const D2D1_COLOR_F color) { memcpy(&m_SelectedColor, &color, sizeof(m_SelectedColor)); }

@@ -195,6 +195,33 @@ void MenuSection::UpdateChildPositions()
 	m_Dest.bottom = pChild.back()->GetRect().bottom;
 }
 
+const bool MenuSection::AlternateInteract()
+{
+	if (bHide) return true;
+	for (auto& child : pChild)
+	{
+		if (!child) continue;
+		if (child->pChild.size())
+		{
+			for (auto& b : child->pChild)
+			{
+				if (!b) continue;
+				if (b->PointInRect())
+					if (!b->AlternateInteract()) return false;
+			}
+		}
+		if (child->PointInRect())
+			if (!child->AlternateInteract()) return false;
+	}
+	for (auto& section : vSubsections)
+	{
+		if (!section) continue;
+		if (section->PointInRect())
+			if (!section->AlternateInteract()) return false;
+	}
+	return true;
+}
+
 const bool MenuSection::Interact()
 {
 	if (bHide) return true;

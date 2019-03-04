@@ -160,3 +160,35 @@ const bool InteractObjects::Interact()
 	}
 	return true;
 }
+
+const bool InteractObjects::AlternateInteract(const D2D1_POINT_2F p)
+{
+	for (auto& child : pChild)
+	{
+		if (child->PointInRect(p))
+		{
+			if (!_wcsicmp(child->GetLabel(), L"Toggle Initiative"))
+			{
+				if (child->pParent) child->pParent->ChangeMode();
+			}
+			if (!child->Interact(p)) return false;
+		}
+	}
+	return true;
+}
+
+const bool InteractObjects::AlternateInteract()
+{
+	for (auto& child : pChild)
+	{
+		if (child->PointInRect())
+		{
+			if (!_wcsicmp(child->GetLabel(), L"Toggle Initiative"))
+			{
+				if (child->pParent) child->pParent->ChangeMode();
+			}
+			if (!child->Interact()) return false;
+		}
+	}
+	return true;
+}

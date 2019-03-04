@@ -36,6 +36,7 @@ public:
 	const float Getinvdy() { return InvTransforms.dy; }
 	D2D1::Matrix3x2F* const GetInvTranforms() { return &InvTransforms; }
 	const bool Interact() override;
+	const bool AlternateInteract() override;
 	void Draw() override;
 	void AddChild(InteractObjects* const Iobject, const D2D1_SIZE_F size, float seperation = 0.0f) override;
 	void Unload() override;

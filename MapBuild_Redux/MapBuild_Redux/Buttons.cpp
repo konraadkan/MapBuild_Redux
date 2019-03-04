@@ -20,8 +20,24 @@ const bool Buttons::Interact(const D2D1_POINT_2F p)
 			}
 		}
 	}
-	//Interaction... look into what exactly to do with this later
 	if(bEnableSelection) bSelected ^= true;
+	return true;
+}
+
+const bool Buttons::AlternateInteract(const D2D1_POINT_2F p)
+{
+	if (IsHidden()) return true;
+	for (auto& child : pChild)
+	{
+		if (child)
+		{
+			if (child->PointInRect(p))
+			{
+				if (!child->AlternateInteract(p)) return false;
+				return true;
+			}
+		}
+	}
 	return true;
 }
 
@@ -29,6 +45,13 @@ const bool Buttons::Interact()
 {
 	if (IsHidden()) return true;
 	if (!Interact(*pMouseCoordinates)) return false;
+	return true;
+}
+
+const bool Buttons::AlternateInteract()
+{
+	if (IsHidden()) return true;
+	if (!AlternateInteract(*pMouseCoordinates)) return false;
 	return true;
 }
 
@@ -342,6 +365,36 @@ const bool SpriteItemButtons::Interact(const D2D1_POINT_2F p)
 	return true;
 }
 
+const bool SpriteItemButtons::AlternateInteract(const D2D1_POINT_2F p)
+{
+	if (IsHidden()) return true;
+	if (!pParent) return true;
+
+	for (auto& child : pChild)
+	{
+		if (child)
+		{
+			if (child->PointInRect(p))
+			{
+				if (!child->AlternateInteract(p)) return false;
+				return true;
+			}
+		}
+	}
+	if (pvInitativeList)
+	{
+		pvInitativeList->push_back(pPiecesW);
+	}
+	return true;
+}
+
+const bool SpriteItemButtons::AlternateInteract()
+{
+	if (IsHidden()) return true;
+	if (!AlternateInteract(*pMouseCoordinates)) return false;
+	return true;
+}
+
 void SpriteItemButtons::Draw()
 {
 	if (IsHidden()) return;
@@ -424,6 +477,55 @@ const bool ColorButtons::Interact()
 	if (IsHidden()) return true;
 	
 	SafeDelete(&(*ppSelectedSprite));
+	if (bEnableSelection)
+	{
+		for (auto& child : pParent->pChild)
+		{
+			child->UnsetIsSelected();
+		}
+		SetIsSelected();
+	}
+	return true;
+}
+
+void InitiativeListButtons::Draw()
+{
+	if (IsHidden()) return;	
+	if (pPiece->GetPortrait())
+	{
+		gfx->DrawBitmap(gfx->GetCompatibleTarget(), pPiece->GetPortrait()->GetBitmap(), D2D1::RectF(m_Dest.left, m_Dest.top, m_Dest.left + 125.0f, m_Dest.bottom), 1.0f, pPiece->GetPortrait()->GetFrame());
+	}
+	else if (pPiece->GetSprite())
+	{
+		gfx->DrawBitmap(gfx->GetCompatibleTarget(), pPiece->GetSprite()->GetBitmap(), D2D1::RectF(m_Dest.left, m_Dest.top, m_Dest.left + 125.0f, m_Dest.bottom), 1.0f, pPiece->GetSprite()->GetFrame());
+	}
+	gfx->OutputText(gfx->GetCompatibleTarget(), pPiece->GetName().c_str(), D2D1::RectF(m_Dest.left + 125.0f, m_Dest.top, m_Dest.right, m_Dest.bottom), TextColor, this->GetTextAlignment(), this->GetParagraphAlignment());
+	if (IsSelected()) gfx->FillRoundedRect(gfx->GetCompatibleTarget(), m_Dest, m_HighlightColor, m_Radius.width, m_Radius.height);
+}
+
+const bool InitiativeListButtons::Interact()
+{
+	if (IsHidden()) return true;
+	bool wasselected = bSelected;
+
+	if (bEnableSelection)
+	{
+		for (auto& child : pParent->pChild)
+		{
+			/*if (child->IsSelected())
+			{
+				child->UnsetIsSelected();
+			}*/
+		}
+		if (!wasselected) SetIsSelected();
+	}
+	return true;
+}
+
+const bool InitiativeListButtons::AlternateInteract()
+{
+	if (IsHidden()) return true;
+
 	if (bEnableSelection)
 	{
 		for (auto& child : pParent->pChild)
