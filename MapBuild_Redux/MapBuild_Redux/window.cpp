@@ -180,6 +180,26 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	case WM_MBUTTONUP:
 		Controller::m_Mouse.OnMiddleReleased(m_MouseCoordinates.x, m_MouseCoordinates.y);
 		break;
+	case WM_XBUTTONUP:
+		if (GET_XBUTTON_WPARAM(wParam) == 0x01)
+		{
+			Controller::m_Mouse.OnX1Released(m_MouseCoordinates.x, m_MouseCoordinates.y);
+		}
+		else if (GET_XBUTTON_WPARAM(wParam) == 0x02)
+		{
+			Controller::m_Mouse.OnX2Released(m_MouseCoordinates.x, m_MouseCoordinates.y);
+		}
+		break;
+	case WM_XBUTTONDOWN:
+		if (GET_XBUTTON_WPARAM(wParam) == 0x01)
+		{
+			Controller::m_Mouse.OnX1Pressed(m_MouseCoordinates.x, m_MouseCoordinates.y);
+		}
+		else if (GET_XBUTTON_WPARAM(wParam) == 0x02)
+		{
+			Controller::m_Mouse.OnX2Pressed(m_MouseCoordinates.x, m_MouseCoordinates.y);
+		}
+		break;
 	case WM_MOUSEWHEEL:
 		if (GET_WHEEL_DELTA_WPARAM(wParam) > 0)
 		{

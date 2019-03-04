@@ -14,9 +14,13 @@ public:
 			LPress,
 			RPress,
 			MPress,
+			X1Press,
+			X2Press,
 			LRelease,
 			RRelease,
 			MRelease,
+			X1Release,
+			X2Release,
 			WheelUp,
 			WheelDown,
 			Move,
@@ -27,6 +31,8 @@ public:
 		bool bLeftPressed = false;
 		bool bRightPressed = false;
 		bool bMiddlePressed = false;
+		bool bX1Pressed = false;
+		bool bX2Pressed = false;
 		float x = 0.0f;
 		float y = 0.0f;
 	public:
@@ -64,6 +70,14 @@ public:
 		{
 			return bMiddlePressed;
 		}
+		bool X1ButtonPressed() const
+		{
+			return bX1Pressed;
+		}
+		bool X2ButtonPressed() const
+		{
+			return bX2Pressed;
+		}
 	};
 public:
 	Mouse() = default;
@@ -75,6 +89,8 @@ public:
 	bool RightPressed() const;
 	bool LeftPressed() const;
 	bool MiddlePressed() const;
+	bool X1Pressed() const;
+	bool X2Pressed() const;
 	bool InWindow() const;
 	Mouse::Event Read();
 	bool IsEmpty() const
@@ -92,6 +108,10 @@ private:
 	void OnRightReleased(float x, float y);
 	void OnMiddlePressed(float x, float y);
 	void OnMiddleReleased(float x, float y);
+	void OnX1Pressed(float x, float y);
+	void OnX1Released(float x, float y);
+	void OnX2Pressed(float x, float y);
+	void OnX2Released(float x, float y);
 	void OnWheelUp(float x, float y);
 	void OnWheelDown(float x, float y);
 	void TrimBuffer();
@@ -102,6 +122,8 @@ private:
 	bool bLeftPressed = false;
 	bool bRightPressed = false;
 	bool bMiddlePressed = false;
+	bool bX1Pressed = false;
+	bool bX2Pressed = false;
 	bool bInWindow = false;
 	std::queue<Event> buffer;
 };

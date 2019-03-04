@@ -182,6 +182,8 @@ public:
 	const bool ShowPieceColors() { return bShowPieceColors; }
 	const unsigned int GetInitativeListSize() { return static_cast<unsigned int>(vInitativeList.size()); }
 	void BuildInitativeList();
+	void NextTurn();
+	void PreviousTurn();
 	
 	std::vector< std::vector<SpritePointer*>>** pSelectedRoom = nullptr;
 	std::vector< std::vector<std::unique_ptr<Wall>>>** ppSelectedWallRoom = nullptr;

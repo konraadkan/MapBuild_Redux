@@ -5,6 +5,7 @@
 #include "Pieces.h"
 #include "HPTimer.h"
 #include "Walls.h"
+#include "ruler.h"
 #include <vector>
 #include <atomic>
 
@@ -53,8 +54,10 @@ private:
 	std::vector< std::vector<bool>> vVisibleLayers;
 	HPTimer* const pTimer;
 	D2D1_POINT_2F PushMouseCoordinate = D2D1::Point2F();
-	const D2D1_RECT_F GetPreviewRect();
+	const D2D1_RECT_F GetPreviewRect(SpritePointer* const pSpritePointer, const D2D1_POINT_2F p);
 	MeasurementMenu::SizeMenuType mSizeMenuType = MeasurementMenu::SizeMenuType::CreatureSize;
+	Ruler* pRuler = nullptr;
+	D2D1_RECT_F mRulerDest = D2D1::RectF();
 public:
 	BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePosition, int WindowX, int WindowY, HPTimer* const timer);
 	BaseLevel(const BaseLevel&) = delete;
@@ -74,7 +77,7 @@ public:
 	void ToggleGridOnTop() { bGridOnTop ^= true; }
 	void ToggleUseTexture() override { bUseTexture ^= true; if (wptest) bUseTexture ? wptest->SetUseTexture() : wptest->UnsetUseTexture(); }
 	const D2D1_POINT_2F GetNearestCorner();
-	void OutputImageLoadingStatusM(std::atomic<unsigned int>& numloaded, unsigned int total, const std::wstring imagetype);
+	void OutputImageLoadingStatusM(std::atomic<unsigned int>& numloaded, unsigned int total, const std::wstring imagetype);	
 private:	
 	void DrawSideMenu();
 	void DrawSizeMenu();

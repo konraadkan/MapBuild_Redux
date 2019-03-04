@@ -404,4 +404,12 @@ public:
 		if (!pBitmap) return;
 		target->DrawBitmap(pBitmap, &destrect, opacity, D2D1_BITMAP_INTERPOLATION_MODE::D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, &srcrect);
 	}
+	template<typename T> void FillGeometry(T target, ID2D1PathGeometry* path, const D2D1_COLOR_F color, const D2D1_COLOR_F outlineColor = D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.0f), const float outlinethickness = 1.0f)
+	{
+		if (!m_Brush) return;
+		m_Brush->SetColor(color);
+		target->FillGeometry(path, m_Brush);
+		m_Brush->SetColor(outlineColor);
+		target->DrawGeometry(path, m_Brush, outlinethickness);
+	}
 };

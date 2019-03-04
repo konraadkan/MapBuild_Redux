@@ -536,3 +536,97 @@ const bool InitiativeListButtons::AlternateInteract()
 	}
 	return true;
 }
+
+void NextTurnButtons::Draw()
+{
+	if (!pGeometry) return;
+	gfx->FillGeometry(gfx->GetCompatibleTarget(), pGeometry, D2D1::ColorF(1.0f, 1.0f, 0.0f), D2D1::ColorF(0.0f, 0.0f, 0.0f), 2.0f);
+}
+
+const bool NextTurnButtons::Interact()
+{
+	if (IsHidden()) return true;
+
+	if (PointInRect())
+		if (pSideMenu) static_cast<SideMenu*>(pSideMenu)->NextTurn();
+	return false;
+}
+
+const bool NextTurnButtons::AlternateInteract()
+{
+	return true;
+}
+
+void PreviousTurnButtons::Draw()
+{
+	if (!pGeometry) return;
+	gfx->FillGeometry(gfx->GetCompatibleTarget(), pGeometry, D2D1::ColorF(1.0f, 1.0f, 0.0f), D2D1::ColorF(0.0f, 0.0f, 0.0f), 2.0f);
+}
+
+const bool PreviousTurnButtons::Interact()
+{
+	if (IsHidden()) return true;
+
+	if (PointInRect())
+		if (pSideMenu) static_cast<SideMenu*>(pSideMenu)->PreviousTurn();
+	return false;
+}
+
+const bool PreviousTurnButtons::AlternateInteract()
+{
+	return true;
+}
+
+void PreviousTurnButtons::BuildGeometry()
+{
+	SafeRelease(&pGeometry);
+	if (!SUCCEEDED(gfx->GetFactory()->CreatePathGeometry(&pGeometry)))
+	{
+		pGeometry = nullptr;
+		return;
+	}
+	
+	ID2D1GeometrySink* pSink = nullptr;
+	if (SUCCEEDED(pGeometry->Open(&pSink)))
+	{
+		pSink->BeginFigure(D2D1::Point2F(m_Dest.right, m_Dest.top + (m_Dest.bottom - m_Dest.top) * 0.33f), D2D1_FIGURE_BEGIN_FILLED);
+		pSink->AddLine(D2D1::Point2F(m_Dest.right - (m_Dest.right - m_Dest.left) * 0.20f, m_Dest.top + (m_Dest.bottom - m_Dest.top) * 0.33f));
+		pSink->AddLine(D2D1::Point2F(m_Dest.right - (m_Dest.right - m_Dest.left) * 0.20f, m_Dest.top));
+		pSink->AddLine(D2D1::Point2F(m_Dest.left, m_Dest.top + (m_Dest.bottom - m_Dest.top) * 0.5f));
+		pSink->AddLine(D2D1::Point2F(m_Dest.right - (m_Dest.right - m_Dest.left) * 0.20f, m_Dest.bottom));
+		pSink->AddLine(D2D1::Point2F(m_Dest.right - (m_Dest.right - m_Dest.left) * 0.20f, m_Dest.top + (m_Dest.bottom - m_Dest.top) * 0.66f));
+		pSink->AddLine(D2D1::Point2F(m_Dest.right, m_Dest.top + (m_Dest.bottom - m_Dest.top) * 0.66f));
+		pSink->EndFigure(D2D1_FIGURE_END_CLOSED);
+		pSink->Close();
+		SafeRelease(&pSink);
+		return;
+	}
+	SafeRelease(&pGeometry);
+}
+
+void NextTurnButtons::BuildGeometry()
+{
+	SafeRelease(&pGeometry);
+	if (!SUCCEEDED(gfx->GetFactory()->CreatePathGeometry(&pGeometry)))
+	{
+		pGeometry = nullptr;
+		return;
+	}
+
+	ID2D1GeometrySink* pSink = nullptr;
+	if (SUCCEEDED(pGeometry->Open(&pSink)))
+	{
+		pSink->BeginFigure(D2D1::Point2F(m_Dest.left, m_Dest.top + (m_Dest.bottom - m_Dest.top) * 0.33f), D2D1_FIGURE_BEGIN_FILLED);
+		pSink->AddLine(D2D1::Point2F(m_Dest.left + (m_Dest.right - m_Dest.left) * 0.20f, m_Dest.top + (m_Dest.bottom - m_Dest.top) * 0.33f));
+		pSink->AddLine(D2D1::Point2F(m_Dest.left + (m_Dest.right - m_Dest.left) * 0.20f, m_Dest.top));
+		pSink->AddLine(D2D1::Point2F(m_Dest.right, m_Dest.top + (m_Dest.bottom - m_Dest.top) * 0.5f));
+		pSink->AddLine(D2D1::Point2F(m_Dest.left + (m_Dest.right - m_Dest.left) * 0.20f, m_Dest.bottom));
+		pSink->AddLine(D2D1::Point2F(m_Dest.left + (m_Dest.right - m_Dest.left) * 0.20f, m_Dest.top + (m_Dest.bottom - m_Dest.top) * 0.66f));
+		pSink->AddLine(D2D1::Point2F(m_Dest.left, m_Dest.top + (m_Dest.bottom - m_Dest.top) * 0.66f));
+		pSink->EndFigure(D2D1_FIGURE_END_CLOSED);
+		pSink->Close();
+		SafeRelease(&pSink);
+		return;
+	}
+	SafeRelease(&pGeometry);
+}

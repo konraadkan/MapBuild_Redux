@@ -72,6 +72,9 @@
     <ClCompile Include="SliderBar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ruler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="window.h">
@@ -141,6 +144,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SliderBar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ruler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

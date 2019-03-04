@@ -741,4 +741,28 @@ void SideMenu::BuildInitativeList()
 		InitiativeList->AddChild(new InitiativeListButtons(nullptr, gfx, pTransforms, pClientRect, pMouseCoordinates, piece->GetName().c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(InitiativeList), piece, nullptr, true, false, D2D1::ColorF(1.0f, 0.0f, 0.0f, 0.6f), DWRITE_TEXT_ALIGNMENT_LEADING), InitativeMenuSize);
 		static_cast<InitiativeListButtons*>(InitiativeList->pChild.back())->SetMatrixPointer(&InitiativeList->AllTransforms);
 	}
+	InitiativeList->pChild.push_back(new PreviousTurnButtons(this, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Previous", D2D1::RectF(m_Dest.right + 5.0f, m_Dest.bottom - 220.0f, m_Dest.right + (m_Dest.right - m_Dest.left) * 0.25f, m_Dest.bottom - 120.0f)));
+	InitiativeList->pChild.back()->SetInvertTransformPointer(&InitiativeList->InvTransforms);
+	InitiativeList->pChild.push_back(new NextTurnButtons(this, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Next", D2D1::RectF(m_Dest.right + (m_Dest.right - m_Dest.left) - (m_Dest.right - m_Dest.left) * 0.25f, m_Dest.bottom - 220.0f, m_Dest.right + (m_Dest.right - m_Dest.left) - 5.0f, m_Dest.bottom - 120.0f)));
+	InitiativeList->pChild.back()->SetInvertTransformPointer(&InitiativeList->InvTransforms);
+}
+
+void SideMenu::NextTurn()
+{
+	if (InitiativeList)
+	{
+		auto temp = vInitativeList.begin();
+		std::rotate(temp, temp + 1, vInitativeList.end());
+		BuildInitativeList();
+	}
+}
+
+void SideMenu::PreviousTurn()
+{
+	if (InitiativeList)
+	{
+		auto temp = vInitativeList.begin() + vInitativeList.size() - 1;
+		std::rotate(vInitativeList.begin(), temp, vInitativeList.end());
+		BuildInitativeList();
+	}
 }

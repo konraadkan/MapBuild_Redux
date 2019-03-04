@@ -88,6 +88,8 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 		}
 	}
 	pSideMenu->BuildInitativeList();
+
+	mRulerDest = D2D1::RectF(5.0f, (WindowSize.height * 0.5f) - 16.0f, 105.0f, (WindowSize.height * 0.5f) + 16.0f);
 }
 
 BaseLevel::~BaseLevel()
@@ -110,6 +112,7 @@ void BaseLevel::Unload()
 	SafeDelete(&sptest);
 	SafeDelete(&pSideMenu);
 	SafeDelete(&pSizeMenu);
+	SafeDelete(&pRuler);
 
 	while (vWalls.size())
 	{
@@ -188,7 +191,7 @@ void BaseLevel::Render()
 	
 	if (sptest && !pSideMenu->WallSelected())
 	{
-		gfx->DrawRect(gfx->GetCompatibleTarget(), mPreviewDest, D2D1::ColorF(1.0f, 0.1f, 0.05f, 1.0f), 5.0f);
+		if (pSideMenu->IsBuildMode() || pSelectedObject) gfx->DrawRect(gfx->GetCompatibleTarget(), mPreviewDest, D2D1::ColorF(1.0f, 0.1f, 0.05f, 1.0f), 5.0f);
 	}
 
 	if (wptest && pSideMenu->WallSelected())
@@ -199,6 +202,7 @@ void BaseLevel::Render()
 	}
 
 	if (bGridOnTop) gfx->DrawDefaultGrid(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), GridSquareSize, D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.9f), 3.0f);
+	if (pRuler) pRuler->DrawLine();
 	gfx->EndDraw(gfx->GetCompatibleTarget());
 
 	//render the frame
@@ -224,7 +228,8 @@ void BaseLevel::Render()
 	gfx->EndDraw(gfx->GetCompatibleTarget());
 
 	gfx->SwapBuffer();
-	gfx->OutputText(gfx->GetRenderTarget(), std::to_wstring(afps).c_str(), D2D1::RectF(0, 500, 500, 564));
+//	gfx->OutputText(gfx->GetRenderTarget(), std::to_wstring(afps).c_str(), D2D1::RectF(0, 500, 500, 564));			//remove comment to display avg. FPS
+	if (pRuler) pRuler->DrawDistance();
 	gfx->EndDraw(gfx->GetRenderTarget());
 }
 
@@ -316,7 +321,8 @@ void BaseLevel::Update(double dDelta)
 	}
 
 	//----- Alternate method to move the screen ------
-	if (pMouse->MiddlePressed())
+	//if (pMouse->MiddlePressed())
+	if (pMouse->X1Pressed())
 	{		
 		if (PushMouseCoordinate.x || PushMouseCoordinate.y)
 		{
@@ -353,7 +359,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 				sptest->SetDestSpritePosition(TranslatedCoordinates);
 				sptest->SetDestResizedSpritePosition(TranslatedCoordinates);
 
-				mPreviewDest = GetPreviewRect();
+				mPreviewDest = GetPreviewRect(pSelectedObject ? pSelectedObject : sptest, TranslatedCoordinates);
 			}
 			if (wptest)
 			{
@@ -363,6 +369,11 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			{
 				pThicknessMenu->UpdateSlider();
 				wptest->SetThickness(pThicknessMenu->GetSelectedThickness());								
+			}
+			if (pRuler)
+			{
+				pRuler->SetEndPoint(TranslatedCoordinates);
+				pRuler->CalcDistance();
 			}
 			break;
 		}
@@ -417,7 +428,9 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 						{
 							if (!pSelectedObject)
 							{
-								pSelectedObject = c;								
+								pSelectedObject = c;
+								if (!pRuler) pRuler = new Ruler(gfx, GridSquareSize, D2D1::Point2F(pSelectedObject->GetDestSprite().left + (pSelectedObject->GetDestSprite().right - pSelectedObject->GetDestSprite().left) * 0.5f,
+									pSelectedObject->GetDestSprite().top + (pSelectedObject->GetDestSprite().bottom - pSelectedObject->GetDestSprite().top) * 0.5f), mRulerDest);
 							}
 							/*else
 							{
@@ -435,8 +448,9 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 					}
 					if (pSelectedObject && move)
 					{
-						pSelectedObject->SetDestSprite(GetPreviewRect());
+						pSelectedObject->SetDestSprite(GetPreviewRect(pSelectedObject, TranslatedCoordinates));
 						pSelectedObject = nullptr;
+						SafeDelete(&pRuler);
 					}
 				}
 			}
@@ -533,12 +547,16 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			}
 			break;
 		}
-		case Mouse::Event::Type::MPress:
-			if(!pSideMenu->PointInRect(*pMouseCoordinate) || pSideMenu->IsHidden())
+		case Mouse::Event::Type::X1Press:
+			if (!pSideMenu->PointInRect(*pMouseCoordinate) || pSideMenu->IsHidden())
 				PushMouseCoordinate = e.GetPos();
 			break;
-		case Mouse::Event::Type::MRelease:
+		case Mouse::Event::Type::X1Release:
 			PushMouseCoordinate = D2D1::Point2F();
+			break;
+		case Mouse::Event::Type::MPress:			
+			break;
+		case Mouse::Event::Type::MRelease:			
 			if (pSideMenu->IsInRealRect() && !pSideMenu->IsBuildMode())
 			{
 				int selectedid = -1;
@@ -604,6 +622,21 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 					pSideMenu->InitiativeList->WheelUp();
 				}
 			}
+			else
+			{
+				if (pMouse->X1Pressed())
+				{
+					D2D1_SIZE_F temp = gfx->GetCompatibleTargetSize();
+					temp.height += GridSquareSize.height;
+					temp.width += GridSquareSize.width;
+					gfx->ResizeCompatibleRenderTarget(temp);
+				}
+				else
+				{
+					Scale.height += ScaleSpeed.height;
+					Scale.width += ScaleSpeed.width;
+				}
+			}
 		}
 			break;
 		case Mouse::Event::Type::WheelDown:
@@ -635,6 +668,23 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 				else
 				{
 					pSideMenu->InitiativeList->WheelDown();
+				}
+			}
+			else
+			{
+				if (pMouse->X1Pressed())
+				{
+					D2D1_SIZE_F temp = gfx->GetCompatibleTargetSize();
+					temp.height -= GridSquareSize.height;
+					temp.width -= GridSquareSize.width;
+					gfx->ResizeCompatibleRenderTarget(temp);
+				}
+				else
+				{
+					Scale.height -= ScaleSpeed.height;
+					Scale.width -= ScaleSpeed.width;
+					if (Scale.height <= 0) Scale.height = ScaleSpeed.height;
+					if (Scale.width <= 0) Scale.width = ScaleSpeed.width;
 				}
 			}
 		}
@@ -683,12 +733,7 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 		{
 			if (!pSideMenu->IsBuildMode())
 			{
-				if (pSideMenu->InitiativeList)
-				{
-					auto temp = pSideMenu->vInitativeList.begin();
-					std::rotate(temp, temp + 1, pSideMenu->vInitativeList.end());
-					pSideMenu->BuildInitativeList();
-				}
+				pSideMenu->NextTurn();
 			}
 			break;
 		}
@@ -696,12 +741,7 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 		{
 			if (!pSideMenu->IsBuildMode())
 			{
-				if (pSideMenu->InitiativeList)
-				{
-					auto temp = pSideMenu->vInitativeList.begin() + pSideMenu->vInitativeList.size() - 1;
-					std::rotate(pSideMenu->vInitativeList.begin(), temp, pSideMenu->vInitativeList.end());
-					pSideMenu->BuildInitativeList();
-				}
+				pSideMenu->PreviousTurn();
 			}
 			break;
 		}
@@ -784,6 +824,10 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 					wptest->SetThickness(pThicknessMenu->GetSelectedThickness());
 				}
 				break;
+			case VK_SHIFT:
+				SafeDelete(&pRuler);
+				pRuler = new Ruler(gfx, GridSquareSize, TranslatedCoordinates, mRulerDest);
+				break;
 			}
 		}
 		if (keyEvents.IsRelease())
@@ -808,6 +852,9 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 			case 'D':
 				direction.push(Move::Direction::Right);
 				direction.push(Move::Direction::RotatePositive);
+				break;
+			case VK_SHIFT:
+				SafeDelete(&pRuler);
 				break;
 			}
 			while (!direction.empty())
@@ -1033,18 +1080,18 @@ void BaseLevel::CreateLayer(size_t uRoomNumber)
 	}
 }
 
-const D2D1_RECT_F BaseLevel::GetPreviewRect()
+const D2D1_RECT_F BaseLevel::GetPreviewRect(SpritePointer* const pSpritePointer, const D2D1_POINT_2F p)
 {
 	D2D1_SIZE_F size;
 	float sizemod = 1.0f;
-	switch (sptest->GetCreatureSize())
+	switch (pSpritePointer->GetCreatureSize())
 	{
 	case CreatureSize::Diminutive:
 	case CreatureSize::Fine:
 	case CreatureSize::Tiny:
 	case CreatureSize::Small:
 	{
-		sizemod = static_cast<float>(1.0f / pow(2, static_cast<unsigned long>(CreatureSize::Medium) - static_cast<unsigned long>(sptest->GetCreatureSize())));
+		sizemod = static_cast<float>(1.0f / pow(2, static_cast<unsigned long>(CreatureSize::Medium) - static_cast<unsigned long>(pSpritePointer->GetCreatureSize())));
 		size = D2D1::SizeF(GridSquareSize.width * sizemod, GridSquareSize.height * sizemod);
 		break;
 	}
@@ -1054,35 +1101,35 @@ const D2D1_RECT_F BaseLevel::GetPreviewRect()
 	case CreatureSize::Large:
 	case CreatureSize::Huge:
 	case CreatureSize::Gargantuan:
-	case CreatureSize::Colossal:	
-		sizemod = static_cast<float>(1 + static_cast<unsigned int>(sptest->GetCreatureSize()) - static_cast<unsigned int>(CreatureSize::Medium));
+	case CreatureSize::Colossal:
+		sizemod = static_cast<float>(1 + static_cast<unsigned int>(pSpritePointer->GetCreatureSize()) - static_cast<unsigned int>(CreatureSize::Medium));
 		size = D2D1::SizeF(GridSquareSize.width * sizemod, GridSquareSize.height * sizemod);
 		break;
 	default:
-		sizemod = static_cast<float>(sptest->GetCreatureSize()) - static_cast<float>(CreatureSize::Colossal);
-		size = D2D1::SizeF(sptest->GetSpriteFrameSize().width * sizemod, sptest->GetSpriteFrameSize().height * sizemod);
+		sizemod = static_cast<float>(pSpritePointer->GetCreatureSize()) - static_cast<float>(CreatureSize::Colossal);
+		size = D2D1::SizeF(pSpritePointer->GetSpriteFrameSize().width * sizemod, pSpritePointer->GetSpriteFrameSize().height * sizemod);
 	}
 	if (bLockToGrid)
 	{
 		D2D1_POINT_2F lockedPoint;
-		if (static_cast<int>(sptest->GetCreatureSize()) < static_cast<int>(CreatureSize::Medium))
+		if (static_cast<int>(pSpritePointer->GetCreatureSize()) < static_cast<int>(CreatureSize::Medium))
 		{
-			lockedPoint.x = static_cast<float>(static_cast<unsigned int>(sptest->GetDestSprite().left) / static_cast<unsigned int>(GridSquareSize.width * sizemod));			
-			lockedPoint.y = static_cast<float>(static_cast<unsigned int>(sptest->GetDestSprite().top) / static_cast<unsigned int>(GridSquareSize.height * sizemod));
+			lockedPoint.x = static_cast<float>(static_cast<unsigned int>(p.x) / static_cast<unsigned int>(GridSquareSize.width * sizemod));
+			lockedPoint.y = static_cast<float>(static_cast<unsigned int>(p.y) / static_cast<unsigned int>(GridSquareSize.height * sizemod));
 			lockedPoint.x *= GridSquareSize.width * sizemod;
 			lockedPoint.y *= GridSquareSize.height * sizemod;
 		}
 		else
 		{
-			lockedPoint.x = static_cast<float>(static_cast<unsigned int>(sptest->GetDestSprite().left) / static_cast<unsigned int>(GridSquareSize.width));
-			lockedPoint.y = static_cast<float>(static_cast<unsigned int>(sptest->GetDestSprite().top) / static_cast<unsigned int>(GridSquareSize.height));
+			lockedPoint.x = static_cast<float>(static_cast<unsigned int>(p.x) / static_cast<unsigned int>(GridSquareSize.width));
+			lockedPoint.y = static_cast<float>(static_cast<unsigned int>(p.y) / static_cast<unsigned int>(GridSquareSize.height));
 			lockedPoint.x *= GridSquareSize.width;
 			lockedPoint.y *= GridSquareSize.height;
 		}
-		
+
 		return D2D1::RectF(lockedPoint.x, lockedPoint.y, lockedPoint.x + size.width, lockedPoint.y + size.height);
 	}
-	return D2D1::RectF(sptest->GetDestSprite().left, sptest->GetDestSprite().top, sptest->GetDestSprite().left + size.width, sptest->GetDestSprite().top + size.height);
+	return D2D1::RectF(p.x, p.y, p.x + size.width, p.y + size.height);
 }
 
 const D2D1_POINT_2F BaseLevel::GetNearestCorner()

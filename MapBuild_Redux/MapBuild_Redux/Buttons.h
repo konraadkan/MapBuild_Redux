@@ -202,3 +202,45 @@ public:
 	const bool Interact() override;
 	const bool AlternateInteract() override;
 };
+
+class TurnButtons : public Buttons
+{
+protected:
+	void* const pSideMenu;
+	ID2D1PathGeometry* pGeometry = nullptr;
+	virtual void BuildGeometry() = 0;
+public:
+	TurnButtons(void* const psidemenu, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, bool enableselection = false, bool selected = false,
+		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : Buttons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign), pSideMenu(psidemenu) {}
+	~TurnButtons() { }
+	TurnButtons(const TurnButtons&) = delete;
+	TurnButtons& operator=(const TurnButtons&) = delete;
+};
+
+class NextTurnButtons : public TurnButtons
+{
+public:
+	NextTurnButtons(void* const psidemenu, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, bool enableselection = false, bool selected = false,
+		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : TurnButtons(psidemenu, graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign)	{ BuildGeometry(); }
+	~NextTurnButtons() { SafeRelease(&pGeometry); }
+	NextTurnButtons(const NextTurnButtons&) = delete;
+	NextTurnButtons& operator=(const NextTurnButtons&) = delete;
+	void Draw() override;
+	const bool Interact() override;
+	const bool AlternateInteract() override;
+	void BuildGeometry() override;
+};
+
+class PreviousTurnButtons : public TurnButtons
+{
+public:
+	PreviousTurnButtons(void* const psidemenu, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, bool enableselection = false, bool selected = false,
+		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : TurnButtons(psidemenu, graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) { BuildGeometry(); }
+	~PreviousTurnButtons() { SafeRelease(&pGeometry); }
+	PreviousTurnButtons(const PreviousTurnButtons&) = delete;
+	PreviousTurnButtons& operator=(const PreviousTurnButtons&) = delete;
+	void Draw() override;
+	const bool Interact() override;
+	const bool AlternateInteract() override;
+	void BuildGeometry() override;
+};

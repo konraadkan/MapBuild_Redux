@@ -30,6 +30,16 @@ bool Mouse::MiddlePressed() const
 	return bMiddlePressed;
 }
 
+bool Mouse::X1Pressed() const
+{
+	return bX1Pressed;
+}
+
+bool Mouse::X2Pressed() const
+{
+	return bX2Pressed;
+}
+
 bool Mouse::InWindow() const
 {
 	return bInWindow;
@@ -108,6 +118,34 @@ void Mouse::OnMiddleReleased(float x, float y)
 {
 	bMiddlePressed = false;
 	buffer.push(Mouse::Event(Mouse::Event::Type::MRelease, *this));
+	TrimBuffer();
+}
+
+void Mouse::OnX1Pressed(float x, float y)
+{
+	bX1Pressed = true;
+	buffer.push(Mouse::Event(Mouse::Event::Type::X1Press, *this));
+	TrimBuffer();
+}
+
+void Mouse::OnX1Released(float x, float y)
+{
+	bX1Pressed = false;
+	buffer.push(Mouse::Event(Mouse::Event::Type::X1Release, *this));
+	TrimBuffer();
+}
+
+void Mouse::OnX2Pressed(float x, float y)
+{
+	bX2Pressed = true;
+	buffer.push(Mouse::Event(Mouse::Event::Type::X2Press, *this));
+	TrimBuffer();
+}
+
+void Mouse::OnX2Released(float x, float y)
+{
+	bX2Pressed = false;
+	buffer.push(Mouse::Event(Mouse::Event::Type::X2Release, *this));
 	TrimBuffer();
 }
 
