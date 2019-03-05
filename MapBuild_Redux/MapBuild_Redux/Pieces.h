@@ -6,6 +6,7 @@
 #include "Sprite.h"
 #include "HPTimer.h"
 #include "CreatureSize.h"
+#include "SafeReleaseMemory.h"
 
 class Pieces : public StringMod
 {
@@ -45,7 +46,7 @@ protected:
 public:
 	Pieces(Graphics* const graphics, HPTimer* const timer, D2D1_SIZE_F* const gridsize) : gfx(graphics), pTimer(timer), pGridSize(gridsize) {}
 	Pieces(std::string Buffer, Graphics* const graphics, HPTimer* const timer, D2D1_SIZE_F* const gridsize) : pTimer(timer), gfx(graphics), pGridSize(gridsize) { char* p = nullptr; FillPiece(Buffer, p); }
-	~Pieces() {}
+	~Pieces() { }
 	std::queue<std::string> FillPiece(std::string& Buffer, char*& pos);
 	std::queue<std::wstring> FillPiece(char* const Buffer, char*& pos);
 public:
@@ -88,6 +89,8 @@ public:
 	void LoadSpriteM(std::atomic<unsigned int>& numberfinished);
 	void LoadPortrait();
 	void LoadPortraitM(std::atomic<unsigned int>& numberfinished);
+	void UnloadSprite() { if (pSprite) SafeDelete(&pSprite); }
+	void UnloadPortrait() { if (pPortrait) SafeDelete(&pPortrait); }
 	Sprite* const GetSprite() { return pSprite; }
 	Sprite* const GetPortrait() { return pPortrait; }
 };
@@ -130,7 +133,7 @@ protected:
 public:
 	PiecesW(Graphics* const graphics, HPTimer* const timer, D2D1_SIZE_F* const gridsize) : gfx(graphics), pTimer(timer), pGridSize(gridsize) {}
 	PiecesW(std::wstring Buffer, Graphics* const graphics, HPTimer* const timer, D2D1_SIZE_F* const gridsize) : gfx(graphics), pTimer(timer), pGridSize(gridsize) { wchar_t* p = nullptr; FillPiece(Buffer, p); }
-	~PiecesW() {}
+	~PiecesW() { }
 	std::queue<std::wstring> FillPiece(std::wstring& Buffer, wchar_t*& pos);
 	std::queue<std::wstring> FillPiece(wchar_t* const Buffer, wchar_t*& pos);
 public:
@@ -174,8 +177,14 @@ public:
 	void LoadSpriteM(std::atomic<unsigned int>& numberfinished);
 	void LoadPortrait();
 	void LoadPortraitM(std::atomic<unsigned int>& numberfinished);
+	void UnloadSprite() { if (pSprite) SafeDelete(&pSprite); }
+	void UnloadPortrait() { if (pPortrait) SafeDelete(&pPortrait); }
 	Sprite* const GetSprite() { return pSprite; }
 	Sprite* const GetPortrait() { return pPortrait; }
+	const unsigned long CalcSaveSize();
+	const char* GetSaveBuffer() { return BuildSaveBuffer(); }
+	const char* BuildSaveBuffer();
+	const bool LoadSaveBuffer(const char* Buffer);
 };
 
 struct Location
@@ -187,7 +196,7 @@ struct Location
 	unsigned long uRoom = 0;
 };
 
-class SpritePointer
+class SpritePointer : public SafeReleaseMemory
 {
 private:
 	Location mLocation;
@@ -200,7 +209,7 @@ private:
 public:
 	SpritePointer(PiecesW* const p, const Location loc, bool keepaspectsprite = true, bool keepaspectportrait = true) : 
 		mLocation(loc), pPiece(p), bKeepAspectRatioSprite(keepaspectsprite), bKeepAspectRatioPortrait(keepaspectportrait) {}
-	~SpritePointer() { }
+	~SpritePointer() { for (auto& child : vSpriteChild) SafeDelete(&child); for (auto& child : vPortraitChild) SafeDelete(&child); }
 	SpritePointer(const SpritePointer&) = delete;
 	SpritePointer& operator=(const SpritePointer&) = delete;
 public:
@@ -231,6 +240,11 @@ public:
 	void SetKeepAspectPortrait() { bKeepAspectRatioPortrait = true; }
 	void UnsetKeepAspectPortrait() { bKeepAspectRatioPortrait = false; }
 	void ToggleAspectRatioPortrait() { bKeepAspectRatioPortrait ^= true; }
+	void AddSpriteChild(PiecesW* const piece);
+	void AddPortraitChild(PiecesW* const piece);
+	void RemoveChildren();
+	const char* GetSaveInformation();
+	const char* CreateSaveInformation();
 public:
 	const bool IsSelected() { return bSelected; }
 	const bool IsKeepAspectSprite() { return bKeepAspectRatioSprite; }
@@ -248,5 +262,7 @@ public:
 	PiecesW* const GetPieces() { return pPiece; }
 	Sprite* const GetSprite() { return pPiece->GetSprite(); }
 	Sprite* const GetPortrait() { return pPiece->GetPortrait(); }
+	std::vector<SpritePointer*> vSpriteChild;
+	std::vector<SpritePointer*> vPortraitChild;
 };
 

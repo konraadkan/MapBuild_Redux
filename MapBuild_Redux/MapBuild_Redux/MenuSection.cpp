@@ -10,7 +10,7 @@ void MenuSection::ResizeDest()
 		if (pChild.back()->pChild.back()->GetRect().bottom >= m_Dest.bottom)
 			m_Dest.bottom = pChild.back()->pChild.back()->GetRect().bottom + 1.0f;
 	}
-	if (pChild.back()->GetRect().top >= m_Dest.bottom)
+	if (pChild.back()->GetRect().bottom >= m_Dest.bottom)
 		m_Dest.bottom = pChild.back()->GetRect().bottom + 1.0f;
 }
 

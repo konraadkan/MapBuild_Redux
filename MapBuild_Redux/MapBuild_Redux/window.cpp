@@ -122,7 +122,17 @@ LRESULT WINAPI Window::HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 }
 
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
-{
+{	
+	if (Controller::CurrentLevel)
+	{
+		if (Controller::CurrentLevel->IsExit())
+			PostQuitMessage(0);
+		if (Controller::CurrentLevel->CreateNew())
+		{
+			Controller::CurrentLevel->Unload();
+			Controller::SwitchLevel(new BaseLevel(gfx, &m_MouseCoordinates, width, height, pTimer));
+		}
+	}
 	switch (msg)
 	{
 	case WM_MOUSEMOVE:
@@ -172,7 +182,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		Controller::m_Mouse.OnMiddlePressed(m_MouseCoordinates.x, m_MouseCoordinates.y);
 		break;
 	case WM_LBUTTONUP:
-		Controller::m_Mouse.OnLeftReleased(m_MouseCoordinates.x, m_MouseCoordinates.y);
+		Controller::m_Mouse.OnLeftReleased(m_MouseCoordinates.x, m_MouseCoordinates.y);		
 		break;
 	case WM_RBUTTONUP:
 		Controller::m_Mouse.OnRightReleased(m_MouseCoordinates.x, m_MouseCoordinates.y);

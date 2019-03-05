@@ -568,8 +568,25 @@ const bool PreviousTurnButtons::Interact()
 	if (IsHidden()) return true;
 
 	if (PointInRect())
+	{
 		if (pSideMenu) static_cast<SideMenu*>(pSideMenu)->PreviousTurn();
-	return false;
+			return false;
+	}
+	return true;
+}
+
+const bool AttachObjectButtons::Interact()
+{
+	if (IsHidden()) return true;
+	if (!pAttachObject) return true;
+
+	if (PointInRect())
+	{
+		*pAttachObject ^= true;
+		if (*pAttachObject) SetIsSelected(); 
+		else UnsetIsSelected();
+	}
+	return true;
 }
 
 const bool PreviousTurnButtons::AlternateInteract()
@@ -629,4 +646,28 @@ void NextTurnButtons::BuildGeometry()
 		return;
 	}
 	SafeRelease(&pGeometry);
+}
+
+const bool ExitButtons::Interact()
+{
+	if (IsHidden()) return true;
+
+	if (PointInRect())
+	{
+		if (pExit) *pExit = true;
+		return false;
+	}
+	return true;
+}
+
+const bool NewButtons::Interact()
+{
+	if (IsHidden()) return true;
+
+	if (PointInRect())
+	{
+		if (pNew) *pNew = true;
+		return false;
+	}
+	return true;
 }

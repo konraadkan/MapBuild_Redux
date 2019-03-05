@@ -519,6 +519,11 @@ void SpritePointer::DrawSprite(Graphics* const gfx, bool back)
 	if (back) gfx->DrawBitmap(gfx->GetCompatibleTarget(), GetSprite()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetSprite()->GetFrame());
 	else gfx->DrawBitmap(gfx->GetRenderTarget(), GetSprite()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetSprite()->GetFrame());
 	GetSprite()->NextFrame();
+
+	for (auto& child : vSpriteChild)
+	{
+		if (child) child->DrawSprite(gfx, back);
+	}
 }
 
 void SpritePointer::DrawPortrait(Graphics* const gfx, bool back)
@@ -527,6 +532,11 @@ void SpritePointer::DrawPortrait(Graphics* const gfx, bool back)
 	if (back) gfx->DrawBitmap(gfx->GetCompatibleTarget(), GetPortrait()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetPortrait()->GetFrame());
 	else gfx->DrawBitmap(gfx->GetRenderTarget(), GetPortrait()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetPortrait()->GetFrame());
 	GetPortrait()->NextFrame();
+
+	for (auto& child : vPortraitChild)
+	{
+		if (child) child->DrawPortrait(gfx, back);
+	}
 }
 
 void SpritePointer::BuildResizedDestSprite()
@@ -713,4 +723,225 @@ void SpritePointer::SetPortraitPosition(const D2D1_POINT_2F point)
 	mLocation.mDestPortrait.top = point.y;
 	mLocation.mDestPortrait.right = mLocation.mDestPortrait.left + GetPortraitFrameSize().width;
 	mLocation.mDestPortrait.bottom = mLocation.mDestPortrait.top + GetPortraitFrameSize().height;
+}
+
+void SpritePointer::AddSpriteChild(PiecesW* const piece)
+{
+	vSpriteChild.push_back(new SpritePointer(piece, mLocation, bKeepAspectRatioSprite, bKeepAspectRatioPortrait));
+	vSpriteChild.back()->SetCreatureSize(GetCreatureSize());
+	vSpriteChild.back()->SetOpacity(0.60f);
+}
+
+void SpritePointer::AddPortraitChild(PiecesW* const piece)
+{
+	vPortraitChild.push_back(new SpritePointer(piece, mLocation, bKeepAspectRatioSprite, bKeepAspectRatioPortrait));
+}
+
+void SpritePointer::RemoveChildren()
+{
+	for (auto& sprite : vSpriteChild)
+	{
+		SafeDelete(&sprite);
+	}
+	for (auto& sprite : vPortraitChild)
+	{
+		SafeDelete(&sprite);
+	}
+	vSpriteChild = std::vector<SpritePointer*>();
+	vPortraitChild = std::vector<SpritePointer*>();
+}
+
+const char* SpritePointer::GetSaveInformation()
+{
+	return CreateSaveInformation();
+}
+
+const char* SpritePointer::CreateSaveInformation()
+{
+	for (auto& child : vSpriteChild)
+	{
+
+	}
+	for (auto& child : vPortraitChild)
+	{
+
+	}
+	return nullptr;
+}
+
+const unsigned long PiecesW::CalcSaveSize()
+{
+	unsigned long uBufferSize = 0;
+	uBufferSize += sizeof(unsigned int);											//holds size of this buffer
+	uBufferSize += sizeof(unsigned int);											//holds creature size
+	uBufferSize += sizeof(unsigned int);											//holds sType.size()
+	uBufferSize += static_cast<unsigned int>(sType.size()) * sizeof(wchar_t);		//holds sType wchar_t's
+	uBufferSize += sizeof(unsigned int);											//holds sName.size()
+	uBufferSize += static_cast<unsigned int>(sName.size()) * sizeof(wchar_t);		//holds sName wchar_t's
+	uBufferSize += sizeof(unsigned int);											//holds sIconPath.size()
+	uBufferSize += static_cast<unsigned int>(sIconPath.size()) * sizeof(wchar_t);	//holsd sIconPath wchar_t's
+	uBufferSize += sizeof(unsigned int);											//holds sSpritePath.size()
+	uBufferSize += static_cast<unsigned int>(sSpritePath.size()) * sizeof(wchar_t); //holds sSpritePath wchar_t's
+	uBufferSize += sizeof(unsigned int);											//holds sSubmenu.size()
+	uBufferSize += static_cast<unsigned int>(sSubMenu.size()) * sizeof(wchar_t);	//holds sSubmenu wchar_t's
+	uBufferSize += sizeof(unsigned char);											//holds bool values for bDefaultInit, bKeepAspect, bKeepIconAspect
+	uBufferSize += sizeof(float) * 4;												//holds color values
+	return uBufferSize;
+}
+
+const char* PiecesW::BuildSaveBuffer()
+{
+	unsigned int uBufferSize = CalcSaveSize();
+	char* Buffer = new char[uBufferSize];
+	size_t pos = 0;
+
+	memcpy(Buffer, &uBufferSize, sizeof(uBufferSize));
+	pos += sizeof(uBufferSize);
+	
+	unsigned int uCreatureSize = static_cast<unsigned int>(mSize);
+	memcpy(Buffer + pos, &uCreatureSize, sizeof(uCreatureSize));
+	pos += sizeof(uCreatureSize);
+
+	unsigned int uLen = static_cast<unsigned int>(sType.size());
+	memcpy(Buffer + pos, &uLen, sizeof(uLen));
+	pos += sizeof(uLen);	
+	if (sType.size())
+	{
+		memcpy(Buffer + pos, &sType.front(), sizeof(wchar_t) * uLen);
+		pos += sizeof(wchar_t) * uLen;
+	}
+
+	uLen = static_cast<unsigned int>(sName.size());
+	memcpy(Buffer + pos, &uLen, sizeof(uLen));
+	pos += sizeof(uLen);
+	if (sName.size())
+	{
+		memcpy(Buffer + pos, &sName.front(), sizeof(wchar_t) * uLen);
+		pos += sizeof(wchar_t) * uLen;
+	}
+
+	uLen = static_cast<unsigned int>(sIconPath.size());
+	memcpy(Buffer + pos, &uLen, sizeof(uLen));
+	pos += sizeof(uLen);
+	if (sIconPath.size())
+	{
+		memcpy(Buffer + pos, &sIconPath.front(), sizeof(wchar_t) * uLen);
+		pos += sizeof(wchar_t) * uLen;
+	}
+
+	uLen = static_cast<unsigned int>(sSpritePath.size());
+	memcpy(Buffer + pos, &uLen, sizeof(uLen));
+	pos += sizeof(uLen);
+	if (sSpritePath.size())
+	{
+		memcpy(Buffer + pos, &sSpritePath.front(), sizeof(wchar_t) * uLen);
+		pos += sizeof(wchar_t) * uLen;
+	}
+
+	uLen = static_cast<unsigned int>(sSubMenu.size());
+	memcpy(Buffer + pos, &uLen, sizeof(uLen));
+	pos += sizeof(uLen);
+	if (sSubMenu.size())
+	{
+		memcpy(Buffer + pos, &sSubMenu.front(), sizeof(wchar_t) * uLen);
+		pos += sizeof(wchar_t) * uLen;
+	}
+
+	unsigned char bools = 0;
+	if (bDetaultInitOrder) bools |= 1;
+	if (bKeepAspect) bools |= 2;
+	if (bKeepIconAspect) bools |= 4;
+
+	memcpy(Buffer + pos, &bools, sizeof(bools));
+	pos += sizeof(bools);
+	
+	memcpy(Buffer + pos, &BackgroundColor.r, sizeof(BackgroundColor.r));
+	pos += sizeof(BackgroundColor.r);
+	memcpy(Buffer + pos, &BackgroundColor.g, sizeof(BackgroundColor.g));
+	pos += sizeof(BackgroundColor.g);
+	memcpy(Buffer + pos, &BackgroundColor.b, sizeof(BackgroundColor.b));
+	pos += sizeof(BackgroundColor.b);
+	memcpy(Buffer + pos, &BackgroundColor.a, sizeof(BackgroundColor.a));
+
+	return Buffer;
+}
+
+const bool PiecesW::LoadSaveBuffer(const char* Buffer)
+{
+	if (!Buffer) return false;
+
+	unsigned int uBufferSize = 0;
+	size_t pos = 0;
+
+	memcpy(&uBufferSize, Buffer, sizeof(uBufferSize));
+	pos += sizeof(uBufferSize);
+
+	unsigned int uCreatureSize = 0;
+	memcpy(&uCreatureSize, Buffer + pos, sizeof(uCreatureSize));
+	mSize = static_cast<CreatureSize>(uCreatureSize);
+	pos += sizeof(uCreatureSize);
+
+	unsigned int uLen = 0;
+	memcpy(&uLen, Buffer + pos, sizeof(uLen));
+	pos += sizeof(uLen);
+	sType = std::wstring(uLen, L'\0');
+	if (uLen)
+	{
+		memcpy(&sType.at(0), Buffer + pos, sizeof(wchar_t) * uLen);
+		pos += sizeof(wchar_t) * uLen;
+	}
+
+	memcpy(&uLen, Buffer + pos, sizeof(uLen));
+	pos += sizeof(uLen);
+	sName = std::wstring(uLen, L'\0');
+	if (uLen)
+	{
+		memcpy(&sName.at(0), Buffer + pos, sizeof(wchar_t) * uLen);
+		pos += sizeof(wchar_t) * uLen;
+	}
+
+	memcpy(&uLen, Buffer + pos, sizeof(uLen));
+	pos += sizeof(uLen);
+	sIconPath = std::wstring(uLen, L'\0');
+	if (uLen)
+	{
+		memcpy(&sIconPath.at(0), Buffer + pos, sizeof(wchar_t) * uLen);
+		pos += sizeof(wchar_t) * uLen;
+	}
+
+	memcpy(&uLen, Buffer + pos, sizeof(uLen));
+	pos += sizeof(uLen);
+	sSpritePath = std::wstring(uLen, L'\0');
+	if (uLen)
+	{
+		memcpy(&sSpritePath.at(0), Buffer + pos, sizeof(wchar_t) * uLen);
+		pos += sizeof(wchar_t) * uLen;
+	}
+
+	memcpy(&uLen, Buffer + pos, sizeof(uLen));
+	pos += sizeof(uLen);
+	sSubMenu = std::wstring(uLen, L'\0');
+	if (uLen)
+	{
+		memcpy(&sSubMenu.at(0), Buffer + pos, sizeof(wchar_t) * uLen);
+		pos += sizeof(wchar_t) * uLen;
+	}
+
+	unsigned char bools = 0;
+	memcpy(&bools, Buffer + pos, sizeof(bools));
+	pos += sizeof(bools);
+	bDetaultInitOrder = (bools & 1);
+	bKeepAspect = (bools & 2);
+	bKeepIconAspect = (bools & 4);
+
+	memcpy(&BackgroundColor.r, Buffer + pos, sizeof(BackgroundColor.r));
+	pos += sizeof(BackgroundColor.r);
+	memcpy(&BackgroundColor.g, Buffer + pos, sizeof(BackgroundColor.g));
+	pos += sizeof(BackgroundColor.g);
+	memcpy(&BackgroundColor.b, Buffer + pos, sizeof(BackgroundColor.b));
+	pos += sizeof(BackgroundColor.b);
+	memcpy(&BackgroundColor.a, Buffer + pos, sizeof(BackgroundColor.a));
+	pos += sizeof(BackgroundColor.a);
+
+	return true;
 }

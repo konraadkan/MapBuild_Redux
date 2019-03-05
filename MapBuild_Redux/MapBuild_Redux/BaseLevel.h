@@ -76,8 +76,9 @@ public:
 	void UnsetKeepAspect() { bKeepAspect = false; }
 	void ToggleGridOnTop() { bGridOnTop ^= true; }
 	void ToggleUseTexture() override { bUseTexture ^= true; if (wptest) bUseTexture ? wptest->SetUseTexture() : wptest->UnsetUseTexture(); }
-	const D2D1_POINT_2F GetNearestCorner();
+	const D2D1_POINT_2F GetNearestCorner();	
 	void OutputImageLoadingStatusM(std::atomic<unsigned int>& numloaded, unsigned int total, const std::wstring imagetype);	
+	const bool CreateNew() override;
 private:	
 	void DrawSideMenu();
 	void DrawSizeMenu();

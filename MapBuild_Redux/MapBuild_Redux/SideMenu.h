@@ -74,6 +74,7 @@ private:
 	D2D1_RECT_F mRealRect = D2D1::RectF();
 	const float SeperationDistance = 5.0f;
 	bool bBuildMode = true;
+	bool bAttachObject = false;
 	char* Buffer = nullptr;
 	size_t BufferSize = 0;
 public:
@@ -104,8 +105,10 @@ private:
 	bool bWallMenuSelected = false;
 	bool bUseTexture = false;
 	bool bShowPieceColors = false;
+	bool bNew = false;
+	bool* const pExit;
 public:
-	SideMenu(const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p,
+	SideMenu(bool* const Exit, const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p,
 		std::vector< std::vector<SpritePointer*>>** const ppRoom, std::vector<SpritePointer*>** const ppLayer, std::vector< std::vector< std::vector<SpritePointer*>>>** const ppRL,
 		std::vector<bool>* const VisibleRooms, std::vector< std::vector<bool>>* const VisibleLayers, SpritePointer** const ppsprite,
 		std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>>** const ppW, std::vector< std::vector<std::unique_ptr<Wall>>>** const ppSWR, std::vector<std::unique_ptr<Wall>>** const ppSWL);
@@ -180,6 +183,8 @@ public:
 	const bool WallSelected() { return bWallMenuSelected; }
 	const bool UseTexture() { return bUseTexture; }
 	const bool ShowPieceColors() { return bShowPieceColors; }
+	const bool IsAttachObject() { return bAttachObject; }
+	const bool CreateNew() { return bNew; }
 	const unsigned int GetInitativeListSize() { return static_cast<unsigned int>(vInitativeList.size()); }
 	void BuildInitativeList();
 	void NextTurn();

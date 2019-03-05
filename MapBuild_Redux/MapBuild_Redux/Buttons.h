@@ -46,6 +46,65 @@ public:
 	void ToggleIsSelected() { bSelected ^= true; }
 };
 
+class AttachObjectButtons : public Buttons
+{
+private:
+	bool* const pAttachObject;
+public:
+	AttachObjectButtons(bool* const AttachObject, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, bool enableselection = false, bool selected = false,
+		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : pAttachObject(AttachObject), Buttons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
+	AttachObjectButtons(const AttachObjectButtons&) = delete;
+	AttachObjectButtons& operator=(const AttachObjectButtons&) = delete;
+	~AttachObjectButtons() { }
+	const bool Interact() override;
+};
+
+class NewButtons : public Buttons
+{
+private:
+	bool* const pNew;
+public:
+	NewButtons(bool* const New, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, bool enableselection = false, bool selected = false,
+		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : pNew(New), Buttons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
+	~NewButtons() {}
+	NewButtons(const NewButtons&) = delete;
+	NewButtons& operator=(const NewButtons&) = delete;
+	const bool Interact() override;
+};
+
+class SaveButtons : public Buttons
+{
+public:
+	SaveButtons(Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, bool enableselection = false, bool selected = false,
+		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : Buttons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
+	~SaveButtons() {}
+	SaveButtons(const SaveButtons&) = delete;
+	SaveButtons& operator=(const SaveButtons&) = delete;
+};
+
+class LoadButtons : public Buttons
+{
+public:
+	LoadButtons(Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, bool enableselection = false, bool selected = false,
+		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : Buttons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
+	~LoadButtons() { }
+	LoadButtons(const LoadButtons&) = delete;
+	LoadButtons& operator=(const LoadButtons&) = delete;
+};
+
+class ExitButtons : public Buttons
+{
+private:
+	bool* const pExit;
+public:
+	ExitButtons(bool* const Exit, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, bool enableselection = false, bool selected = false,
+		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : pExit(Exit), Buttons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
+	~ExitButtons() {}
+	ExitButtons(const ExitButtons&) = delete;
+	ExitButtons& operator=(const ExitButtons&) = delete;
+	const bool Interact() override;
+};
+
 class RoomLayerBox : public Buttons
 {
 private:

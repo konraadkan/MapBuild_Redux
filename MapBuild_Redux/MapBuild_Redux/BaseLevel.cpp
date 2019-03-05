@@ -18,6 +18,12 @@ const bool AlphaSortName(PiecesW& p1, PiecesW& p2)
 	return (toupper(p1.GetName().front()) < toupper(p2.GetName().front()));
 }
 
+const bool BaseLevel::CreateNew()
+{
+	if (pSideMenu) return pSideMenu->CreateNew();
+	return true;
+}
+
 BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePosition, int WindowX, int WindowY, HPTimer* const timer) : pTimer(timer)
 {
 	this->gfx = graphics;
@@ -26,7 +32,7 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	m_ClientWindow = D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height);
 	RotationCenter = D2D1::Point2F(WindowSize.width * 0.5f, WindowSize.height * 0.5f);
 
-	pSideMenu = new SideMenu(D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow, &MenuCoordinates, &pSelectedRoom, &pSelectedLayer, &ppvSprites, &vVisibleRooms, &vVisibleLayers, &sptest, &pvWalls, &pSelectedRoomWall, &pSelectedLayerWall);
+	pSideMenu = new SideMenu(&bExit, D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow, &MenuCoordinates, &pSelectedRoom, &pSelectedLayer, &ppvSprites, &vVisibleRooms, &vVisibleLayers, &sptest, &pvWalls, &pSelectedRoomWall, &pSelectedLayerWall);
 	pSideMenu->pBaseLevel = this;
 	pSideMenu->SetMousePointer(&MenuCoordinates);
 	IObjects.push_back(pSideMenu);
@@ -113,6 +119,21 @@ void BaseLevel::Unload()
 	SafeDelete(&pSideMenu);
 	SafeDelete(&pSizeMenu);
 	SafeDelete(&pRuler);
+	wptest.reset();
+
+	while (vPieces.size())
+	{
+		vPieces.back().UnloadSprite();
+		vPieces.back().UnloadPortrait();
+		vPieces.pop_back();
+	}
+
+	while (vPiecesW.size())
+	{
+		vPiecesW.back().UnloadSprite();
+		vPiecesW.back().UnloadPortrait();
+		vPiecesW.pop_back();
+	}
 
 	while (vWalls.size())
 	{
@@ -147,8 +168,6 @@ void BaseLevel::Unload()
 		IObjects.back() = nullptr;
 		IObjects.pop_back();
 	}
-	this->gfx = nullptr;
-	this->pMouseCoordinate = nullptr;
 }
 
 void BaseLevel::Render()
@@ -299,23 +318,36 @@ void BaseLevel::Update(double dDelta)
 	//----- Eraser Logic-----
 	if (pMouse->RightPressed() && wptest->PointsEmpty())
 	{
-		for (size_t i =0; i < pSelectedLayer->size(); i++)
+		if (pSideMenu->IsAttachObject())
 		{
-			if (pSelectedLayer->at(i)->PointInSprite(TranslatedCoordinates))
+			for (auto& sprite : *pSelectedLayer)
 			{
-				if (pSelectedLayer->at(i) == pSelectedObject) pSelectedObject = nullptr;
-				pSelectedLayer->erase(pSelectedLayer->begin() + i);
-				pSelectedLayer->shrink_to_fit();
-				break;
+				if (sprite->PointInSprite(TranslatedCoordinates))
+				{
+					sprite->RemoveChildren();
+				}
 			}
 		}
-		for (size_t i = 0; i < pSelectedLayerWall->size(); i++)
+		else
 		{
-			if (pSelectedLayerWall->at(i)->PointTouching(TranslatedCoordinates))
+			for (size_t i = 0; i < pSelectedLayer->size(); i++)
 			{
-				pSelectedLayerWall->erase(pSelectedLayerWall->begin() + i);
-				pSelectedLayerWall->shrink_to_fit();
-				break;
+				if (pSelectedLayer->at(i)->PointInSprite(TranslatedCoordinates))
+				{
+					if (pSelectedLayer->at(i) == pSelectedObject) pSelectedObject = nullptr;
+					pSelectedLayer->erase(pSelectedLayer->begin() + i);
+					pSelectedLayer->shrink_to_fit();
+					break;
+				}
+			}
+			for (size_t i = 0; i < pSelectedLayerWall->size(); i++)
+			{
+				if (pSelectedLayerWall->at(i)->PointTouching(TranslatedCoordinates))
+				{
+					pSelectedLayerWall->erase(pSelectedLayerWall->begin() + i);
+					pSelectedLayerWall->shrink_to_fit();
+					break;
+				}
 			}
 		}
 	}
@@ -382,15 +414,29 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			{
 				if (sptest && !pSideMenu->WallSelected())
 				{
-					pSelectedLayer->push_back(new SpritePointer(sptest->GetPieces(), Location()));
-					pSelectedLayer->back()->SetCreatureSize(sptest->GetCreatureSize());				
-					bKeepAspect ? pSelectedLayer->back()->SetKeepAspectSprite() : pSelectedLayer->back()->UnsetKeepAspectSprite();
-					
-					if (bLockToGrid)
-						pSelectedLayer->back()->SetDestSprite(mPreviewDest);
+					if (pSideMenu->IsAttachObject())
+					{
+						for (auto& sprite : *pSelectedLayer)
+						{
+							if (sprite->PointInSprite(TranslatedCoordinates))
+							{
+								sprite->AddSpriteChild(sptest->GetPieces());
+								break;
+							}
+						}
+					}
 					else
-						pSelectedLayer->back()->SetDestSprite(mPreviewDest);
+					{
+						pSelectedLayer->push_back(new SpritePointer(sptest->GetPieces(), Location()));
+						pSelectedLayer->back()->SetCreatureSize(sptest->GetCreatureSize());
+						bKeepAspect ? pSelectedLayer->back()->SetKeepAspectSprite() : pSelectedLayer->back()->UnsetKeepAspectSprite();
+
+						if (bLockToGrid)
+							pSelectedLayer->back()->SetDestSprite(mPreviewDest);
+						else
+							pSelectedLayer->back()->SetDestSprite(mPreviewDest);
 						//pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + sptest->GetDestResizedSpriteSize().width, TranslatedCoordinates.y + sptest->GetDestResizedSpriteSize().height));
+					}
 				}
 				else if (wptest)
 				{
@@ -449,6 +495,13 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 					if (pSelectedObject && move)
 					{
 						pSelectedObject->SetDestSprite(GetPreviewRect(pSelectedObject, TranslatedCoordinates));
+						for (auto& child : pSelectedObject->vSpriteChild)
+						{
+							if (child)
+							{
+								child->SetDestSprite(pSelectedObject->GetDestSprite());
+							}
+						}
 						pSelectedObject = nullptr;
 						SafeDelete(&pRuler);
 					}
@@ -828,6 +881,21 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 				SafeDelete(&pRuler);
 				pRuler = new Ruler(gfx, GridSquareSize, TranslatedCoordinates, mRulerDest);
 				break;
+			case 'B':
+			{//test button
+				/*const char* t = vPiecesW.front().GetSaveBuffer();
+				if (t)
+				{
+					PiecesW p(gfx, pTimer, &GridSquareSize);
+					p.LoadSaveBuffer(t);
+					p.LoadSprite();
+					p.LoadPortrait();
+					p.UnloadSprite();
+					p.UnloadPortrait();
+					delete[] t;
+				}
+				break;*/
+			}
 			}
 		}
 		if (keyEvents.IsRelease())

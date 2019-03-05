@@ -22,8 +22,11 @@ protected:
 	bool bGridOnTop = false;
 	bool bLockToGrid = true;
 	bool bKeepAspect = true;
-	bool bUseTexture = false;
-public:
+	bool bUseTexture = false;	
+	bool bExit = false;
+public:	
+	virtual const bool CreateNew() = 0;
+	virtual const bool IsExit() { return bExit; }
 	virtual const std::string Trim(const std::string s);
 	virtual const std::string LTrim(const std::string s);
 	virtual const std::string RTrim(const std::string s);
