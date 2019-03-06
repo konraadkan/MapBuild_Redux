@@ -181,7 +181,7 @@ public:
 	void UnloadPortrait() { if (pPortrait) SafeDelete(&pPortrait); }
 	Sprite* const GetSprite() { return pSprite; }
 	Sprite* const GetPortrait() { return pPortrait; }
-	const unsigned long CalcSaveSize();
+	const unsigned int CalcSaveSize();
 	const char* GetSaveBuffer() { return BuildSaveBuffer(); }
 	const char* BuildSaveBuffer();
 	const bool LoadSaveBuffer(const char* Buffer);
@@ -192,6 +192,7 @@ struct Location
 	D2D1_RECT_F mDestSprite = D2D1::RectF();
 	D2D1_RECT_F mDestPortrait = D2D1::RectF();
 	D2D1_RECT_F mResizedDestSprite = D2D1::RectF();
+	D2D1_RECT_F mDestTag = D2D1::RectF();
 	unsigned long uLayer = 0;
 	unsigned long uRoom = 0;
 };
@@ -200,19 +201,24 @@ class SpritePointer : public SafeReleaseMemory
 {
 private:
 	Location mLocation;
-	PiecesW* const pPiece;
+	PiecesW* pPiece = nullptr;
+	char* LoadedPiece = nullptr;
 	bool bSelected = false;
 	float fOpacity = 1.0f;
 	CreatureSize mSize = CreatureSize::Medium;
+	wchar_t wTag[2] = L"\0";
 	bool bKeepAspectRatioSprite = true;
 	bool bKeepAspectRatioPortrait = true;
+	D2D1_SIZE_F* pGridSquareSize = nullptr;
 public:
-	SpritePointer(PiecesW* const p, const Location loc, bool keepaspectsprite = true, bool keepaspectportrait = true) : 
-		mLocation(loc), pPiece(p), bKeepAspectRatioSprite(keepaspectsprite), bKeepAspectRatioPortrait(keepaspectportrait) {}
-	~SpritePointer() { for (auto& child : vSpriteChild) SafeDelete(&child); for (auto& child : vPortraitChild) SafeDelete(&child); }
+	SpritePointer(PiecesW* const p, const Location loc, D2D1_SIZE_F* const GridSquareSize, bool keepaspectsprite = true, bool keepaspectportrait = true) : 
+		mLocation(loc), pPiece(p), bKeepAspectRatioSprite(keepaspectsprite), bKeepAspectRatioPortrait(keepaspectportrait), pGridSquareSize(GridSquareSize) { mLocation.mDestTag = CalcDestTag(); }
+	~SpritePointer() { for (auto& child : vSpriteChild) SafeDelete(&child); for (auto& child : vPortraitChild) SafeDelete(&child); SafeDeleteArray(&LoadedPiece); }
 	SpritePointer(const SpritePointer&) = delete;
 	SpritePointer& operator=(const SpritePointer&) = delete;
 public:
+	const char* GetPieceBuffer() { return LoadedPiece; }
+	void SetPiecePointer(PiecesW* const ptr) { pPiece = ptr; }
 	void MoveDestSprite(const D2D1_SIZE_F changes);
 	void MovePortraitSprite(const D2D1_SIZE_F changes);
 	void MoveResizedDestSprite(const D2D1_SIZE_F changes);
@@ -243,14 +249,19 @@ public:
 	void AddSpriteChild(PiecesW* const piece);
 	void AddPortraitChild(PiecesW* const piece);
 	void RemoveChildren();
+	void AddTag(wchar_t w);
 	const char* GetSaveInformation();
 	const char* CreateSaveInformation();
+	const unsigned int CalcSaveSize();
+	const bool LoadSaveBuffer(const char* Buffer);
+	const D2D1_RECT_F CalcDestTag();
 public:
 	const bool IsSelected() { return bSelected; }
 	const bool IsKeepAspectSprite() { return bKeepAspectRatioSprite; }
 	const bool IsKeepAspectPortrait() { return bKeepAspectRatioPortrait; }
 	const bool PointInSprite(D2D1_POINT_2F p) { return (p.x > mLocation.mDestSprite.left && p.x < mLocation.mDestSprite.right && p.y > mLocation.mDestSprite.top && p.y < mLocation.mDestSprite.bottom); }
 	const D2D1_RECT_F GetDestSprite() { return mLocation.mDestSprite; }
+	const D2D1_RECT_F GetDestTag() { return mLocation.mDestTag; }
 	const D2D1_RECT_F GetDestResizedSprite() { return mLocation.mResizedDestSprite; }
 	const D2D1_RECT_F GetDestPortrait() { return mLocation.mDestPortrait; }
 	const D2D1_SIZE_F GetSpriteFrameSize() { return pPiece->GetSprite()->GetFrameSize(); }

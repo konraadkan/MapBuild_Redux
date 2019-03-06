@@ -63,7 +63,7 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 
 	pThicknessMenu = new ThicknessMenu(gfx, D2D1::RectF(WindowSize.width * 0.75f, WindowSize.height - 98.0f, WindowSize.width, WindowSize.height), pMouseCoordinate);
 	
-	sptest = new SpritePointer(&vPiecesW.front(), Location());
+	sptest = new SpritePointer(&vPiecesW.front(), Location(), &GridSquareSize);
 	sptest->SetDestSprite(D2D1::RectF(-sptest->GetSpriteFrameSize().width, -sptest->GetSpriteFrameSize().height, 0.0f, 0.0f));
 	sptest->SetCreatureSize(vPiecesW.front().GetSize());
 	
@@ -427,7 +427,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 					}
 					else
 					{
-						pSelectedLayer->push_back(new SpritePointer(sptest->GetPieces(), Location()));
+						pSelectedLayer->push_back(new SpritePointer(sptest->GetPieces(), Location(), &GridSquareSize));
 						pSelectedLayer->back()->SetCreatureSize(sptest->GetCreatureSize());
 						bKeepAspect ? pSelectedLayer->back()->SetKeepAspectSprite() : pSelectedLayer->back()->UnsetKeepAspectSprite();
 
@@ -806,19 +806,16 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 		if (keyEvents.IsPress())
 		{
 			switch (keyEvents.GetCode())
-			{
+			{			
 			case VK_UP:
-			case 'W':
 				Movement.bMove = true;
 				Movement.vDirection.push_back(Move::Direction::Up);
 				break;
 			case VK_DOWN:
-			case 'S':
 				Movement.bMove = true;
 				Movement.vDirection.push_back(Move::Direction::Down);
 				break;
 			case VK_LEFT:
-			case 'A':
 				if (GetAsyncKeyState(VK_SHIFT) < 0)
 				{
 					Movement.bMove = true;
@@ -831,7 +828,6 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 				}
 				break;
 			case VK_RIGHT:
-			case 'D':
 				if (GetAsyncKeyState(VK_SHIFT) < 0)
 				{
 					//RotationAngle += RotationSpeed * dDelta;
@@ -881,20 +877,66 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 				SafeDelete(&pRuler);
 				pRuler = new Ruler(gfx, GridSquareSize, TranslatedCoordinates, mRulerDest);
 				break;
+			case 'V':
+			{
+				for (size_t i = 0; i < pSideMenu->pRoomsMenu->pChild.size(); i++)
+				{
+					SafeDelete(&pSideMenu->pRoomsMenu->pChild.at(i));
+				}
+				while (pSideMenu->pRoomsMenu->pChild.size())
+					pSideMenu->pRoomsMenu->pChild.pop_back();
+				for (auto& layer : pSideMenu->pLayersMenu)
+				{
+					for (size_t i = 0; i < layer->pChild.size(); i++)
+					{
+						SafeDelete(&layer->pChild.at(i));
+					}
+					while (layer->pChild.size())
+						layer->pChild.pop_back();
+				}
+				for (auto& l : pSideMenu->pLayersMenu)
+				{
+					pSideMenu->RemoveFromMenuSection(l);
+					SafeDelete(&l);
+				}
+				while (pSideMenu->pLayersMenu.size()) pSideMenu->pLayersMenu.pop_back();
+				FILE* file = nullptr;
+				fopen_s(&file, "delme.dat", "rb");
+				fseek(file, 0, SEEK_END);
+				unsigned int ulen = ftell(file);
+				fseek(file, 0, SEEK_SET);
+				char* t = new char[ulen];
+				fread(t, ulen, 1, file);
+				fclose(file);
+				this->LoadMapSpriteList(t);
+				SafeDeleteArray(&t);
+				pSelectedRoom = &vSprites.front();
+				pSelectedLayer = &vSprites.front().front();
+				pSideMenu->pSelectWallRoomsandLayers = &pvWalls;
+				sptest = nullptr;				
+				pSideMenu->RealignAddLayerButton();
+			}
+				break;
 			case 'B':
 			{//test button
-				/*const char* t = vPiecesW.front().GetSaveBuffer();
-				if (t)
+				unsigned int tlen = this->CalcMapSpriteListBufferSize();
+				const char* t = this->GetMapSpriteListSaveBuffer();
+				FILE* file = nullptr;
+				fopen_s(&file, "delme.dat", "wb");
+				fwrite(t, tlen, 1, file);
+				fclose(file);
+				SafeDeleteArray(&t);
+				break;
+			}
+			default:
+			{
+				if ((keyEvents.GetCode() >= L'0' && keyEvents.GetCode() <= L'9') || (keyEvents.GetCode() >= 'A' && keyEvents.GetCode() <= 'Z'))
 				{
-					PiecesW p(gfx, pTimer, &GridSquareSize);
-					p.LoadSaveBuffer(t);
-					p.LoadSprite();
-					p.LoadPortrait();
-					p.UnloadSprite();
-					p.UnloadPortrait();
-					delete[] t;
+					for (auto& sprite : *pSelectedLayer)
+					{
+						if (sprite->PointInSprite(TranslatedCoordinates)) sprite->AddTag(static_cast<wchar_t>(keyEvents.GetCode()));
+					}
 				}
-				break;*/
 			}
 			}
 		}
@@ -1219,4 +1261,146 @@ const D2D1_POINT_2F BaseLevel::GetNearestCorner()
 		return closecorner;
 	}
 	return TranslatedCoordinates;
+}
+
+/*
+const bool SaveMapSpriteList();
+	void LoadMapSpriteList(const char* Buffer);*/
+
+const bool BaseLevel::LoadMapSpriteList(const char* Buffer)
+{
+	if (!Buffer) return false;
+	vSprites = std::vector< std::vector< std::vector<SpritePointer*>>>();
+	vWalls = std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>>();
+	vVisibleRooms = std::vector<bool>();
+	vVisibleLayers = std::vector< std::vector< bool>>();
+
+	/****** Need to delete these and rebuild them, probably just delete thier children and resize their m_Dest
+	pSideMenu->pRoomsCheckMenu;
+	pSideMenu->pRoomsMenu;
+	pSideMenu->pLayersCheckMenu;
+	pSideMenu->pLayersMenu;
+	*/	
+
+	unsigned int uBufferSize = 0;
+	size_t pos = 0;
+	memcpy(&uBufferSize, Buffer, sizeof(uBufferSize));
+	pos += sizeof(uBufferSize);
+
+	unsigned int uLen = 0;
+	memcpy(&uLen, Buffer + pos, sizeof(uLen));
+	pos += sizeof(uLen);
+	for (unsigned int i = 0; i < uLen; i++)
+	{
+		//vSprites.push_back(std::vector< std::vector<SpritePointer*>>());
+		CreateRoom();
+		unsigned int uLayers = 0;
+		memcpy(&uLayers, Buffer + pos, sizeof(uLayers));
+		pos += sizeof(uLayers);
+		for (unsigned int j = 0; j < uLayers; j++)
+		{
+			//vSprites.at(i).push_back(std::vector<SpritePointer*>());
+			if (j) CreateLayer(i);
+			unsigned int uSpritePointers = 0;
+			memcpy(&uSpritePointers, Buffer + pos, sizeof(uSpritePointers));
+			pos += sizeof(uSpritePointers);
+			for (unsigned int w = 0; w < uSpritePointers; w++)
+			{
+				unsigned int uSpriteSize = 0;
+				memcpy(&uSpriteSize, Buffer + pos, sizeof(uSpriteSize));
+				SpritePointer* p = new SpritePointer(nullptr, Location(), &GridSquareSize);
+				p->LoadSaveBuffer(Buffer + pos);
+				p->SetPiecePointer(FindPiece(p->GetPieceBuffer()));
+				for (auto c : p->vSpriteChild)
+				{
+					c->SetPiecePointer(FindPiece(c->GetPieceBuffer()));
+				}
+				for (auto c : p->vPortraitChild)
+				{
+					c->SetPiecePointer(FindPiece(c->GetPieceBuffer()));
+				}
+				pos += uSpriteSize;
+				vSprites.back().back().push_back(p);
+			}
+		}
+	}
+	return true;
+}
+
+PiecesW* const BaseLevel::FindPiece(const char* Buffer)
+{
+	if (!Buffer) return nullptr;
+	PiecesW temp(gfx, pTimer, &GridSquareSize);
+	temp.LoadSaveBuffer(Buffer);
+
+	for (auto& t : vPiecesW)
+	{
+		if (!_wcsicmp(t.GetName().c_str(), temp.GetName().c_str()))
+		{
+			if (!_wcsicmp(t.GetType().c_str(), temp.GetType().c_str()))
+			{
+				if (!_wcsicmp(t.GetSubMenu().c_str(), temp.GetSubMenu().c_str()))
+				{
+					return &t;
+				}
+			}
+		}
+	}
+	//if it was not found, the PiecesW does not exists, therefore: create it
+	vPiecesW.push_back(temp);
+	return &vPiecesW.back();
+}
+
+const char* BaseLevel::BuildMapSpriteListSaveBuffer()
+{
+	unsigned int uBufferSize = CalcMapSpriteListBufferSize();
+	char* Buffer = new char[uBufferSize];
+	size_t pos = 0;
+
+	memcpy(Buffer, &uBufferSize, sizeof(uBufferSize));
+	pos += sizeof(uBufferSize);
+	unsigned int uLen = static_cast<unsigned int>(vSprites.size());
+	memcpy(Buffer + pos, &uLen, sizeof(uLen));
+	pos += sizeof(uLen);
+	for (auto& room : vSprites)
+	{
+		uLen = static_cast<unsigned int>(room.size());
+		memcpy(Buffer + pos, &uLen, sizeof(uLen));
+		pos += sizeof(uLen);
+		for (auto& layer : room)
+		{
+			uLen = static_cast<unsigned int>(layer.size());
+			memcpy(Buffer + pos, &uLen, sizeof(uLen));
+			pos += sizeof(uLen);
+			for (auto& sp : layer)
+			{
+				uLen = sp->CalcSaveSize();
+				const char* tbuff = sp->GetSaveInformation();
+				memcpy(Buffer + pos, tbuff, uLen);
+				pos += uLen;
+				SafeDeleteArray(&tbuff);
+			}
+		}
+	}
+	return Buffer;
+}
+
+const unsigned int BaseLevel::CalcMapSpriteListBufferSize()
+{
+	unsigned int uBufferSize = 0;
+	uBufferSize += sizeof(unsigned int);							//store buffer size
+	uBufferSize += sizeof(unsigned int);							//store number rooms
+	for (auto& room : vSprites)
+	{
+		uBufferSize += sizeof(unsigned int);						//store number layer for each room
+		for (auto& layer : room)
+		{
+			uBufferSize += sizeof(unsigned int);					//store number spritepointers for each layer
+			for (auto& sp : layer)
+			{
+				uBufferSize += sp->CalcSaveSize();					//store size of spritepointer
+			}
+		}
+	}
+	return uBufferSize;
 }

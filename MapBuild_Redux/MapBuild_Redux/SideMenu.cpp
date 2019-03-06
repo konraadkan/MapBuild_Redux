@@ -16,6 +16,10 @@ void SideMenu::Draw()
 	else
 	{
 		pOptionsMenu->Draw();
+		pRoomsMenu->Draw();
+		pLayersMenu.at(GetSelectedRoomNumber())->Draw();
+		pAddRemoveRooms->Draw();
+		pAddRemoveLayers->Draw();
 		if (InitiativeList) InitiativeList->Draw();
 	}
 }
@@ -160,7 +164,14 @@ const bool SideMenu::Interact()
 				}
 			}
 			if (bBuildMode) { if (!pMenuSections.at(i)->Interact()) return false; }
-			else if (!pOptionsMenu->Interact()) return false;
+			else
+			{
+				if (!pOptionsMenu->Interact()) return false;
+				if (!pRoomsMenu->Interact()) return false;
+				if (!pLayersMenu.at(GetSelectedRoomNumber())->Interact()) return false;
+				if (!pAddRemoveRooms->Interact()) return false;
+				if (!pAddRemoveLayers->Interact()) return false;
+			}
 		}
 	}
 	return true;
@@ -551,6 +562,7 @@ void SideMenu::RealignAddLayerButton(unsigned int uRoomNumber)
 		CategoryMenu->SetTranslation(D2D1::SizeF(-GetSize().width, pLayersMenu[GetSelectedRoomNumber()]->GetTranslatedRectNotInv().bottom + 2.0f));
 		RealignCategories();
 	}
+	if (InitiativeList) InitiativeList->SetTranslation(D2D1::SizeF(-GetSize().width, pLayersMenu[GetSelectedRoomNumber()]->GetTranslatedRectNotInv().bottom + 2.0f));
 }
 
 void SideMenu::BuildCategories(std::vector<PiecesW>* const wPieces)
@@ -608,7 +620,7 @@ void SideMenu::BuildSubcategories(std::vector<PiecesW>* const wPieces)
 		}
 		targetSubmenu->SetTranslation(D2D1::SizeF(0.0f, CategoryMenu->GetSize().height + 5.0f));
 		targetSubmenu->UpdateInvTranforms(CategoryMenu->GetTransforms() * CategoryMenu->vSubsections.back()->GetTransforms());
-		targetSubSubmenu->AddChild(new SpriteItemButtons(&vInitativeList, gfx, pTransforms, pClientRect, pMouseCoordinates, piece.GetName().c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), &piece, ppSelectedSprite, true), ItemMenuSize);
+		targetSubSubmenu->AddChild(new SpriteItemButtons(static_cast<BaseLevel*>(pBaseLevel)->GetGridSquareSizePtr(), &vInitativeList, gfx, pTransforms, pClientRect, pMouseCoordinates, piece.GetName().c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), &piece, ppSelectedSprite, true), ItemMenuSize);
 		targetSubSubmenu->SetTranslation(D2D1::SizeF(0.0f, targetSubmenu->GetSize().height + 5.0f));
 		targetSubSubmenu->UpdateInvTranforms(CategoryMenu->GetTransforms() * targetSubmenu->GetTransforms() * targetSubmenu->vSubsections.back()->GetTransforms());
 		targetSubSubmenu->SetHidden();
@@ -663,7 +675,7 @@ void SideMenu::BuildWallMenu(std::vector<PiecesW>* const wPieces)
 	{
 		if (!_wcsicmp(piece.GetType().c_str(), L"Texture"))
 		{
-			targetSubSubmenu->AddChild(new SpriteItemButtons(&vInitativeList, gfx, pTransforms, pClientRect, pMouseCoordinates, piece.GetName().c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), &piece, ppSelectedSprite, true), ItemMenuSize);
+			targetSubSubmenu->AddChild(new SpriteItemButtons(static_cast<BaseLevel*>(pBaseLevel)->GetGridSquareSizePtr(), &vInitativeList, gfx, pTransforms, pClientRect, pMouseCoordinates, piece.GetName().c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), &piece, ppSelectedSprite, true), ItemMenuSize);
 			targetSubSubmenu->SetTranslation(D2D1::SizeF(0.0f, targetSubmenu->GetSize().height + 5.0f));
 			targetSubSubmenu->UpdateInvTranforms(CategoryMenu->GetTransforms() * targetSubmenu->GetTransforms() * targetSubmenu->vSubsections.back()->GetTransforms());
 			targetSubSubmenu->SetHidden();
@@ -735,19 +747,20 @@ void SideMenu::BuildInitativeList()
 	if (vInitativeList.empty()) return;
 	SafeDelete(&InitiativeList);
 	D2D1_RECT_F LastRect = pOptionsMenu->GetTranslatedRect();
-	InitiativeList = new MenuSection(gfx, pTransforms, pClientRect, pMouseCoordinates, D2D1::RectF(m_Dest.right, m_Dest.top + 3.0f, m_Dest.right + (m_Dest.right - m_Dest.left), InitativeMenuSize.height + 3.0f), InitativeMenuSize.height, L"Initative", true);
+	//scrolling currently set to disabled, once i figure out why it was acting up i'll turn it back on.
+	InitiativeList = new MenuSection(gfx, pTransforms, pClientRect, pMouseCoordinates, D2D1::RectF(m_Dest.right, m_Dest.top + 3.0f, m_Dest.right + (m_Dest.right - m_Dest.left), InitativeMenuSize.height + 3.0f), InitativeMenuSize.height, L"Initative", false);
 	InitiativeList->SetBorderStyle(BorderStyle::Invisible);
 	InitiativeList->pParent = this;
-	InitiativeList->SetTranslation(D2D1::SizeF(m_Dest.left - m_Dest.right, LastRect.bottom + SeperationDistance));
+	RealignAddLayerButton();
 	for (auto& piece : vInitativeList)
 	{
 		//D2D1_RECT_F lastrect = InitiativeModeObjects
-		InitiativeList->AddChild(new InitiativeListButtons(nullptr, gfx, pTransforms, pClientRect, pMouseCoordinates, piece->GetName().c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(InitiativeList), piece, nullptr, true, false, D2D1::ColorF(1.0f, 0.0f, 0.0f, 0.6f), DWRITE_TEXT_ALIGNMENT_LEADING), InitativeMenuSize);
+		InitiativeList->AddChild(new InitiativeListButtons(nullptr, static_cast<BaseLevel*>(pBaseLevel)->GetGridSquareSizePtr(), gfx, pTransforms, pClientRect, pMouseCoordinates, piece->GetName().c_str(), D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(InitiativeList), piece, nullptr, true, false, D2D1::ColorF(1.0f, 0.0f, 0.0f, 0.6f), DWRITE_TEXT_ALIGNMENT_LEADING), InitativeMenuSize);
 		static_cast<InitiativeListButtons*>(InitiativeList->pChild.back())->SetMatrixPointer(&InitiativeList->AllTransforms);
 	}
-	InitiativeList->pChild.push_back(new PreviousTurnButtons(this, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Previous", D2D1::RectF(m_Dest.right + 5.0f, m_Dest.bottom - 240.0f, m_Dest.right + (m_Dest.right - m_Dest.left) * 0.25f, m_Dest.bottom - 145.0f)));
+	InitiativeList->pChild.push_back(new PreviousTurnButtons(this, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Previous", D2D1::RectF(m_Dest.right + 5.0f, m_Dest.bottom - 320.0f, m_Dest.right + (m_Dest.right - m_Dest.left) * 0.25f, m_Dest.bottom - 225.0f)));
 	InitiativeList->pChild.back()->SetInvertTransformPointer(&InitiativeList->InvTransforms);
-	InitiativeList->pChild.push_back(new NextTurnButtons(this, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Next", D2D1::RectF(m_Dest.right + (m_Dest.right - m_Dest.left) - (m_Dest.right - m_Dest.left) * 0.25f, m_Dest.bottom - 240.0f, m_Dest.right + (m_Dest.right - m_Dest.left) - 5.0f, m_Dest.bottom - 145.0f)));
+	InitiativeList->pChild.push_back(new NextTurnButtons(this, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Next", D2D1::RectF(m_Dest.right + (m_Dest.right - m_Dest.left) - (m_Dest.right - m_Dest.left) * 0.25f, m_Dest.bottom - 320.0f, m_Dest.right + (m_Dest.right - m_Dest.left) - 5.0f, m_Dest.bottom - 225.0f)));
 	InitiativeList->pChild.back()->SetInvertTransformPointer(&InitiativeList->InvTransforms);
 }
 
@@ -769,4 +782,17 @@ void SideMenu::PreviousTurn()
 		std::rotate(vInitativeList.begin(), temp, vInitativeList.end());
 		BuildInitativeList();
 	}
+}
+
+void SideMenu::RemoveFromMenuSection(MenuSection* const p)
+{
+	for (size_t i = 0; i < pMenuSections.size(); i++)
+	{
+		if (p == pMenuSections.at(i))
+		{
+			pMenuSections.erase(pMenuSections.begin() + i);
+			break;
+		}
+	}
+	pMenuSections.shrink_to_fit();
 }

@@ -89,12 +89,12 @@ public:
 	MenuSection* SubcategoryMenu = nullptr;
 	MenuSection* pSizeMenu = nullptr;
 	MenuSection* ItemMenu = nullptr;
-	MenuSection* InitiativeList = nullptr;
+	MenuSection* InitiativeList = nullptr;	
 private:
-	std::vector<D2D1_RECT_F> CategoryStartPoints;
-	std::vector<MenuSection*> pMenuSections;
+	std::vector<D2D1_RECT_F> CategoryStartPoints;	
 	std::vector<InteractObjects*> InitiativeModeObjects;
 	std::vector<InteractObjects*> BuildModeObjects;
+	std::vector<MenuSection*> pMenuSections;
 	const D2D1_RECT_F GetNextButtonRect(const MenuItemType ItemType);
 	void UpdateNextButtonRect(const MenuItemType ItemType);
 	void AddSeparation(const MenuItemType ItemType, D2D1::Matrix3x2F* const transform, D2D1_RECT_F* const area, const D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f));
@@ -189,6 +189,7 @@ public:
 	void BuildInitativeList();
 	void NextTurn();
 	void PreviousTurn();
+	void RemoveFromMenuSection(MenuSection* const p);
 	
 	std::vector< std::vector<SpritePointer*>>** pSelectedRoom = nullptr;
 	std::vector< std::vector<std::unique_ptr<Wall>>>** ppSelectedWallRoom = nullptr;

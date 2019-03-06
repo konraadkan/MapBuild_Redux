@@ -79,6 +79,12 @@ public:
 	const D2D1_POINT_2F GetNearestCorner();	
 	void OutputImageLoadingStatusM(std::atomic<unsigned int>& numloaded, unsigned int total, const std::wstring imagetype);	
 	const bool CreateNew() override;
+	const char* GetMapSpriteListSaveBuffer() { return BuildMapSpriteListSaveBuffer(); }
+	const char* BuildMapSpriteListSaveBuffer();
+	const unsigned int CalcMapSpriteListBufferSize();
+	const bool LoadMapSpriteList(const char* Buffer);
+	PiecesW* const FindPiece(const char* Buffer);
+	D2D1_SIZE_F* const GetGridSquareSizePtr() { return &GridSquareSize; }
 private:	
 	void DrawSideMenu();
 	void DrawSizeMenu();

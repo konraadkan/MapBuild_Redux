@@ -196,9 +196,10 @@ private:
 	SpritePointer** ppSelectedSprite = nullptr;
 	std::vector<PiecesW*>* pvInitativeList = nullptr;
 	D2D1::Matrix3x2F* pMatrix = nullptr;
+	D2D1_SIZE_F* pGridSquareSize = nullptr;
 public:
-	SpriteItemButtons(std::vector<PiecesW*>* const pInitiativeVector, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, PiecesW* const piecew = nullptr, SpritePointer** const ppsp = nullptr, bool enableselection = false, bool selected = false,
-		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : pPiecesW(piecew), ppSelectedSprite(ppsp), pvInitativeList(pInitiativeVector), Buttons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
+	SpriteItemButtons(D2D1_SIZE_F* const GridSquareSize, std::vector<PiecesW*>* const pInitiativeVector, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, PiecesW* const piecew = nullptr, SpritePointer** const ppsp = nullptr, bool enableselection = false, bool selected = false,
+		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : pGridSquareSize(GridSquareSize), pPiecesW(piecew), ppSelectedSprite(ppsp), pvInitativeList(pInitiativeVector), Buttons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
 	SpriteItemButtons(const SpriteItemButtons&) = delete;
 	SpriteItemButtons& operator=(const SpriteItemButtons&) = delete;
 	void SetMatrixPointer(D2D1::Matrix3x2F* p) { pMatrix = p; }
@@ -253,8 +254,8 @@ class InitiativeListButtons : public SpriteItemButtons
 private:
 	PiecesW* pPiece = nullptr;
 public:
-	InitiativeListButtons(std::vector<PiecesW*>* const pInitiativeVector, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, PiecesW* const piecew = nullptr, SpritePointer** const ppsp = nullptr, bool enableselection = false, bool selected = false,
-		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : SpriteItemButtons(pInitiativeVector, graphics, Transform, area, p, text, dest, textColor, parent, piecew, ppsp, enableselection, selected, highlight, talign, palign), pPiece(piecew) {}
+	InitiativeListButtons(std::vector<PiecesW*>* const pInitiativeVector, D2D1_SIZE_F* const GridSquareSize, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, PiecesW* const piecew = nullptr, SpritePointer** const ppsp = nullptr, bool enableselection = false, bool selected = false,
+		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : SpriteItemButtons(GridSquareSize, pInitiativeVector, graphics, Transform, area, p, text, dest, textColor, parent, piecew, ppsp, enableselection, selected, highlight, talign, palign), pPiece(piecew) {}
 	InitiativeListButtons(const InitiativeListButtons&) = delete;
 	InitiativeListButtons& operator=(const InitiativeListButtons&) = delete;
 	void Draw() override;

@@ -520,6 +520,20 @@ void SpritePointer::DrawSprite(Graphics* const gfx, bool back)
 	else gfx->DrawBitmap(gfx->GetRenderTarget(), GetSprite()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetSprite()->GetFrame());
 	GetSprite()->NextFrame();
 
+	if (wTag[0] != L'\0')
+	{
+		if (mSize < CreatureSize::Medium)
+		{
+			if (back) gfx->OutputTextSmall(gfx->GetCompatibleTarget(), wTag, GetDestTag());
+			else gfx->OutputTextSmall(gfx->GetRenderTarget(), wTag, GetDestTag());
+		}
+		else
+		{
+			if (back) gfx->OutputText(gfx->GetCompatibleTarget(), wTag, GetDestTag());
+			else gfx->OutputText(gfx->GetRenderTarget(), wTag, GetDestTag());
+		}
+	}
+
 	for (auto& child : vSpriteChild)
 	{
 		if (child) child->DrawSprite(gfx, back);
@@ -591,6 +605,7 @@ void SpritePointer::SetDestSprite(const D2D1_RECT_F d, bool ApplyRebuild)
 		mLocation.mDestSprite = RectToAspectSprite(d);
 		if (ApplyRebuild) BuildResizedDestSprite();
 	}
+	mLocation.mDestTag = CalcDestTag();
 }
 
 const D2D1_RECT_F SpritePointer::RectToAspectSprite(const D2D1_RECT_F d)
@@ -682,6 +697,7 @@ void SpritePointer::MoveDestSprite(const D2D1_SIZE_F changes)
 	mLocation.mDestSprite.right += changes.width;
 	mLocation.mDestSprite.top += changes.height;
 	mLocation.mDestSprite.bottom += changes.height;
+	mLocation.mDestTag = CalcDestTag();
 }
 
 void SpritePointer::MovePortraitSprite(const D2D1_SIZE_F changes)
@@ -706,6 +722,7 @@ void SpritePointer::SetDestSpritePosition(const D2D1_POINT_2F point)
 	mLocation.mDestSprite.top = point.y;
 	mLocation.mDestSprite.right = mLocation.mDestSprite.left + GetSpriteFrameSize().width;
 	mLocation.mDestSprite.bottom = mLocation.mDestSprite.top + GetSpriteFrameSize().height;
+	mLocation.mDestTag = CalcDestTag();
 }
 
 void SpritePointer::SetDestResizedSpritePosition(const D2D1_POINT_2F point)
@@ -727,14 +744,14 @@ void SpritePointer::SetPortraitPosition(const D2D1_POINT_2F point)
 
 void SpritePointer::AddSpriteChild(PiecesW* const piece)
 {
-	vSpriteChild.push_back(new SpritePointer(piece, mLocation, bKeepAspectRatioSprite, bKeepAspectRatioPortrait));
+	vSpriteChild.push_back(new SpritePointer(piece, mLocation, pGridSquareSize, bKeepAspectRatioSprite, bKeepAspectRatioPortrait));
 	vSpriteChild.back()->SetCreatureSize(GetCreatureSize());
 	vSpriteChild.back()->SetOpacity(0.60f);
 }
 
 void SpritePointer::AddPortraitChild(PiecesW* const piece)
 {
-	vPortraitChild.push_back(new SpritePointer(piece, mLocation, bKeepAspectRatioSprite, bKeepAspectRatioPortrait));
+	vPortraitChild.push_back(new SpritePointer(piece, mLocation, pGridSquareSize, bKeepAspectRatioSprite, bKeepAspectRatioPortrait));
 }
 
 void SpritePointer::RemoveChildren()
@@ -751,6 +768,12 @@ void SpritePointer::RemoveChildren()
 	vPortraitChild = std::vector<SpritePointer*>();
 }
 
+void SpritePointer::AddTag(wchar_t w)
+{
+	if (wTag[0] == w) wTag[0] = L'\0';
+	else wTag[0] = w;
+}
+
 const char* SpritePointer::GetSaveInformation()
 {
 	return CreateSaveInformation();
@@ -758,20 +781,251 @@ const char* SpritePointer::GetSaveInformation()
 
 const char* SpritePointer::CreateSaveInformation()
 {
+	unsigned int uBufferSize = CalcSaveSize();										//get size of buffer
+	char* Buffer = new char[uBufferSize];											//allocate buffer
+	size_t pos = 0;
+	memcpy(Buffer, &uBufferSize, sizeof(uBufferSize));
+	pos += sizeof(uBufferSize);
+
+	/****Child Buffer Data***/
+	unsigned int uLen = static_cast<unsigned int>(vSpriteChild.size());
+	memcpy(Buffer + pos, &uLen, sizeof(uLen));
+	pos += sizeof(uLen);
 	for (auto& child : vSpriteChild)
 	{
-
+		unsigned int ilen = child->CalcSaveSize();
+		const char* temp = child->GetSaveInformation();
+		memcpy(Buffer + pos, temp, ilen);
+		pos += ilen;
+		delete[] temp;
 	}
+	uLen = static_cast<unsigned int>(vPortraitChild.size());
+	memcpy(Buffer + pos, &uLen, sizeof(uLen));
+	pos += sizeof(uLen);
 	for (auto& child : vPortraitChild)
 	{
-
+		unsigned int ilen = child->CalcSaveSize();
+		const char* temp = child->GetSaveInformation();
+		memcpy(Buffer + pos, temp, ilen);
+		pos += ilen;
+		delete[] temp;
 	}
-	return nullptr;
+	wchar_t t = wTag[0];
+	memcpy(Buffer + pos, &t, sizeof(t));
+	pos += sizeof(t);
+	/****Begin Location Data*******/
+	memcpy(Buffer + pos, &mLocation.mDestSprite.left, sizeof(mLocation.mDestSprite.left));
+	pos += sizeof(mLocation.mDestSprite.left);
+	memcpy(Buffer + pos, &mLocation.mDestSprite.top, sizeof(mLocation.mDestSprite.top));
+	pos += sizeof(mLocation.mDestSprite.top);
+	memcpy(Buffer + pos, &mLocation.mDestSprite.right, sizeof(mLocation.mDestSprite.right));
+	pos += sizeof(mLocation.mDestSprite.right);
+	memcpy(Buffer + pos, &mLocation.mDestSprite.bottom, sizeof(mLocation.mDestSprite.bottom));
+	pos += sizeof(mLocation.mDestSprite.bottom);
+	memcpy(Buffer + pos, &mLocation.mDestTag.left, sizeof(mLocation.mDestTag.left));
+	pos += sizeof(mLocation.mDestTag.left);
+	memcpy(Buffer + pos, &mLocation.mDestTag.top, sizeof(mLocation.mDestTag.top));
+	pos += sizeof(mLocation.mDestTag.top);
+	memcpy(Buffer + pos, &mLocation.mDestTag.right, sizeof(mLocation.mDestTag.right));
+	pos += sizeof(mLocation.mDestTag.right);
+	memcpy(Buffer + pos, &mLocation.mDestTag.bottom, sizeof(mLocation.mDestTag.bottom));
+	pos += sizeof(mLocation.mDestTag.bottom);
+	memcpy(Buffer + pos, &mLocation.mDestPortrait.left, sizeof(mLocation.mDestPortrait.left));
+	pos += sizeof(mLocation.mDestPortrait.left);
+	memcpy(Buffer + pos, &mLocation.mDestPortrait.top, sizeof(mLocation.mDestPortrait.top));
+	pos += sizeof(mLocation.mDestPortrait.top);
+	memcpy(Buffer + pos, &mLocation.mDestPortrait.right, sizeof(mLocation.mDestPortrait.right));
+	pos += sizeof(mLocation.mDestPortrait.right);
+	memcpy(Buffer + pos, &mLocation.mDestPortrait.bottom, sizeof(mLocation.mDestPortrait.bottom));
+	pos += sizeof(mLocation.mDestPortrait.bottom);
+	memcpy(Buffer + pos, &mLocation.mResizedDestSprite.left, sizeof(mLocation.mResizedDestSprite.left));
+	pos += sizeof(mLocation.mResizedDestSprite.left);
+	memcpy(Buffer + pos, &mLocation.mResizedDestSprite.top, sizeof(mLocation.mResizedDestSprite.top));
+	pos += sizeof(mLocation.mResizedDestSprite.top);
+	memcpy(Buffer + pos, &mLocation.mResizedDestSprite.right, sizeof(mLocation.mResizedDestSprite.right));
+	pos += sizeof(mLocation.mResizedDestSprite.right);
+	memcpy(Buffer + pos, &mLocation.mResizedDestSprite.bottom, sizeof(mLocation.mResizedDestSprite.bottom));
+	pos += sizeof(mLocation.mResizedDestSprite.bottom);
+	memcpy(Buffer + pos, &mLocation.uLayer, sizeof(mLocation.uLayer));
+	pos += sizeof(mLocation.uLayer);
+	memcpy(Buffer + pos, &mLocation.uRoom, sizeof(mLocation.uRoom));
+	pos += sizeof(mLocation.uRoom);
+
+	unsigned char bools = 0;
+	if (bSelected) bools |= 1;
+	if (bKeepAspectRatioSprite) bools |= 2;
+	if (bKeepAspectRatioPortrait) bools |= 4;
+	memcpy(Buffer + pos, &bools, sizeof(bools));
+	pos += sizeof(bools);
+	memcpy(Buffer + pos, &fOpacity, sizeof(fOpacity));
+	pos += sizeof(fOpacity);
+
+	unsigned int uCreatureSize = static_cast<unsigned int>(mSize);
+	memcpy(Buffer + pos, &uCreatureSize, sizeof(uCreatureSize));
+	pos += sizeof(uCreatureSize);
+
+	unsigned int ilen = pPiece->CalcSaveSize();
+	const char* tempBuffer = pPiece->GetSaveBuffer();
+	memcpy(Buffer + pos, tempBuffer, ilen);
+	pos += ilen;
+	delete[] tempBuffer;
+
+	return Buffer;
 }
 
-const unsigned long PiecesW::CalcSaveSize()
+const D2D1_RECT_F SpritePointer::CalcDestTag()
 {
-	unsigned long uBufferSize = 0;
+	D2D1_RECT_F rect = D2D1::RectF();
+	D2D1_SIZE_F size = D2D1::SizeF(mLocation.mDestSprite.right - mLocation.mDestSprite.left, mLocation.mDestSprite.bottom - mLocation.mDestSprite.top);
+	if (mSize < CreatureSize::Medium)
+	{
+		rect.left = mLocation.mDestSprite.left;
+		rect.top = mLocation.mDestSprite.top - pGridSquareSize->height * 0.25f;
+		rect.right = mLocation.mDestSprite.left + pGridSquareSize->width * 0.25f;
+		rect.bottom = mLocation.mDestSprite.top;
+	}
+	else
+	{
+		rect.left = mLocation.mDestSprite.left;
+		rect.top = mLocation.mDestSprite.top;
+		rect.right = rect.left + size.width * 0.25f;
+		rect.bottom = rect.top + size.height * 0.25f;
+	}
+	return rect;
+}
+
+const bool SpritePointer::LoadSaveBuffer(const char* Buffer)
+{
+	if (!Buffer) return false;
+	unsigned int uBufferSize = 0;
+	size_t pos = 0;
+	memcpy(&uBufferSize, Buffer, sizeof(uBufferSize));
+	pos += sizeof(uBufferSize);
+	unsigned int uLen = 0;
+	memcpy(&uLen, Buffer + pos, sizeof(uLen));
+	pos += sizeof(uLen);
+	if (uLen)
+	{
+		for (unsigned int i = 0; i < uLen; i++)
+		{
+			unsigned int ilen = 0;
+			memcpy(&ilen, Buffer + pos, sizeof(ilen));
+			vSpriteChild.push_back(new SpritePointer(nullptr, mLocation, pGridSquareSize));
+			vSpriteChild.back()->LoadSaveBuffer(Buffer + pos);
+			pos += ilen;
+		}
+	}
+	memcpy(&uLen, Buffer + pos, sizeof(uLen));
+	pos += sizeof(uLen);
+	if (uLen)
+	{
+		for (unsigned int i = 0; i < uLen; i++)
+		{
+			unsigned int ilen = 0;
+			memcpy(&ilen, Buffer + pos, sizeof(ilen));
+			vPortraitChild.push_back(new SpritePointer(nullptr, mLocation, pGridSquareSize));
+			vPortraitChild.back()->LoadSaveBuffer(Buffer + pos);
+			pos += ilen;
+		}
+	}
+	memcpy(&wTag, Buffer + pos, sizeof(wTag));
+	pos += sizeof(wchar_t);
+
+	memcpy(&mLocation.mDestSprite.left, Buffer + pos, sizeof(mLocation.mDestSprite.left));
+	pos += sizeof(mLocation.mDestSprite.left);
+	memcpy(&mLocation.mDestSprite.top, Buffer + pos, sizeof(mLocation.mDestSprite.top));
+	pos += sizeof(mLocation.mDestSprite.top);
+	memcpy(&mLocation.mDestSprite.right, Buffer + pos, sizeof(mLocation.mDestSprite.right));
+	pos += sizeof(mLocation.mDestSprite.right);
+	memcpy(&mLocation.mDestSprite.bottom, Buffer + pos, sizeof(mLocation.mDestSprite.bottom));
+	pos += sizeof(mLocation.mDestSprite.bottom);
+	memcpy(&mLocation.mDestTag.left, Buffer + pos, sizeof(mLocation.mDestTag.left));
+	pos += sizeof(mLocation.mDestTag.left);
+	memcpy(&mLocation.mDestTag.top, Buffer + pos, sizeof(mLocation.mDestTag.top));
+	pos += sizeof(mLocation.mDestTag.top);
+	memcpy(&mLocation.mDestTag.right, Buffer + pos, sizeof(mLocation.mDestTag.right));
+	pos += sizeof(mLocation.mDestTag.right);
+	memcpy(&mLocation.mDestTag.bottom, Buffer + pos, sizeof(mLocation.mDestTag.bottom));
+	pos += sizeof(mLocation.mDestTag.bottom);
+	memcpy(&mLocation.mDestPortrait.left, Buffer + pos, sizeof(mLocation.mDestPortrait.left));
+	pos += sizeof(mLocation.mDestPortrait.left);
+	memcpy(&mLocation.mDestPortrait.top, Buffer + pos, sizeof(mLocation.mDestPortrait.top));
+	pos += sizeof(mLocation.mDestPortrait.top);
+	memcpy(&mLocation.mDestPortrait.right, Buffer + pos, sizeof(mLocation.mDestPortrait.right));
+	pos += sizeof(mLocation.mDestPortrait.right);
+	memcpy(&mLocation.mDestPortrait.bottom, Buffer + pos, sizeof(mLocation.mDestPortrait.bottom));
+	pos += sizeof(mLocation.mDestPortrait.bottom);
+	memcpy(&mLocation.mResizedDestSprite.left, Buffer + pos, sizeof(mLocation.mResizedDestSprite.left));
+	pos += sizeof(mLocation.mResizedDestSprite.left);
+	memcpy(&mLocation.mResizedDestSprite.top, Buffer + pos, sizeof(mLocation.mResizedDestSprite.top));
+	pos += sizeof(mLocation.mResizedDestSprite.top);
+	memcpy(&mLocation.mResizedDestSprite.right, Buffer + pos, sizeof(mLocation.mResizedDestSprite.right));
+	pos += sizeof(mLocation.mResizedDestSprite.right);
+	memcpy(&mLocation.mResizedDestSprite.bottom, Buffer + pos, sizeof(mLocation.mResizedDestSprite.bottom));
+	pos += sizeof(mLocation.mResizedDestSprite.bottom);
+	memcpy(&mLocation.uLayer, Buffer + pos, sizeof(mLocation.uLayer));
+	pos += sizeof(mLocation.uLayer);
+	memcpy(&mLocation.uRoom, Buffer + pos, sizeof(mLocation.uRoom));
+	pos += sizeof(mLocation.uRoom);
+
+	unsigned char bools = 0;
+	memcpy(&bools, Buffer + pos, sizeof(bools));
+	pos += sizeof(bools);
+	bSelected = (bools & 1);
+	bKeepAspectRatioSprite = (bools & 2);
+	bKeepAspectRatioPortrait = (bools & 4);
+
+	memcpy(&fOpacity, Buffer + pos, sizeof(fOpacity));
+	pos += sizeof(fOpacity);
+	unsigned int uCreatureSize = 0;
+	memcpy(&uCreatureSize, Buffer + pos, sizeof(uCreatureSize));
+	pos += sizeof(uCreatureSize);
+	mSize = static_cast<CreatureSize>(uCreatureSize);
+
+	unsigned int ilen = 0;
+	memcpy(&ilen, Buffer + pos, sizeof(ilen));
+	SafeDeleteArray(&LoadedPiece);
+	LoadedPiece = new char[ilen];
+	memcpy(LoadedPiece, Buffer + pos, ilen);
+	pos += ilen;
+	return true;
+}
+
+const unsigned int SpritePointer::CalcSaveSize()
+{
+	unsigned int uBufferSize = 0;
+	uBufferSize += sizeof(unsigned int);											//hold size of this buffer
+	uBufferSize += sizeof(unsigned int);											//holds vSpriteChild.size()
+	
+	for (auto& child : vSpriteChild)
+	{
+		uBufferSize += child->CalcSaveSize();										//stores vSpriteChild buffer for each vSpriteChild
+	}
+
+	uBufferSize += sizeof(unsigned int);											//holds vPortraitChild.size()
+	
+	for (auto& child : vPortraitChild)
+	{
+		uBufferSize += child->CalcSaveSize();										//stores vPortraitchild buffer for each vPortraitChild
+	}
+	uBufferSize += sizeof(wchar_t);													//stores tag data
+	/**   start calculating size of mLocation   **/
+	uBufferSize += sizeof(float) * 4;												//stores DestSprite data
+	uBufferSize += sizeof(float) * 4;												//stores DestTag data
+	uBufferSize += sizeof(float) * 4;												//stores DestPortrait data
+	uBufferSize += sizeof(float) * 4;												//stores ResizedDestSprite data
+	uBufferSize += sizeof(mLocation.uLayer);										//stores Layer data
+	uBufferSize += sizeof(mLocation.uRoom);											//stores room data
+	uBufferSize += sizeof(unsigned char);											//unsigned char to hold booleen data
+	uBufferSize += sizeof(float);													//stores opacity data
+	uBufferSize += sizeof(unsigned int);											//stores creature data as an unsigned int
+	uBufferSize += pPiece->CalcSaveSize();											//stores piecew value
+	return uBufferSize;
+}
+
+const unsigned int PiecesW::CalcSaveSize()
+{
+	unsigned int uBufferSize = 0;
 	uBufferSize += sizeof(unsigned int);											//holds size of this buffer
 	uBufferSize += sizeof(unsigned int);											//holds creature size
 	uBufferSize += sizeof(unsigned int);											//holds sType.size()

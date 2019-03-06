@@ -359,7 +359,7 @@ const bool SpriteItemButtons::Interact(const D2D1_POINT_2F p)
 	if (ppSelectedSprite)
 	{
 		SafeDelete(&(*ppSelectedSprite));
-		(*ppSelectedSprite) = new SpritePointer(pPiecesW, Location());
+		(*ppSelectedSprite) = new SpritePointer(pPiecesW, Location(), pGridSquareSize);
 		(*ppSelectedSprite)->SetCreatureSize(pPiecesW->GetSize());
 	}
 	return true;

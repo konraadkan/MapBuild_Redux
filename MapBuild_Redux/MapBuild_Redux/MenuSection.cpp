@@ -297,6 +297,8 @@ void MenuSection::SetRoom(const size_t pos)
 
 void MenuSection::SetLayer(const size_t pos)
 {
+	if ((*ppSelectedWallRoom)->empty()) *ppSelectedWallRoom = &(*pSelectWallRoomsandLayers)->at(pos);
+	if ((*ppSelectedWallLayer)->empty()) *ppSelectedWallLayer = &(*ppSelectedWallRoom)->front();
 	if ((*pSelectedRoom)->size() > pos)	*pSelectedLayer = &(*pSelectedRoom)->at(pos);
 	if ((*ppSelectedWallRoom)->size() > pos) *ppSelectedWallLayer = &(*ppSelectedWallRoom)->at(pos);
 	else MessageBoxW(nullptr, L"Failed to set layer", L"Error", MB_OK | MB_ICONERROR);
