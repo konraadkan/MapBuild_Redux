@@ -78,6 +78,8 @@ public:
 	}
 	const int GetWidth() { return width; }
 	const int GetHeight() { return height; }
+	const std::wstring GetSaveFilePath();
+	const std::wstring GetOpenFilePath();
 private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 	static LRESULT CALLBACK HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;

@@ -24,7 +24,7 @@ const bool BaseLevel::CreateNew()
 	return true;
 }
 
-BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePosition, int WindowX, int WindowY, HPTimer* const timer) : pTimer(timer)
+BaseLevel::BaseLevel(const HWND hwnd, Graphics* const graphics, D2D1_POINT_2F* const pMousePosition, int WindowX, int WindowY, HPTimer* const timer) : pTimer(timer), hWnd(hwnd)
 {
 	this->gfx = graphics;
 	this->pMouseCoordinate = pMousePosition;
@@ -32,7 +32,7 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	m_ClientWindow = D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height);
 	RotationCenter = D2D1::Point2F(WindowSize.width * 0.5f, WindowSize.height * 0.5f);
 
-	pSideMenu = new SideMenu(&bExit, D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow, &MenuCoordinates, &pSelectedRoom, &pSelectedLayer, &ppvSprites, &vVisibleRooms, &vVisibleLayers, &sptest, &pvWalls, &pSelectedRoomWall, &pSelectedLayerWall);
+	pSideMenu = new SideMenu(hWnd, &bExit, D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow, &MenuCoordinates, &pSelectedRoom, &pSelectedLayer, &ppvSprites, &vVisibleRooms, &vVisibleLayers, &sptest, &pvWalls, &pSelectedRoomWall, &pSelectedLayerWall);
 	pSideMenu->pBaseLevel = this;
 	pSideMenu->SetMousePointer(&MenuCoordinates);
 	IObjects.push_back(pSideMenu);
@@ -886,47 +886,7 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 				break;
 			case 'V':
 			{
-				for (size_t i = 0; i < pSideMenu->pRoomsMenu->pChild.size(); i++)
-				{
-					SafeDelete(&pSideMenu->pRoomsMenu->pChild.at(i));
-				}
-				while (pSideMenu->pRoomsMenu->pChild.size())
-					pSideMenu->pRoomsMenu->pChild.pop_back();
-				for (auto& layer : pSideMenu->pLayersMenu)
-				{
-					for (size_t i = 0; i < layer->pChild.size(); i++)
-					{
-						SafeDelete(&layer->pChild.at(i));
-					}
-					while (layer->pChild.size())
-						layer->pChild.pop_back();
-				}
-				for (auto& l : pSideMenu->pLayersMenu)
-				{
-					pSideMenu->RemoveFromMenuSection(l);
-					SafeDelete(&l);
-				}
-				while (pSideMenu->pLayersMenu.size()) pSideMenu->pLayersMenu.pop_back();
-				FILE* file = nullptr;
-				fopen_s(&file, "delme.dat", "rb");
-				fseek(file, 0, SEEK_END);
-				uint32_t ulen = ftell(file);
-				fseek(file, 0, SEEK_SET);
-				char* t = new char[ulen];
-				fread(t, ulen, 1, file);
-				fclose(file);
-				/*uint32_t spritelistsize = 0;
-				memcpy(&spritelistsize, t, sizeof(spritelistsize));
-				this->LoadMapSpriteList(t);
-				this->LoadMapWallList(t + spritelistsize);*/
-				LoadSaveBuffer(t);
-				SafeDeleteArray(&t);
-				pSideMenu->pSelectWallRoomsandLayers = &pvWalls;
-				SafeDelete(&sptest);
-				wptest.reset();
-				wptest = std::make_unique<Wall>(this, &GridSquareSize, gfx, &TranslatedCoordinates, bUseTexture);
-				wptest->SetThickness(pThicknessMenu->GetSelectedThickness());
-				pSideMenu->RealignAddLayerButton();
+				Open(L"delme.dat");
 			}
 				break;
 			case 'B':
@@ -1499,6 +1459,69 @@ const bool BaseLevel::LoadMapWallList(const char* Buffer)
 	return true;
 }
 
+/*
+const uint32_t CalcInitativeSaveBufferSize();
+	const char* BuildInitativeListSaveBuffer();
+	const char* GetInitativeListSaveBuffer();
+*/
+
+const uint32_t BaseLevel::CalcInitativeSaveBufferSize()
+{
+	uint32_t uBufferSize = 0;
+	uBufferSize += sizeof(uint32_t);		//store size
+	uBufferSize += sizeof(uint32_t);		//store number of entries
+	for (auto& entry : pSideMenu->vInitativeList)
+	{
+		uBufferSize += entry->CalcSaveSize();	//store entry data
+	}
+	return uBufferSize;
+}
+
+const char* BaseLevel::BuildInitiativeListSaveBuffer()
+{
+	uint32_t uBufferSize = CalcInitativeSaveBufferSize();
+	size_t pos = 0;
+	char* Buffer = new char[uBufferSize];
+	memcpy(Buffer, &uBufferSize, sizeof(uBufferSize));
+	pos += sizeof(uBufferSize);
+	uint32_t uNumEntries = static_cast<uint32_t>(pSideMenu->vInitativeList.size());
+	memcpy(Buffer + pos, &uNumEntries, sizeof(uNumEntries));
+	pos += sizeof(uNumEntries);
+	for (auto& entry : pSideMenu->vInitativeList)
+	{
+		uint32_t uSize = entry->CalcSaveSize();
+		const char* tbuff = entry->GetSaveBuffer();
+		memcpy(Buffer + pos, tbuff, uSize);
+		pos += uSize;
+		SafeDeleteArray(&tbuff);
+	}
+	return Buffer;
+}
+
+const bool BaseLevel::LoadInitiativeSaveBuffer(const char* Buffer)
+{
+	if (!Buffer) return false;
+	pSideMenu->vInitativeList = std::vector<PiecesW*>();
+
+	uint32_t uBufferSize = 0;
+	size_t pos = 0;
+	memcpy(&uBufferSize, Buffer, sizeof(uBufferSize));
+	pos += sizeof(uBufferSize);
+	uint32_t uNumEntries = 0;
+	memcpy(&uNumEntries, Buffer + pos, sizeof(uNumEntries));
+	pos += sizeof(uNumEntries);
+	for (uint32_t i = 0; i < uNumEntries; i++)
+	{
+		uint32_t uSize = 0;
+		memcpy(&uSize, Buffer + pos, sizeof(uSize));
+		PiecesW* p = FindPiece(Buffer + pos);
+		if (p) pSideMenu->vInitativeList.push_back(p);
+		pos += uSize;
+	}
+	pSideMenu->BuildInitativeList();
+	return true;
+}
+
 const bool BaseLevel::Save(const std::wstring wFilePath)
 {
 	if (wFilePath.empty()) return false;
@@ -1516,27 +1539,61 @@ const bool BaseLevel::Save(const std::wstring wFilePath)
 	fwrite(Buffer, buffersize, 1, file);
 	fclose(file);
 	SafeDeleteArray(&Buffer);
+	
+	return true;
+}
 
-	/*uint32_t spritelistsize = CalcMapSpriteListBufferSize();
-	uint32_t walllistsize = CalcMapWallListBufferSize();
-	uint32_t tlen = spritelistsize + walllistsize;
-	const char* t = this->GetMapSpriteListSaveBuffer();
-	char* tf = new char[tlen];
-	memcpy(tf, t, spritelistsize);
-	SafeDeleteArray(&t);
-	t = this->GetMapWallListSaveBuffer();
-	memcpy(tf + spritelistsize, t, walllistsize);
+void BaseLevel::ResetVectors()
+{
+	for (size_t i = 0; i < pSideMenu->pRoomsMenu->pChild.size(); i++)
+	{
+		SafeDelete(&pSideMenu->pRoomsMenu->pChild.at(i));
+	}
+	while (pSideMenu->pRoomsMenu->pChild.size())
+		pSideMenu->pRoomsMenu->pChild.pop_back();
+	for (auto& layer : pSideMenu->pLayersMenu)
+	{
+		for (size_t i = 0; i < layer->pChild.size(); i++)
+		{
+			SafeDelete(&layer->pChild.at(i));
+		}
+		while (layer->pChild.size())
+			layer->pChild.pop_back();
+	}
+	for (auto& l : pSideMenu->pLayersMenu)
+	{
+		pSideMenu->RemoveFromMenuSection(l);
+		SafeDelete(&l);
+	}
+	while (pSideMenu->pLayersMenu.size()) pSideMenu->pLayersMenu.pop_back();
+}
+
+const bool BaseLevel::Open(const std::wstring wFilePath)
+{
+	if (wFilePath.empty()) return false;	
+
 	FILE* file = nullptr;
-	errno_t err = _wfopen_s(&file, wFilePath.c_str(), L"wb"); uint32_t iline = __LINE__;
+	errno_t err = _wfopen_s(&file, wFilePath.c_str(), L"rb"); uint32_t iline = __LINE__;
 	if (err)
 	{
 		SendErrorMessage(wFilePath, err, iline);
 		return false;
 	}
-	fwrite(tf, tlen, 1, file);
+	fseek(file, 0, SEEK_END);
+	uint32_t uBufferSize = ftell(file);
+	fseek(file, 0, SEEK_SET);
+	char* Buffer = new char[uBufferSize];
+	fread(Buffer, uBufferSize, 1, file);
 	fclose(file);
-	SafeDeleteArray(&t);
-	SafeDeleteArray(&tf);*/
+	this->ResetVectors();
+
+	LoadSaveBuffer(Buffer);
+	SafeDeleteArray(&Buffer);
+	SafeDelete(&sptest);
+	wptest.reset();
+	wptest = std::make_unique<Wall>(this, &GridSquareSize, gfx, &TranslatedCoordinates, bUseTexture);
+	wptest->SetThickness(pThicknessMenu->GetSelectedThickness());
+	pSideMenu->RealignAddLayerButton();
 
 	return true;
 }
@@ -1584,8 +1641,9 @@ const uint32_t BaseLevel::CalcSaveBufferSize()
 	{
 		uBufferSize += sizeof(uint32_t);				//store on/off values for each layer as boolean values
 	}
+	uBufferSize += CalcInitativeSaveBufferSize();		//store initiative
 	uBufferSize += CalcMapSpriteListBufferSize();		//store sprites
-	uBufferSize += CalcMapWallListBufferSize();			//store walls
+	uBufferSize += CalcMapWallListBufferSize();			//store walls	
 	return uBufferSize;
 }
 
@@ -1645,6 +1703,9 @@ const char* BaseLevel::CreateSaveInformation()
 	if (bUseTexture) bools |= 8;
 	if (bShowSideMenu) bools |= 16;
 	if (bShowCounter) bools |= 32;
+	if (pSideMenu->ShowPieceColors()) bools |= 64;
+	if (pSideMenu->IsAttachObject()) bools |= 128;
+	if (pSideMenu->IsBuildMode()) bools |= 256;
 	memcpy(Buffer + pos, &bools, sizeof(bools));
 	pos += sizeof(bools);
 	memcpy(Buffer + pos, &GridBackgroundColor.r, sizeof(GridBackgroundColor.r));
@@ -1694,6 +1755,10 @@ const char* BaseLevel::CreateSaveInformation()
 	memcpy(Buffer + pos, t, uLen);
 	SafeDelete(&t);
 	pos += uLen;
+	uLen = CalcInitativeSaveBufferSize();
+	t = GetInitiativeListSaveBuffer();
+	memcpy(Buffer + pos, t, uLen);
+	SafeDeleteArray(&t);
 
 	return Buffer;
 }
@@ -1737,6 +1802,10 @@ const bool BaseLevel::LoadSaveBuffer(const char* Buffer)
 	bUseTexture = (bools & 8);
 	bShowSideMenu = (bools & 16);
 	bShowCounter = (bools & 32);
+	(bools & 64) ? pSideMenu->SetUseColors() : pSideMenu->UnsetUseColors();
+	(bools & 128) ? pSideMenu->SetAttachObject() : pSideMenu->UnsetAttachObject();
+	(bools & 256) ? pSideMenu->SetIsBuildMode() : pSideMenu->UnsetIsBuildMode();
+	
 	memcpy(&GridBackgroundColor.r, Buffer + pos, sizeof(GridBackgroundColor.r));
 	pos += sizeof(GridBackgroundColor.r);
 	memcpy(&GridBackgroundColor.g, Buffer + pos, sizeof(GridBackgroundColor.g));
@@ -1784,11 +1853,78 @@ const bool BaseLevel::LoadSaveBuffer(const char* Buffer)
 	memcpy(&uLen, Buffer + pos, sizeof(uLen));
 	LoadMapWallList(Buffer + pos);
 	pos += uLen;
+	memcpy(&uLen, Buffer + pos, sizeof(uLen));	
+	LoadInitiativeSaveBuffer(Buffer + pos);
+	pos += uLen;
 	
+	for (size_t i = 0; i < vVisibleRooms.size(); i++)
+	{
+		vVisibleRooms.at(i) = (uRoomsStates & (1 << i));
+		for (size_t j = 0; j < vVisibleLayers.at(i).size(); j++)
+		{
+			vVisibleLayers.at(i).at(j) = (vLayersStates.at(i) & (1 << j));
+		}
+	}
+
+	for (auto& button : pSideMenu->pOptionsMenu->pChild)
+	{
+		bool setselected = false;
+		if (!_wcsicmp(button->GetLabel(), L"Grid On Top"))
+		{
+			setselected = bGridOnTop;
+		}
+		else if (!_wcsicmp(button->GetLabel(), L"Lock To Grid"))
+		{
+			setselected = bLockToGrid;
+		}
+		else if (!_wcsicmp(button->GetLabel(), L"Toggle Keep Aspect"))
+		{
+			setselected = bKeepAspect;
+		}
+		else if (!_wcsicmp(button->GetLabel(), L"Show Counter"))
+		{
+			setselected = bShowCounter;
+		}
+		else if (!_wcsicmp(button->GetLabel(), L"Toggle PC Colors"))
+		{
+			setselected = pSideMenu->ShowPieceColors();
+		}
+		else if (!_wcsicmp(button->GetLabel(), L"Attach Object"))
+		{
+			setselected = pSideMenu->IsAttachObject();
+		}
+		else if (!_wcsicmp(button->GetLabel(), L"Turn Counter"))
+		{
+			setselected = bShowCounter;
+		}
+		setselected ? button->SetIsSelected() : button->UnsetIsSelected();
+	}
+
+	for (size_t i = 0; i < pSideMenu->pRoomsMenu->pChild.size(); i++)
+	{
+		vVisibleRooms.at(i) ? pSideMenu->pRoomsMenu->pChild.at(i)->SetIsSelected() : pSideMenu->pRoomsMenu->pChild.at(i)->UnsetIsSelected();
+		pSideMenu->pRoomsMenu->pChild.at(i)->pChild.front()->UnsetIsSelected();
+		for (size_t j = 0; j < pSideMenu->pLayersMenu.at(i)->pChild.size(); j++)
+		{			
+			vVisibleLayers.at(i).at(j) ? pSideMenu->pLayersMenu.at(i)->pChild.at(j)->SetIsSelected() : pSideMenu->pLayersMenu.at(i)->pChild.at(j)->UnsetIsSelected();
+			pSideMenu->pLayersMenu.at(i)->SetHidden();
+			if (i == uSelectedRoomNumber)
+			{
+				pSideMenu->pLayersMenu.at(i)->pChild.at(j)->pChild.front()->UnsetIsSelected();
+				pSideMenu->pLayersMenu.at(i)->SetUnhidden();
+			}
+		}
+	}
+	pSideMenu->pRoomsMenu->pChild.at(uSelectedRoomNumber)->pChild.front()->SetIsSelected();
+	pSideMenu->pLayersMenu.at(uSelectedRoomNumber)->pChild.at(uSelectedLayerNumber)->pChild.front()->SetIsSelected();
+
 	pSelectedRoom = &vSprites.at(uSelectedRoomNumber);
 	pSelectedLayer = &vSprites.at(uSelectedRoomNumber).at(uSelectedLayerNumber);
 	pSelectedRoomWall = &vWalls.at(uSelectedRoomNumber);
 	pSelectedLayerWall = &vWalls.at(uSelectedRoomNumber).at(uSelectedLayerNumber);
+	pSideMenu->pSelectWallRoomsandLayers = &pvWalls;
+
+	pSideMenu->RealignAddLayerButton();
 
 	return true;
 }

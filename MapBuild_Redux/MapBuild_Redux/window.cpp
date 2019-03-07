@@ -56,7 +56,7 @@ Window::Window(int Width, int Height, const wchar_t* name) noexcept : width(Widt
 	{
 		MessageBoxW(hWnd, L"Unable to Initialize Timer.", L"Error", MB_OK | MB_ICONERROR);
 	}
-	Controller::SwitchLevel(new BaseLevel(gfx, &m_MouseCoordinates, width, height, pTimer));
+	Controller::SwitchLevel(new BaseLevel(hWnd, gfx, &m_MouseCoordinates, width, height, pTimer));
 }
 
 Window::Window(POINT p, int Width, int Height, const wchar_t* name) noexcept : width(Width), height(Height)
@@ -82,7 +82,7 @@ Window::Window(POINT p, int Width, int Height, const wchar_t* name) noexcept : w
 		MessageBoxW(hWnd, L"Unable to Initialize Timer.", L"Error", MB_OK | MB_ICONERROR);
 	}
 
-	Controller::SwitchLevel(new BaseLevel(gfx, &m_MouseCoordinates, width, height, pTimer));
+	Controller::SwitchLevel(new BaseLevel(hWnd, gfx, &m_MouseCoordinates, width, height, pTimer));
 }
 
 Window::~Window()
@@ -130,7 +130,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		if (Controller::CurrentLevel->CreateNew())
 		{
 			Controller::CurrentLevel->Unload();
-			Controller::SwitchLevel(new BaseLevel(gfx, &m_MouseCoordinates, width, height, pTimer));
+			Controller::SwitchLevel(new BaseLevel(hWnd, gfx, &m_MouseCoordinates, width, height, pTimer));
 		}
 	}
 	switch (msg)
@@ -243,12 +243,28 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 			break;
 		case ID_OPEN_CMD:
 			//load a saved map
+		{
+			const std::wstring t = GetOpenFilePath();
+			if (t.size())
+			{
+				Controller::CurrentLevel->Open(t);
+			}
+		}
 			break;
 		case ID_NEW_CMD:
 			//new map
+			Controller::CurrentLevel->Unload();
+			Controller::SwitchLevel(new BaseLevel(hWnd, gfx, &m_MouseCoordinates, width, height, pTimer));
 			break;
 		case ID_SAVE_CMD:
 			//save the map
+		{
+			const std::wstring t = GetSaveFilePath();
+			if (t.size())
+			{
+				Controller::CurrentLevel->Save(t);
+			}
+		}
 			break;
 		case ID_RESIZE_CMD:
 			//take input from user for exact resolution for the backbuffer
@@ -276,4 +292,46 @@ bool Window::ProcessMessage()
 	}
 
 	return true;
+}
+
+const std::wstring Window::GetSaveFilePath()
+{
+	wchar_t wFilePath[510];
+	std::wstring wPath;
+	OPENFILENAMEW ofn = {};
+
+	ofn.lStructSize = sizeof(OPENFILENAMEW);
+	ofn.hwndOwner = hWnd;
+	ofn.lpstrFilter = L"Map Files (*.d3m)\0*.d3m\0All Files (*.*)\0*.*\0";
+	ofn.lpstrDefExt = L"d3m";
+	ofn.lpstrFile = wFilePath;
+	ofn.lpstrFile[0] = L'\0';
+	ofn.nMaxFile = 510;
+	ofn.Flags = OFN_EXPLORER | OFN_NOCHANGEDIR | OFN_OVERWRITEPROMPT;
+	if (GetSaveFileNameW(&ofn))
+	{
+		wPath = wFilePath;
+	}
+	return wFilePath;
+}
+
+const std::wstring Window::GetOpenFilePath()
+{
+	wchar_t wFilePath[510];
+	std::wstring wPath;
+	OPENFILENAMEW ofn = {};
+
+	ofn.lStructSize = sizeof(OPENFILENAMEW);
+	ofn.hwndOwner = hWnd;
+	ofn.lpstrFilter = L"Map Files (*.d3m)\0*.d3m\0All Files (*.*)\0*.*\0";
+	ofn.lpstrDefExt = L"d3m";
+	ofn.lpstrFile = wFilePath;
+	ofn.lpstrFile[0] = L'\0';
+	ofn.nMaxFile = 510;
+	ofn.Flags = OFN_EXPLORER | OFN_NOCHANGEDIR | OFN_FILEMUSTEXIST;
+	if (GetOpenFileNameW(&ofn))
+	{
+		wPath = wFilePath;
+	}
+	return wFilePath;
 }

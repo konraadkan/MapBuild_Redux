@@ -59,12 +59,13 @@ private:
 	const D2D1_RECT_F GetPreviewRect(SpritePointer* const pSpritePointer, const D2D1_POINT_2F p);
 	MeasurementMenu::SizeMenuType mSizeMenuType = MeasurementMenu::SizeMenuType::CreatureSize;
 	Ruler* pRuler = nullptr;
-	D2D1_RECT_F mRulerDest = D2D1::RectF();
+	D2D1_RECT_F mRulerDest = D2D1::RectF();	
 public:
-	BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePosition, int WindowX, int WindowY, HPTimer* const timer);
+	BaseLevel(const HWND hwnd, Graphics* const graphics, D2D1_POINT_2F* const pMousePosition, int WindowX, int WindowY, HPTimer* const timer);
 	BaseLevel(const BaseLevel&) = delete;
 	BaseLevel& operator=(const BaseLevel&) = delete;
 	~BaseLevel();
+	HWND hWnd;
 	void Load(Keyboard* const keyboard, Mouse* const mouse) override;
 	void Unload() override;
 	void Render() override;
@@ -92,9 +93,15 @@ public:
 	PiecesW* const FindPiece(const char* Buffer);
 	D2D1_SIZE_F* const GetGridSquareSizePtr() { return &GridSquareSize; }
 	const bool Save(const std::wstring wFilePath) override;
+	const bool Open(const std::wstring sFilePath) override;
 	const char* GetSaveInformation() { return CreateSaveInformation(); }
 	const bool LoadSaveBuffer(const char* Buffer);
+	const uint32_t CalcInitativeSaveBufferSize();
+	const char* BuildInitiativeListSaveBuffer();
+	const char* GetInitiativeListSaveBuffer() { return BuildInitiativeListSaveBuffer(); }
+	const bool LoadInitiativeSaveBuffer(const char* Buffer);
 private:	
+	void ResetVectors();
 	void DrawSideMenu();
 	void DrawSizeMenu();
 	void ProcessKeyboardEvents(double dDelta);

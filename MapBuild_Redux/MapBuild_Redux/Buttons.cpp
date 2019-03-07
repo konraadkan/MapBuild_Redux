@@ -1,5 +1,6 @@
 #include "Buttons.h"
 #include "SideMenu.h"
+#include "resource.h"
 
 const bool Buttons::Interact(const D2D1_POINT_2F p)
 {
@@ -668,6 +669,32 @@ const bool NewButtons::Interact()
 	{
 		if (pNew) *pNew = true;
 		return false;
+	}
+	return true;
+}
+
+const bool SaveButtons::Interact()
+{
+	if (IsHidden()) return true;
+
+	if (PointInRect())
+	{
+		WPARAM wParam = ID_SAVE_CMD;
+		LPARAM lParam = {};
+		SendMessage(hWnd, WM_COMMAND, wParam, lParam);
+	}
+	return true;
+}
+
+const bool LoadButtons::Interact()
+{
+	if (IsHidden()) return true;
+
+	if (PointInRect())
+	{
+		WPARAM wParam = ID_OPEN_CMD;
+		LPARAM lParam = {};
+		SendMessage(hWnd, WM_COMMAND, wParam, lParam);
 	}
 	return true;
 }

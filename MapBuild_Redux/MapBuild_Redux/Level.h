@@ -38,10 +38,7 @@ public:
 	virtual void Render() = 0;
 	virtual void Update(double dDelta) = 0;
 	virtual void ProcessEvents(double dDelta) = 0;
-	virtual bool Open(const wchar_t* sFilePath)
-	{
-		return false;
-	}
+	virtual const bool Open(const std::wstring sFilePath) = 0;
 	virtual const bool Save(const std::wstring wFilePath) = 0;
 	virtual void SetGridOnTop() { bGridOnTop = true; }
 	virtual void UnsetGridOnTop() { bGridOnTop = false; }

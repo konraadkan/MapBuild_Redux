@@ -89,7 +89,8 @@ public:
 	MenuSection* SubcategoryMenu = nullptr;
 	MenuSection* pSizeMenu = nullptr;
 	MenuSection* ItemMenu = nullptr;
-	MenuSection* InitiativeList = nullptr;	
+	MenuSection* InitiativeList = nullptr;
+	HWND hWnd;
 private:
 	std::vector<D2D1_RECT_F> CategoryStartPoints;	
 	std::vector<InteractObjects*> InitiativeModeObjects;
@@ -108,7 +109,7 @@ private:
 	bool bNew = false;
 	bool* const pExit;
 public:
-	SideMenu(bool* const Exit, const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p,
+	SideMenu(const HWND hwnd, bool* const Exit, const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p,
 		std::vector< std::vector<SpritePointer*>>** const ppRoom, std::vector<SpritePointer*>** const ppLayer, std::vector< std::vector< std::vector<SpritePointer*>>>** const ppRL,
 		std::vector<bool>* const VisibleRooms, std::vector< std::vector<bool>>* const VisibleLayers, SpritePointer** const ppsprite,
 		std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>>** const ppW, std::vector< std::vector<std::unique_ptr<Wall>>>** const ppSWR, std::vector<std::unique_ptr<Wall>>** const ppSWL);
@@ -157,6 +158,10 @@ public:
 	void SetInvTransform(D2D1::Matrix3x2F* const inv) { pInvTransforms = inv; }
 	const bool IsInRealRect() { return PointInTargetRect(mRealRect); }
 	const bool IsBuildMode() { return bBuildMode; }
+	void SetIsBuildMode() { bBuildMode = true; }
+	void UnsetIsBuildMode() { bBuildMode = false; }
+	void SetAttachObject() { bAttachObject = true; }
+	void UnsetAttachObject() { bAttachObject = false; }
 	void SetSelectedRoomPointer(std::vector< std::vector<SpritePointer*>>** const p) { pSelectedRoom = p; }
 	void SetSelectedLayerPointer(std::vector<SpritePointer*>** const p) { pSelectedLayer = p; }
 	void SetSelectedWallRoomPointer(std::vector< std::vector<std::unique_ptr<Wall>>>** const p) { ppSelectedWallRoom = p; for (auto& sections : pMenuSections) sections->SetSelectedWallRoomPointer(p); }

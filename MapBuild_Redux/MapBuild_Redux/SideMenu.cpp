@@ -229,9 +229,9 @@ void SideMenu::UpdateNextButtonRect(MenuItemType type)
 	}
 }
 
-SideMenu::SideMenu(bool* const Exit, const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, std::vector< std::vector<SpritePointer*>>** const ppRoom, std::vector<SpritePointer*>** const ppLayer,
+SideMenu::SideMenu(const HWND hwnd, bool* const Exit, const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, std::vector< std::vector<SpritePointer*>>** const ppRoom, std::vector<SpritePointer*>** const ppLayer,
 	std::vector< std::vector< std::vector<SpritePointer*>>>** const ppRL, std::vector<bool>* const VisibleRooms, std::vector< std::vector<bool>>* const VisibleLayers, SpritePointer** const ppsprite, std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>>** const ppW,
-	std::vector< std::vector<std::unique_ptr<Wall>>>** const ppSWR, std::vector<std::unique_ptr<Wall>>** const ppSWL) : ppSelectedWallRoom(ppSWR), ppSelectedWallLayer(ppSWL), pSelectedRoom(ppRoom), pSelectWallRoomsandLayers(ppW), pSelectedLayer(ppLayer), vSelectRoomsandLayers(ppRL), ppSelectedSprite(ppsprite), Buttons(graphics, Transform, area, p), pExit(Exit)
+	std::vector< std::vector<std::unique_ptr<Wall>>>** const ppSWR, std::vector<std::unique_ptr<Wall>>** const ppSWL) : hWnd(hwnd), ppSelectedWallRoom(ppSWR), ppSelectedWallLayer(ppSWL), pSelectedRoom(ppRoom), pSelectWallRoomsandLayers(ppW), pSelectedLayer(ppLayer), vSelectRoomsandLayers(ppRL), ppSelectedSprite(ppsprite), Buttons(graphics, Transform, area, p), pExit(Exit)
 {
 	pVisibleLayers = VisibleLayers;
 	pVisibleRooms = VisibleRooms;
@@ -287,8 +287,8 @@ SideMenu::SideMenu(bool* const Exit, const D2D1_RECT_F targetDest, Graphics* con
 	pMenuSections.push_back(new MenuSection(gfx, Transform, area, pMouseCoordinates, D2D1::RectF(m_Dest.right, m_Dest.top + 3.0f,m_Dest.right + (m_Dest.right - m_Dest.left), OptionMenuSize.height + 3.0f), 0.0f, L"Options", false));
 	pOptionsMenu = pMenuSections.back();
 	pMenuSections.back()->AddChild(new NewButtons(&bNew, gfx, Transform, area, pMouseCoordinates, L"New", D2D1::RectF()), OptionMenuSize);
-	pMenuSections.back()->AddChild(new SaveButtons(gfx, Transform, area, pMouseCoordinates, L"Save", D2D1::RectF()), OptionMenuSize);
-	pMenuSections.back()->AddChild(new LoadButtons(gfx, Transform, area, pMouseCoordinates, L"Load", D2D1::RectF()), OptionMenuSize);
+	pMenuSections.back()->AddChild(new SaveButtons(hWnd, gfx, Transform, area, pMouseCoordinates, L"Save", D2D1::RectF()), OptionMenuSize);
+	pMenuSections.back()->AddChild(new LoadButtons(hWnd, gfx, Transform, area, pMouseCoordinates, L"Load", D2D1::RectF()), OptionMenuSize);
 	pMenuSections.back()->AddChild(new ExitButtons(pExit, gfx, Transform, area, pMouseCoordinates, L"Exit", D2D1::RectF()), OptionMenuSize);
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Lock to Grid", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true, true), OptionMenuSize);
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Grid on Top", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
