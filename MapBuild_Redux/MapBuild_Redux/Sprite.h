@@ -76,7 +76,7 @@ public:
 	ID2D1Bitmap* const GetBitmap() { return pBitmap; }
 	ID2D1Bitmap* const GetFrameBitmap() { return pFrameBitmap; }
 private:
-	char* DecodeSPR3(const wchar_t* FilePath, unsigned int& ImageBufferLen);
+	char* DecodeSPR3(const wchar_t* FilePath, uint32_t& ImageBufferLen);
 	char* DecodeSPR(const wchar_t* FilePath);
 	char* GetStreamBuffer(const wchar_t* FilePath, size_t& ImageBufferLen);
 };

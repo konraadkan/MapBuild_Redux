@@ -3,6 +3,7 @@
 #include <memory>
 #include "Graphics.h"
 #include "SafeReleaseMemory.h"
+#include "Pieces.h"
 
 class Wall : public SafeReleaseMemory
 {
@@ -16,10 +17,14 @@ private:
 	Graphics* const gfx;
 	ID2D1PathGeometry* pSetGeometry = nullptr;
 	bool bUseTexture = false;
+	bool bIsClosed = false;
 	ID2D1BitmapBrush* pBitmapBrush = nullptr;
+	SpritePointer* pTexture = nullptr;
+	D2D1_SIZE_F* pGridSquareSize;
+	void* const pBaseLevel;
 public:
-	Wall(Graphics* const graphics, D2D1_POINT_2F* const MouseCoordinates, const bool useTexture) : bUseTexture(useTexture), pMouseCoordinates(MouseCoordinates), gfx(graphics) {}
-	~Wall() { while (vGeometryPathHistory.size()) RemoveLastGeometry(); SafeRelease(&pBitmapBrush); SafeRelease(&pSetGeometry); }
+	Wall(void* const BaseLevel, D2D1_SIZE_F* const GridSquareSize, Graphics* const graphics, D2D1_POINT_2F* const MouseCoordinates, const bool useTexture) : pBaseLevel(BaseLevel), pGridSquareSize(GridSquareSize), bUseTexture(useTexture), pMouseCoordinates(MouseCoordinates), gfx(graphics) {}
+	~Wall() { while (vGeometryPathHistory.size()) RemoveLastGeometry(); SafeRelease(&pBitmapBrush); SafeRelease(&pSetGeometry); SafeDelete(&pTexture); }
 	Wall(const Wall&) = delete;
 	Wall& operator=(const Wall&) = delete;
 public:
@@ -34,8 +39,14 @@ public:
 	void SetColor(const D2D1_COLOR_F color) { mColor = color; }
 	void SetGeometry(const bool bClose = false);
 	void SetUseTexture() { bUseTexture = true; }
-	void UnsetUseTexture() { bUseTexture = false; }
-	void SetTexture(ID2D1Bitmap* const bitmap);
+	void UnsetUseTexture() { bUseTexture = false; }	
+	void SetTexture(SpritePointer* const p);
 	const bool PointTouching(const D2D1_POINT_2F p);
 	const bool PointsEmpty() { return vPoints.empty(); }
+	const uint32_t CalcSaveSize();
+	const char* GetSaveInformation() { return CreateSaveInformation(); }
+	const char* CreateSaveInformation();
+	const bool LoadSaveBuffer(const char* Buffer);
+private:
+	void SetTexture(ID2D1Bitmap* const bitmap);
 };

@@ -476,9 +476,9 @@ void SideMenu::AddBuildObject(InteractObjects* const Io)
 	BuildModeObjects.push_back(Io);
 }
 
-const unsigned int SideMenu::GetSelectedRoomNumber()
+const uint32_t SideMenu::GetSelectedRoomNumber()
 {
-	for (unsigned int i = 0; i < pRoomsMenu->pChild.size(); i++)
+	for (uint32_t i = 0; i < pRoomsMenu->pChild.size(); i++)
 	{
 		if (pRoomsMenu->pChild.at(i)->pChild.front()->IsSelected())
 			return i;
@@ -522,14 +522,14 @@ void SideMenu::SetLayer(size_t uLayerNumber)
 	}
 }
 
-const unsigned int SideMenu::GetSelectedLayerNumber()
+const uint32_t SideMenu::GetSelectedLayerNumber()
 {
 	return GetSelectedLayerNumber(GetSelectedRoomNumber());
 }
 
-const unsigned int SideMenu::GetSelectedLayerNumber(const unsigned int uRoom)
+const uint32_t SideMenu::GetSelectedLayerNumber(const uint32_t uRoom)
 {
-	for (unsigned int i = 0; i < pLayersMenu[uRoom]->pChild.size(); i++)
+	for (uint32_t i = 0; i < pLayersMenu[uRoom]->pChild.size(); i++)
 	{
 		if (pLayersMenu[uRoom]->pChild.at(i)->pChild.front()->IsSelected())
 			return i;
@@ -542,7 +542,7 @@ void SideMenu::RealignAddLayerButton()
 	RealignAddLayerButton(GetSelectedRoomNumber());
 }
 
-void SideMenu::RealignAddLayerButton(unsigned int uRoomNumber)
+void SideMenu::RealignAddLayerButton(uint32_t uRoomNumber)
 {
 	D2D1_SIZE_F newtranslation = D2D1::SizeF();	
 
@@ -576,7 +576,7 @@ void SideMenu::BuildCategories(std::vector<PiecesW>* const wPieces)
 	for (auto& piece : *wPieces)
 	{
 		bool foundit = false;
-		for (unsigned int i = 0; i < CategoryMenu->pChild.size(); i++)
+		for (uint32_t i = 0; i < CategoryMenu->pChild.size(); i++)
 		{			
 			if (!_wcsicmp(CategoryMenu->pChild.at(i)->GetLabel(), piece.GetType().c_str()))
 			{

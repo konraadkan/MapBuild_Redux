@@ -1,7 +1,7 @@
 #include "BaseLevel.h"
 #include <thread>
 #include <mutex>
-
+#include <comdef.h>
 
 const bool AlphaSortSubType(PiecesW& p1, PiecesW& p2)
 {
@@ -74,7 +74,7 @@ BaseLevel::BaseLevel(Graphics* const graphics, D2D1_POINT_2F* const pMousePositi
 	pSideMenu->SetSelectedRoomPointer(&pSelectedRoom);
 	pSideMenu->SetSelectedLayerPointer(&pSelectedLayer);
 
-	wptest = std::make_unique<Wall>(gfx, &TranslatedCoordinates, bUseTexture);
+	wptest = std::make_unique<Wall>(this, &GridSquareSize, gfx, &TranslatedCoordinates, bUseTexture);
 	wptest->SetColor(D2D1::ColorF(1, 0, 0));
 	wptest->SetThickness(pThicknessMenu->GetSelectedThickness());
 
@@ -353,7 +353,6 @@ void BaseLevel::Update(double dDelta)
 	}
 
 	//----- Alternate method to move the screen ------
-	//if (pMouse->MiddlePressed())
 	if (pMouse->X1Pressed())
 	{		
 		if (PushMouseCoordinate.x || PushMouseCoordinate.y)
@@ -568,7 +567,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 		{
 			if (pSideMenu->IsInRealRect() && pSideMenu->IsBuildMode())
 			{
-				unsigned int uInitativeListSize = pSideMenu->GetInitativeListSize();
+				uint32_t uInitativeListSize = pSideMenu->GetInitativeListSize();
 				for (auto& io : IObjects)
 				{
 					if (io->PointInRect())
@@ -607,7 +606,21 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 		case Mouse::Event::Type::X1Release:
 			PushMouseCoordinate = D2D1::Point2F();
 			break;
-		case Mouse::Event::Type::MPress:			
+		case Mouse::Event::Type::MPress:
+			if (!pSideMenu->IsInRealRect())
+			{
+				if (pSelectedLayer)
+				{
+					for (auto& sprite : *pSelectedLayer)
+					{
+						if (sprite->PointInSprite(TranslatedCoordinates))
+						{
+							sprite->IncreaseCreatureSize();
+							break;
+						}
+					}
+				}
+			}
 			break;
 		case Mouse::Event::Type::MRelease:			
 			if (pSideMenu->IsInRealRect() && !pSideMenu->IsBuildMode())
@@ -854,13 +867,7 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 					if (pSideMenu->UseTexture())
 					{
 						//need to define which texture to use somehow
-						ID2D1Bitmap* t = sptest->GetSprite()->GetFrameBitmap();
-						if (!t)
-						{
-							sptest->GetSprite()->CreateFrameBitmap();
-							t = sptest->GetSprite()->GetFrameBitmap();
-						}
-						if (t) wptest->SetTexture(t);
+						wptest->SetTexture(sptest);
 					}
 					wptest->SetGeometry(close);
 					if (pSelectedLayerWall)
@@ -868,7 +875,7 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 						pSelectedLayerWall->push_back(std::unique_ptr<Wall>(wptest.get()));
 					}
 					wptest.release();
-					wptest = std::make_unique<Wall>(gfx, &TranslatedCoordinates, pSideMenu->UseTexture());
+					wptest = std::make_unique<Wall>(this, &GridSquareSize, gfx, &TranslatedCoordinates, pSideMenu->UseTexture());
 					wptest->SetColor(D2D1::ColorF(1, 0, 0));
 					wptest->SetThickness(pThicknessMenu->GetSelectedThickness());
 				}
@@ -903,29 +910,32 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 				FILE* file = nullptr;
 				fopen_s(&file, "delme.dat", "rb");
 				fseek(file, 0, SEEK_END);
-				unsigned int ulen = ftell(file);
+				uint32_t ulen = ftell(file);
 				fseek(file, 0, SEEK_SET);
 				char* t = new char[ulen];
 				fread(t, ulen, 1, file);
 				fclose(file);
+				/*uint32_t spritelistsize = 0;
+				memcpy(&spritelistsize, t, sizeof(spritelistsize));
 				this->LoadMapSpriteList(t);
+				this->LoadMapWallList(t + spritelistsize);*/
+				LoadSaveBuffer(t);
 				SafeDeleteArray(&t);
-				pSelectedRoom = &vSprites.front();
-				pSelectedLayer = &vSprites.front().front();
 				pSideMenu->pSelectWallRoomsandLayers = &pvWalls;
-				sptest = nullptr;				
+				SafeDelete(&sptest);
+				wptest.reset();
+				wptest = std::make_unique<Wall>(this, &GridSquareSize, gfx, &TranslatedCoordinates, bUseTexture);
+				wptest->SetThickness(pThicknessMenu->GetSelectedThickness());
 				pSideMenu->RealignAddLayerButton();
 			}
 				break;
 			case 'B':
-			{//test button
-				unsigned int tlen = this->CalcMapSpriteListBufferSize();
-				const char* t = this->GetMapSpriteListSaveBuffer();
-				FILE* file = nullptr;
-				fopen_s(&file, "delme.dat", "wb");
-				fwrite(t, tlen, 1, file);
-				fclose(file);
-				SafeDeleteArray(&t);
+			{
+				Save(L"delme.dat");
+				break;
+			}
+			case 'H':
+			{
 				break;
 			}
 			default:
@@ -981,7 +991,7 @@ template<typename T> void BaseLevel::RemoveEmptyPieces(T& pieces)
 	pieces.erase(std::remove_if(pieces.begin(), pieces.end(), [](auto& o) { return o.GetType().empty(); }), pieces.end());
 }
 
-void BaseLevel::OutputImageLoadingStatus(unsigned int numloaded, unsigned int total, const std::wstring imagetype)
+void BaseLevel::OutputImageLoadingStatus(uint32_t numloaded, uint32_t total, const std::wstring imagetype)
 {
 	std::wstring msg = L"Loading " + imagetype + L" " + std::to_wstring(numloaded + 1) + L" of " + std::to_wstring(total);
 	gfx->BeginDraw(gfx->GetRenderTarget());
@@ -990,7 +1000,7 @@ void BaseLevel::OutputImageLoadingStatus(unsigned int numloaded, unsigned int to
 	gfx->EndDraw(gfx->GetRenderTarget());
 }
 
-void BaseLevel::OutputImageLoadingStatusM(std::atomic<unsigned int>& numloaded, unsigned int total, const std::wstring imagetype)
+void BaseLevel::OutputImageLoadingStatusM(std::atomic<uint32_t>& numloaded, uint32_t total, const std::wstring imagetype)
 {
 	std::mutex m;
 	double dtTimeout = 120.0;
@@ -1012,8 +1022,8 @@ void BaseLevel::OutputImageLoadingStatusM(std::atomic<unsigned int>& numloaded, 
 
 void BaseLevel::LoadSprites()
 {
-	unsigned int totalnumbersprites = static_cast<unsigned int>(vPieces.size() + vPiecesW.size());
-	std::atomic<unsigned int> numberfinished = 0;
+	uint32_t totalnumbersprites = static_cast<uint32_t>(vPieces.size() + vPiecesW.size());
+	std::atomic<uint32_t> numberfinished = 0;
 	std::vector<std::thread> tthreads;
 
 	std::thread temp([this, &numberfinished, &totalnumbersprites]() { this->OutputImageLoadingStatusM(numberfinished, totalnumbersprites, L"Sprites"); });
@@ -1039,9 +1049,9 @@ void BaseLevel::LoadImages()
 
 void BaseLevel::LoadPortraits()
 {
-	unsigned int totalnumbersprites = static_cast<unsigned int>(vPieces.size() + vPiecesW.size());
-	unsigned int spritesloaded = 0;
-	std::atomic<unsigned int> numberfinished = 0;
+	uint32_t totalnumbersprites = static_cast<uint32_t>(vPieces.size() + vPiecesW.size());
+	uint32_t spritesloaded = 0;
+	std::atomic<uint32_t> numberfinished = 0;
 	std::vector<std::thread> tthreads;
 	
 	std::thread temp([this, &numberfinished, &totalnumbersprites]() { this->OutputImageLoadingStatusM(numberfinished, totalnumbersprites - 1, L"Portraits"); });
@@ -1212,7 +1222,7 @@ const D2D1_RECT_F BaseLevel::GetPreviewRect(SpritePointer* const pSpritePointer,
 	case CreatureSize::Huge:
 	case CreatureSize::Gargantuan:
 	case CreatureSize::Colossal:
-		sizemod = static_cast<float>(1 + static_cast<unsigned int>(pSpritePointer->GetCreatureSize()) - static_cast<unsigned int>(CreatureSize::Medium));
+		sizemod = static_cast<float>(1 + static_cast<uint32_t>(pSpritePointer->GetCreatureSize()) - static_cast<uint32_t>(CreatureSize::Medium));
 		size = D2D1::SizeF(GridSquareSize.width * sizemod, GridSquareSize.height * sizemod);
 		break;
 	default:
@@ -1224,15 +1234,15 @@ const D2D1_RECT_F BaseLevel::GetPreviewRect(SpritePointer* const pSpritePointer,
 		D2D1_POINT_2F lockedPoint;
 		if (static_cast<int>(pSpritePointer->GetCreatureSize()) < static_cast<int>(CreatureSize::Medium))
 		{
-			lockedPoint.x = static_cast<float>(static_cast<unsigned int>(p.x) / static_cast<unsigned int>(GridSquareSize.width * sizemod));
-			lockedPoint.y = static_cast<float>(static_cast<unsigned int>(p.y) / static_cast<unsigned int>(GridSquareSize.height * sizemod));
+			lockedPoint.x = static_cast<float>(static_cast<uint32_t>(p.x) / static_cast<uint32_t>(GridSquareSize.width * sizemod));
+			lockedPoint.y = static_cast<float>(static_cast<uint32_t>(p.y) / static_cast<uint32_t>(GridSquareSize.height * sizemod));
 			lockedPoint.x *= GridSquareSize.width * sizemod;
 			lockedPoint.y *= GridSquareSize.height * sizemod;
 		}
 		else
 		{
-			lockedPoint.x = static_cast<float>(static_cast<unsigned int>(p.x) / static_cast<unsigned int>(GridSquareSize.width));
-			lockedPoint.y = static_cast<float>(static_cast<unsigned int>(p.y) / static_cast<unsigned int>(GridSquareSize.height));
+			lockedPoint.x = static_cast<float>(static_cast<uint32_t>(p.x) / static_cast<uint32_t>(GridSquareSize.width));
+			lockedPoint.y = static_cast<float>(static_cast<uint32_t>(p.y) / static_cast<uint32_t>(GridSquareSize.height));
 			lockedPoint.x *= GridSquareSize.width;
 			lockedPoint.y *= GridSquareSize.height;
 		}
@@ -1274,39 +1284,32 @@ const bool BaseLevel::LoadMapSpriteList(const char* Buffer)
 	vWalls = std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>>();
 	vVisibleRooms = std::vector<bool>();
 	vVisibleLayers = std::vector< std::vector< bool>>();
-
-	/****** Need to delete these and rebuild them, probably just delete thier children and resize their m_Dest
-	pSideMenu->pRoomsCheckMenu;
-	pSideMenu->pRoomsMenu;
-	pSideMenu->pLayersCheckMenu;
-	pSideMenu->pLayersMenu;
-	*/	
-
-	unsigned int uBufferSize = 0;
+	
+	uint32_t uBufferSize = 0;
 	size_t pos = 0;
 	memcpy(&uBufferSize, Buffer, sizeof(uBufferSize));
 	pos += sizeof(uBufferSize);
 
-	unsigned int uLen = 0;
+	uint32_t uLen = 0;
 	memcpy(&uLen, Buffer + pos, sizeof(uLen));
 	pos += sizeof(uLen);
-	for (unsigned int i = 0; i < uLen; i++)
+	for (uint32_t i = 0; i < uLen; i++)
 	{
 		//vSprites.push_back(std::vector< std::vector<SpritePointer*>>());
 		CreateRoom();
-		unsigned int uLayers = 0;
+		uint32_t uLayers = 0;
 		memcpy(&uLayers, Buffer + pos, sizeof(uLayers));
 		pos += sizeof(uLayers);
-		for (unsigned int j = 0; j < uLayers; j++)
+		for (uint32_t j = 0; j < uLayers; j++)
 		{
 			//vSprites.at(i).push_back(std::vector<SpritePointer*>());
 			if (j) CreateLayer(i);
-			unsigned int uSpritePointers = 0;
+			uint32_t uSpritePointers = 0;
 			memcpy(&uSpritePointers, Buffer + pos, sizeof(uSpritePointers));
 			pos += sizeof(uSpritePointers);
-			for (unsigned int w = 0; w < uSpritePointers; w++)
+			for (uint32_t w = 0; w < uSpritePointers; w++)
 			{
-				unsigned int uSpriteSize = 0;
+				uint32_t uSpriteSize = 0;
 				memcpy(&uSpriteSize, Buffer + pos, sizeof(uSpriteSize));
 				SpritePointer* p = new SpritePointer(nullptr, Location(), &GridSquareSize);
 				p->LoadSaveBuffer(Buffer + pos);
@@ -1353,23 +1356,23 @@ PiecesW* const BaseLevel::FindPiece(const char* Buffer)
 
 const char* BaseLevel::BuildMapSpriteListSaveBuffer()
 {
-	unsigned int uBufferSize = CalcMapSpriteListBufferSize();
+	uint32_t uBufferSize = CalcMapSpriteListBufferSize();
 	char* Buffer = new char[uBufferSize];
 	size_t pos = 0;
 
 	memcpy(Buffer, &uBufferSize, sizeof(uBufferSize));
 	pos += sizeof(uBufferSize);
-	unsigned int uLen = static_cast<unsigned int>(vSprites.size());
+	uint32_t uLen = static_cast<uint32_t>(vSprites.size());
 	memcpy(Buffer + pos, &uLen, sizeof(uLen));
 	pos += sizeof(uLen);
 	for (auto& room : vSprites)
 	{
-		uLen = static_cast<unsigned int>(room.size());
+		uLen = static_cast<uint32_t>(room.size());
 		memcpy(Buffer + pos, &uLen, sizeof(uLen));
 		pos += sizeof(uLen);
 		for (auto& layer : room)
 		{
-			uLen = static_cast<unsigned int>(layer.size());
+			uLen = static_cast<uint32_t>(layer.size());
 			memcpy(Buffer + pos, &uLen, sizeof(uLen));
 			pos += sizeof(uLen);
 			for (auto& sp : layer)
@@ -1385,17 +1388,17 @@ const char* BaseLevel::BuildMapSpriteListSaveBuffer()
 	return Buffer;
 }
 
-const unsigned int BaseLevel::CalcMapSpriteListBufferSize()
+const uint32_t BaseLevel::CalcMapSpriteListBufferSize()
 {
-	unsigned int uBufferSize = 0;
-	uBufferSize += sizeof(unsigned int);							//store buffer size
-	uBufferSize += sizeof(unsigned int);							//store number rooms
+	uint32_t uBufferSize = 0;
+	uBufferSize += sizeof(uint32_t);							//store buffer size
+	uBufferSize += sizeof(uint32_t);							//store number rooms
 	for (auto& room : vSprites)
 	{
-		uBufferSize += sizeof(unsigned int);						//store number layer for each room
+		uBufferSize += sizeof(uint32_t);						//store number layer for each room
 		for (auto& layer : room)
 		{
-			uBufferSize += sizeof(unsigned int);					//store number spritepointers for each layer
+			uBufferSize += sizeof(uint32_t);					//store number spritepointers for each layer
 			for (auto& sp : layer)
 			{
 				uBufferSize += sp->CalcSaveSize();					//store size of spritepointer
@@ -1403,4 +1406,389 @@ const unsigned int BaseLevel::CalcMapSpriteListBufferSize()
 		}
 	}
 	return uBufferSize;
+}
+
+const uint32_t BaseLevel::CalcMapWallListBufferSize()
+{
+	uint32_t uBufferSize = 0;
+	uBufferSize += sizeof(uint32_t);							//store buffer size
+	uBufferSize += sizeof(uint32_t);							//store number rooms
+	for (auto& room : vWalls)
+	{
+		uBufferSize += sizeof(uint32_t);						//store number layer for each room
+		for (auto& layer : room)
+		{
+			uBufferSize += sizeof(uint32_t);					//store number walls for each layer
+			for (auto& wall : layer)
+			{
+				uBufferSize += wall->CalcSaveSize();				//store size of wall
+			}
+		}
+	}
+	return uBufferSize;
+}
+
+const char* BaseLevel::BuildMapWallListSaveBuffer()
+{
+	uint32_t uBufferSize = CalcMapWallListBufferSize();
+	char* Buffer = new char[uBufferSize];
+	size_t pos = 0;
+	memcpy(Buffer + pos, &uBufferSize, sizeof(uBufferSize));
+	pos += sizeof(uBufferSize);
+	uint32_t uNumRooms = static_cast<uint32_t>(vWalls.size());
+	memcpy(Buffer + pos, &uNumRooms, sizeof(uNumRooms));
+	pos += sizeof(uNumRooms);
+
+	for (auto& room : vWalls)
+	{
+		uint32_t uNumLayers = static_cast<uint32_t>(room.size());
+		memcpy(Buffer + pos, &uNumLayers, sizeof(uNumLayers));
+		pos += sizeof(uNumLayers);
+		for (auto& layer : room)
+		{
+			uint32_t uNumWalls = static_cast<uint32_t>(layer.size());
+			memcpy(Buffer + pos, &uNumWalls, sizeof(uNumWalls));
+			pos += sizeof(uNumWalls);
+			for (auto& wall : layer)
+			{
+				uint32_t wallsize = wall->CalcSaveSize();
+				const char* tbuff = wall->GetSaveInformation();
+				memcpy(Buffer + pos, tbuff, wallsize);
+				pos += wallsize;
+				SafeDeleteArray(&tbuff);
+			}
+		}
+	}
+	return Buffer;
+}
+
+const bool BaseLevel::LoadMapWallList(const char* Buffer)
+{
+	if (!Buffer) return false;
+	//this function assumes LoadMapSpriteList was already called. If not called inthe correct order there will be issues
+	uint32_t uBufferSize = 0;
+	size_t pos = 0;
+	memcpy(&uBufferSize, Buffer, sizeof(uBufferSize));
+	pos += sizeof(uBufferSize);
+	uint32_t uNumRooms = 0;
+	memcpy(&uNumRooms, Buffer + pos, sizeof(uNumRooms));
+	pos += sizeof(uNumRooms);
+
+	for (uint32_t i = 0; i < uNumRooms; i++)
+	{
+		uint32_t uNumLayers = 0;
+		memcpy(&uNumLayers, Buffer + pos, sizeof(uNumLayers));
+		pos += sizeof(uNumLayers);
+		for (uint32_t j = 0; j < uNumLayers; j++)
+		{
+			uint32_t uNumWalls = 0;
+			memcpy(&uNumWalls, Buffer + pos, sizeof(uNumWalls));
+			pos += sizeof(uNumWalls);
+			for (uint32_t w = 0; w < uNumWalls; w++)
+			{
+				uint32_t wallsize = 0;
+				memcpy(&wallsize, Buffer + pos, sizeof(wallsize));
+				std::unique_ptr<Wall> twall = std::make_unique<Wall>(this, &GridSquareSize, gfx, pMouseCoordinate, false);
+				twall->LoadSaveBuffer(Buffer + pos);
+				pos += wallsize;
+				vWalls[i][j].push_back(std::unique_ptr<Wall>(twall.get()));
+				twall.release();
+			}
+		}
+	}
+	return true;
+}
+
+const bool BaseLevel::Save(const std::wstring wFilePath)
+{
+	if (wFilePath.empty()) return false;
+
+	uint32_t buffersize = CalcSaveBufferSize();
+	const char* Buffer = GetSaveInformation();
+
+	FILE* file = nullptr;
+	errno_t err = _wfopen_s(&file, wFilePath.c_str(), L"wb"); uint32_t iline = __LINE__;
+	if (err)
+	{
+		SendErrorMessage(wFilePath, err, iline);
+		return false;
+	}
+	fwrite(Buffer, buffersize, 1, file);
+	fclose(file);
+	SafeDeleteArray(&Buffer);
+
+	/*uint32_t spritelistsize = CalcMapSpriteListBufferSize();
+	uint32_t walllistsize = CalcMapWallListBufferSize();
+	uint32_t tlen = spritelistsize + walllistsize;
+	const char* t = this->GetMapSpriteListSaveBuffer();
+	char* tf = new char[tlen];
+	memcpy(tf, t, spritelistsize);
+	SafeDeleteArray(&t);
+	t = this->GetMapWallListSaveBuffer();
+	memcpy(tf + spritelistsize, t, walllistsize);
+	FILE* file = nullptr;
+	errno_t err = _wfopen_s(&file, wFilePath.c_str(), L"wb"); uint32_t iline = __LINE__;
+	if (err)
+	{
+		SendErrorMessage(wFilePath, err, iline);
+		return false;
+	}
+	fwrite(tf, tlen, 1, file);
+	fclose(file);
+	SafeDeleteArray(&t);
+	SafeDeleteArray(&tf);*/
+
+	return true;
+}
+
+void BaseLevel::SendErrorMessage(HRESULT hr, int iLineNumber)
+{
+	_com_error err(hr);
+	std::string sErrMsg = err.ErrorMessage();
+	std::wstring sErrMsgW(sErrMsg.begin(), sErrMsg.end());
+	sErrMsgW = L"Error on Line " + std::to_wstring(iLineNumber) + std::wstring(L".\n") + sErrMsgW;
+	MessageBoxW(nullptr, sErrMsgW.c_str(), L"Error", MB_OK | MB_ICONERROR);
+}
+
+void BaseLevel::SendErrorMessage(std::wstring filename, HRESULT hr, int iLineNumber)
+{
+	_com_error err(hr);
+	std::string sErrMsg = err.ErrorMessage();
+	std::wstring sErrMsgW = L"Unable to open " + filename;
+	sErrMsgW.append(L".\n");
+	sErrMsgW.append(std::wstring(sErrMsg.begin(), sErrMsg.end()));
+	sErrMsgW = L"Error on Line " + std::to_wstring(iLineNumber) + std::wstring(L".\n") + sErrMsgW;
+	MessageBoxW(nullptr, sErrMsgW.c_str(), L"Error", MB_OK | MB_ICONERROR);
+}
+
+const uint32_t BaseLevel::CalcSaveBufferSize()
+{
+	uint32_t uBufferSize = 0;
+	uBufferSize += sizeof(uBufferSize);					//store total size
+	uBufferSize += sizeof(float) * 2;					//store GrdiSquareSize
+	uBufferSize += sizeof(float) * 2;					//store scaling
+	uBufferSize += sizeof(float) * 2;					//store scaling speed
+	uBufferSize += sizeof(float) * 2;					//store offset
+	uBufferSize += sizeof(float);						//store rotation
+	uBufferSize += sizeof(float);						//store rotation speed
+	uBufferSize += sizeof(float);						//store movement speed
+	uBufferSize += sizeof(uint32_t);					//store boolean values
+	uBufferSize += sizeof(float) * 4;					//store grid backbround color
+	uBufferSize += sizeof(float) * 2;					//gfx->GetCompatibleTargetSize()
+	uBufferSize += sizeof(uint32_t);					//store turn counter value
+	uBufferSize += sizeof(uint32_t);					//store currently selected room number
+	uBufferSize += sizeof(uint32_t);					//store currently selected layer number
+	uBufferSize += sizeof(uint32_t);					//store on/off values for each room as boolean values
+	uBufferSize += sizeof(uint32_t);					//store number layers
+	for (size_t i = 0; i < vVisibleRooms.size(); i++)
+	{
+		uBufferSize += sizeof(uint32_t);				//store on/off values for each layer as boolean values
+	}
+	uBufferSize += CalcMapSpriteListBufferSize();		//store sprites
+	uBufferSize += CalcMapWallListBufferSize();			//store walls
+	return uBufferSize;
+}
+
+const uint32_t BaseLevel::GetRoomsStates()
+{
+	uint32_t bools = 0;
+	for (size_t i = 0; i < vVisibleRooms.size(); i++)
+	{
+		bools |= (vVisibleRooms.at(i) << i);
+	}
+	return bools;
+}
+
+const uint32_t BaseLevel::GetLayersStates(const uint32_t uRoom)
+{
+	uint32_t bools = 0;
+	for (size_t i = 0; i < vVisibleLayers.at(uRoom).size(); i++)
+	{
+		bools |= (vVisibleLayers.at(uRoom).at(i) << i);
+	}
+	return bools;
+}
+
+const char* BaseLevel::CreateSaveInformation()
+{
+	uint32_t uBufferSize = CalcSaveBufferSize();
+	char* Buffer = new char[uBufferSize];
+	size_t pos = 0;
+	memcpy(Buffer, &uBufferSize, sizeof(uBufferSize));
+	pos += sizeof(uBufferSize);
+	memcpy(Buffer + pos, &GridSquareSize.width, sizeof(GridSquareSize.width));
+	pos += sizeof(GridSquareSize.width);
+	memcpy(Buffer + pos, &GridSquareSize.height, sizeof(GridSquareSize.height));
+	pos += sizeof(GridSquareSize.height);
+	memcpy(Buffer + pos, &Scale.width, sizeof(Scale.width));
+	pos += sizeof(Scale.width);
+	memcpy(Buffer + pos, &Scale.height, sizeof(Scale.height));
+	pos += sizeof(Scale.height);
+	memcpy(Buffer + pos, &ScaleSpeed.width, sizeof(ScaleSpeed.width));
+	pos += sizeof(ScaleSpeed.width);
+	memcpy(Buffer + pos, &ScaleSpeed.height, sizeof(ScaleSpeed.height));
+	pos += sizeof(ScaleSpeed.height);
+	memcpy(Buffer + pos, &Offset.width, sizeof(Offset.width));
+	pos += sizeof(Offset.width);
+	memcpy(Buffer + pos, &Offset.height, sizeof(Offset.height));
+	pos += sizeof(Offset.height);
+	memcpy(Buffer + pos, &RotationAngle, sizeof(RotationAngle));
+	pos += sizeof(RotationAngle);
+	memcpy(Buffer + pos, &RotationSpeed, sizeof(RotationSpeed));
+	pos += sizeof(RotationSpeed);
+	memcpy(Buffer + pos, &MovementSpeed, sizeof(MovementSpeed));
+	pos += sizeof(MovementSpeed);
+	uint32_t bools = 0;
+	if (bGridOnTop) bools |= 1;
+	if (bLockToGrid) bools |= 2;
+	if (bKeepAspect) bools |= 4;
+	if (bUseTexture) bools |= 8;
+	if (bShowSideMenu) bools |= 16;
+	if (bShowCounter) bools |= 32;
+	memcpy(Buffer + pos, &bools, sizeof(bools));
+	pos += sizeof(bools);
+	memcpy(Buffer + pos, &GridBackgroundColor.r, sizeof(GridBackgroundColor.r));
+	pos += sizeof(GridBackgroundColor.r);
+	memcpy(Buffer + pos, &GridBackgroundColor.g, sizeof(GridBackgroundColor.g));
+	pos += sizeof(GridBackgroundColor.g);
+	memcpy(Buffer + pos, &GridBackgroundColor.b, sizeof(GridBackgroundColor.b));
+	pos += sizeof(GridBackgroundColor.b);
+	memcpy(Buffer + pos, &GridBackgroundColor.a, sizeof(GridBackgroundColor.a));
+	pos += sizeof(GridBackgroundColor.a);
+
+	D2D1_SIZE_F size = gfx->GetCompatibleTargetSize();
+	memcpy(Buffer + pos, &size.width, sizeof(size.width));
+	pos += sizeof(size.width);
+	memcpy(Buffer + pos, &size.height, sizeof(size.height));
+	pos += sizeof(size.height);
+
+	memcpy(Buffer + pos, &uCounterValue, sizeof(uCounterValue));
+	pos += sizeof(uCounterValue);
+
+	uint32_t uSelectedRoomNumber = pSideMenu->GetSelectedRoomNumber();
+	uint32_t uSelectedLayerNumber = pSideMenu->GetSelectedLayerNumber();
+	memcpy(Buffer + pos, &uSelectedRoomNumber, sizeof(uSelectedRoomNumber));
+	pos += sizeof(uSelectedRoomNumber);
+	memcpy(Buffer + pos, &uSelectedLayerNumber, sizeof(uSelectedLayerNumber));
+	pos += sizeof(uSelectedLayerNumber);
+	uint32_t uRoomsStates = GetRoomsStates();
+	memcpy(Buffer + pos, &uRoomsStates, sizeof(uRoomsStates));
+	pos += sizeof(uRoomsStates);
+	uint32_t uNumberRooms = static_cast<uint32_t>(vVisibleRooms.size());
+	memcpy(Buffer + pos, &uNumberRooms, sizeof(uNumberRooms));
+	pos += sizeof(uNumberRooms);
+	for (size_t i = 0; i < vVisibleRooms.size(); i++)
+	{
+		uint32_t uLayerStates = GetLayersStates(static_cast<uint32_t>(i));
+		memcpy(Buffer + pos, &uLayerStates, sizeof(uLayerStates));
+		pos += sizeof(uLayerStates);
+	}
+
+	uint32_t uLen = CalcMapSpriteListBufferSize();
+	const char* t = GetMapSpriteListSaveBuffer();
+	memcpy(Buffer + pos, t, uLen);
+	SafeDeleteArray(&t);
+	pos += uLen;
+	uLen = CalcMapWallListBufferSize();
+	t = GetMapWallListSaveBuffer();
+	memcpy(Buffer + pos, t, uLen);
+	SafeDelete(&t);
+	pos += uLen;
+
+	return Buffer;
+}
+
+const bool BaseLevel::LoadSaveBuffer(const char* Buffer)
+{
+	if (!Buffer) return false;
+
+	uint32_t uBufferSize = 0;
+	size_t pos = 0;
+	memcpy(&uBufferSize, Buffer, sizeof(uBufferSize));
+	pos += sizeof(uBufferSize);
+	memcpy(&GridSquareSize.width, Buffer + pos, sizeof(GridSquareSize.width));
+	pos += sizeof(GridSquareSize.width);
+	memcpy(&GridSquareSize.height, Buffer + pos, sizeof(GridSquareSize.height));
+	pos += sizeof(GridSquareSize.height);
+	memcpy(&Scale.width, Buffer + pos, sizeof(Scale.width));
+	pos += sizeof(Scale.width);
+	memcpy(&Scale.height, Buffer + pos, sizeof(Scale.height));
+	pos += sizeof(Scale.height);
+	memcpy(&ScaleSpeed.width, Buffer + pos, sizeof(ScaleSpeed.width));
+	pos += sizeof(ScaleSpeed.width);
+	memcpy(&ScaleSpeed.height, Buffer + pos, sizeof(ScaleSpeed.height));
+	pos += sizeof(ScaleSpeed.height);
+	memcpy(&Offset.width, Buffer + pos, sizeof(Offset.width));
+	pos += sizeof(Offset.width);
+	memcpy(&Offset.height, Buffer + pos, sizeof(Offset.height));
+	pos += sizeof(Offset.height);
+	memcpy(&RotationAngle, Buffer + pos, sizeof(RotationAngle));
+	pos += sizeof(RotationAngle);
+	memcpy(&RotationSpeed, Buffer + pos, sizeof(RotationSpeed));
+	pos += sizeof(RotationSpeed);
+	memcpy(&MovementSpeed, Buffer + pos, sizeof(MovementSpeed));
+	pos += sizeof(MovementSpeed);
+	uint32_t bools = 0;
+	memcpy(&bools, Buffer + pos, sizeof(bools));
+	pos += sizeof(bools);
+	bGridOnTop = (bools & 1);
+	bLockToGrid = (bools & 2);
+	bKeepAspect = (bools & 4);
+	bUseTexture = (bools & 8);
+	bShowSideMenu = (bools & 16);
+	bShowCounter = (bools & 32);
+	memcpy(&GridBackgroundColor.r, Buffer + pos, sizeof(GridBackgroundColor.r));
+	pos += sizeof(GridBackgroundColor.r);
+	memcpy(&GridBackgroundColor.g, Buffer + pos, sizeof(GridBackgroundColor.g));
+	pos += sizeof(GridBackgroundColor.g);
+	memcpy(&GridBackgroundColor.b, Buffer + pos, sizeof(GridBackgroundColor.b));
+	pos += sizeof(GridBackgroundColor.b);
+	memcpy(&GridBackgroundColor.a, Buffer + pos, sizeof(GridBackgroundColor.a));
+	pos += sizeof(GridBackgroundColor.a);
+
+	D2D1_SIZE_F size = D2D1::SizeF();
+	memcpy(&size.width, Buffer + pos, sizeof(size.width));
+	pos += sizeof(size.width);
+	memcpy(&size.height, Buffer + pos, sizeof(size.height));
+	pos += sizeof(size.height);
+	gfx->ResizeCompatibleRenderTarget(size);
+
+	memcpy(&uCounterValue, Buffer + pos, sizeof(uCounterValue));
+	pos += sizeof(uCounterValue);
+
+	uint32_t uSelectedRoomNumber = 0;
+	uint32_t uSelectedLayerNumber = 0;
+	memcpy(&uSelectedRoomNumber, Buffer + pos, sizeof(uSelectedRoomNumber));
+	pos += sizeof(uSelectedRoomNumber);
+	memcpy(&uSelectedLayerNumber, Buffer + pos, sizeof(uSelectedLayerNumber));
+	pos += sizeof(uSelectedLayerNumber);
+	uint32_t uRoomsStates = 0;
+	memcpy(&uRoomsStates, Buffer + pos, sizeof(uRoomsStates));
+	pos += sizeof(uRoomsStates);
+	uint32_t uNumberRooms = 0;
+	memcpy(&uNumberRooms, Buffer + pos, sizeof(uNumberRooms));
+	pos += sizeof(uNumberRooms);
+	std::vector<uint32_t> vLayersStates;
+	for (size_t i = 0; i < uNumberRooms; i++)
+	{
+		uint32_t uLayerStates = 0;
+		memcpy(&uLayerStates, Buffer + pos, sizeof(uLayerStates));
+		pos += sizeof(uLayerStates);
+		vLayersStates.push_back(uLayerStates);
+	}
+
+	uint32_t uLen = 0;
+	memcpy(&uLen, Buffer + pos, sizeof(uLen));
+	LoadMapSpriteList(Buffer + pos);
+	pos += uLen;
+	memcpy(&uLen, Buffer + pos, sizeof(uLen));
+	LoadMapWallList(Buffer + pos);
+	pos += uLen;
+	
+	pSelectedRoom = &vSprites.at(uSelectedRoomNumber);
+	pSelectedLayer = &vSprites.at(uSelectedRoomNumber).at(uSelectedLayerNumber);
+	pSelectedRoomWall = &vWalls.at(uSelectedRoomNumber);
+	pSelectedLayerWall = &vWalls.at(uSelectedRoomNumber).at(uSelectedLayerNumber);
+
+	return true;
 }

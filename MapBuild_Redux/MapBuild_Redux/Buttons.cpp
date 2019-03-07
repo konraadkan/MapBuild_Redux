@@ -88,7 +88,7 @@ const bool Checkbox::Interact()
 
 	if (bRoom)
 	{
-		for (unsigned int i = 0; i < pParent->pParent->pChild.size(); i++)
+		for (uint32_t i = 0; i < pParent->pParent->pChild.size(); i++)
 		{
 			if (pParent) if (pParent->pParent) if (pParent->pParent->pChild.at(i)) if (pParent->pParent->pChild.at(i)->pChild.back())
 			{
@@ -108,7 +108,7 @@ const bool Checkbox::Interact()
 	}
 	else
 	{//if its not a room its a layer
-		for (unsigned int i = 0; i < pParent->pParent->pChild.size(); i++)
+		for (uint32_t i = 0; i < pParent->pParent->pChild.size(); i++)
 		{
 			if (pParent) if (pParent->pParent) if (pParent->pParent->pChild.at(i)) if (pParent->pParent->pChild.at(i)->pChild.back())
 			{
@@ -165,8 +165,8 @@ const bool AddItem::Interact(const D2D1_POINT_2F p)
 	if (bRoom)
 	{
 		SideMenu* parent = (static_cast<SideMenu*>(pParent));
-		unsigned int roomnum = parent->GetSelectedRoomNumber();
-		unsigned int layernum = parent->GetSelectedLayerNumber(roomnum);
+		uint32_t roomnum = parent->GetSelectedRoomNumber();
+		uint32_t layernum = parent->GetSelectedLayerNumber(roomnum);
 		//its a room
 		if (!parent) return true;
 		if (!*parent->vSelectRoomsandLayers) return true;
@@ -194,8 +194,8 @@ const bool AddItem::Interact(const D2D1_POINT_2F p)
 		//its a layer		
 		SideMenu* parent = static_cast<SideMenu*>(pParent);
 		if (!parent) return true;
-		unsigned int uRoom = parent->GetSelectedRoomNumber();
-		unsigned int uLayer = parent->GetSelectedLayerNumber(uRoom);
+		uint32_t uRoom = parent->GetSelectedRoomNumber();
+		uint32_t uLayer = parent->GetSelectedLayerNumber(uRoom);
 		if (!*parent->vSelectRoomsandLayers) return true;
 		if (!parent->pSelectWallRoomsandLayers) return true;
 		if (!parent->pVisibleLayers) return true;
@@ -235,7 +235,7 @@ const bool TypeButtons::Interact(const D2D1_POINT_2F p)
 	{
 		SideMenu* parent = static_cast<SideMenu*>(pParent);
 		
-		for (unsigned int i = 0; i < parent->CategoryMenu->pChild.size(); i++)
+		for (uint32_t i = 0; i < parent->CategoryMenu->pChild.size(); i++)
 		{
 			if (parent->CategoryMenu->pChild.at(i) == this)
 			{
@@ -272,7 +272,7 @@ const bool SubsectionButtons::Interact(const D2D1_POINT_2F p)
 	if (bEnableSelection)
 	{
 		MenuSection* parent = static_cast<MenuSection*>(pParent);
-		for (unsigned int i = 0; i < parent->pChild.size(); i++)
+		for (uint32_t i = 0; i < parent->pChild.size(); i++)
 		{
 			if (parent->pChild.at(i) == this)
 			{
@@ -309,7 +309,7 @@ const bool WallSubsectionButtons::Interact(const D2D1_POINT_2F p)
 	if (bEnableSelection)
 	{
 		MenuSection* parent = static_cast<MenuSection*>(pParent);
-		for (unsigned int i = 0; i < parent->pChild.size(); i++)
+		for (uint32_t i = 0; i < parent->pChild.size(); i++)
 		{
 			if (parent->pChild.at(i) == this)
 			{
@@ -347,7 +347,7 @@ const bool SpriteItemButtons::Interact(const D2D1_POINT_2F p)
 	if (bEnableSelection)
 	{
 		MenuSection* parent = static_cast<MenuSection*>(pParent);
-		for (unsigned int i = 0; i < parent->pChild.size(); i++)
+		for (uint32_t i = 0; i < parent->pChild.size(); i++)
 		{
 			if (parent->pChild.at(i) == this)
 				continue;
@@ -453,7 +453,7 @@ const bool SizeMenuButtons::Interact()
 	if (bEnableSelection)
 	{
 		SizeMenu* parent = static_cast<SizeMenu*>(pSizeMenu);
-		for (unsigned int i = 0; i < parent->vpChild.size(); i++)
+		for (uint32_t i = 0; i < parent->vpChild.size(); i++)
 		{
 			if (parent->vpChild.at(i) == this)
 				continue;

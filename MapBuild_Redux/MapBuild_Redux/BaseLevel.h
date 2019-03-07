@@ -48,6 +48,8 @@ private:
 	float MovementSpeed = 100.0f;
 	D2D1_POINT_2F RotationCenter = D2D1::Point2F();	
 	bool bShowSideMenu = true;
+	bool bShowCounter = false;
+	uint32_t uCounterValue = 0;
 	D2D1_COLOR_F GridBackgroundColor = D2D1::ColorF(0.75f, 0.75f, 0.75f);
 	D2D1::Matrix3x2F Transforms = D2D1::Matrix3x2F::Identity();
 	std::vector<bool> vVisibleRooms;
@@ -77,14 +79,21 @@ public:
 	void ToggleGridOnTop() { bGridOnTop ^= true; }
 	void ToggleUseTexture() override { bUseTexture ^= true; if (wptest) bUseTexture ? wptest->SetUseTexture() : wptest->UnsetUseTexture(); }
 	const D2D1_POINT_2F GetNearestCorner();	
-	void OutputImageLoadingStatusM(std::atomic<unsigned int>& numloaded, unsigned int total, const std::wstring imagetype);	
+	void OutputImageLoadingStatusM(std::atomic<uint32_t>& numloaded, uint32_t total, const std::wstring imagetype);	
 	const bool CreateNew() override;
 	const char* GetMapSpriteListSaveBuffer() { return BuildMapSpriteListSaveBuffer(); }
 	const char* BuildMapSpriteListSaveBuffer();
-	const unsigned int CalcMapSpriteListBufferSize();
+	const char* GetMapWallListSaveBuffer() { return BuildMapWallListSaveBuffer(); }
+	const char* BuildMapWallListSaveBuffer();
+	const uint32_t CalcMapSpriteListBufferSize();
+	const uint32_t CalcMapWallListBufferSize();
 	const bool LoadMapSpriteList(const char* Buffer);
+	const bool LoadMapWallList(const char* Buffer);
 	PiecesW* const FindPiece(const char* Buffer);
 	D2D1_SIZE_F* const GetGridSquareSizePtr() { return &GridSquareSize; }
+	const bool Save(const std::wstring wFilePath) override;
+	const char* GetSaveInformation() { return CreateSaveInformation(); }
+	const bool LoadSaveBuffer(const char* Buffer);
 private:	
 	void DrawSideMenu();
 	void DrawSizeMenu();
@@ -97,10 +106,16 @@ private:
 	void LoadSprites();
 	void LoadPortraits();
 	void LoadImages();
-	void OutputImageLoadingStatus(unsigned int numloaded, unsigned int total, const std::wstring imagetype);
+	void OutputImageLoadingStatus(uint32_t numloaded, uint32_t total, const std::wstring imagetype);
 	const std::wstring GetLineW(wchar_t* const buffer, wchar_t*& pos);
 	const std::wstring GetLineW(char* const buffer, char*& pos);
 	template<typename T> void RemoveEmptyPieces(T& pieces);
+	void SendErrorMessage(HRESULT hr, int iLineNumber);
+	void SendErrorMessage(std::wstring filname, HRESULT hr, int iLineNumber);
+	const uint32_t CalcSaveBufferSize();
+	const char* CreateSaveInformation();
+	const uint32_t GetRoomsStates();
+	const uint32_t GetLayersStates(const uint32_t uRoom);
 public:
 	SideMenu* pSideMenu = nullptr;
 	SizeMenu* pSizeMenu = nullptr;

@@ -412,7 +412,7 @@ void PiecesW::LoadSprite()
 	pSprite = new Sprite(GetSpritePath().c_str(), gfx, pTimer, pGridSize);
 }
 
-void PiecesW::LoadSpriteM(std::atomic<unsigned int>& numberfinished)
+void PiecesW::LoadSpriteM(std::atomic<uint32_t>& numberfinished)
 {
 	std::mutex m;
 	if (GetSpritePath().empty())
@@ -437,7 +437,7 @@ void PiecesW::LoadPortrait()
 		SafeDelete(&pPortrait);
 }
 
-void PiecesW::LoadPortraitM(std::atomic<unsigned int>& numberfinished)
+void PiecesW::LoadPortraitM(std::atomic<uint32_t>& numberfinished)
 {
 	std::mutex m;
 	if (GetIconPath().empty())
@@ -465,7 +465,7 @@ void Pieces::LoadSprite()
 		SafeDelete(&pSprite);
 }
 
-void Pieces::LoadSpriteM(std::atomic<unsigned int>& numberfinished)
+void Pieces::LoadSpriteM(std::atomic<uint32_t>& numberfinished)
 {
 	std::mutex m;
 	if (GetSpritePath().empty())
@@ -484,7 +484,7 @@ void Pieces::LoadSpriteM(std::atomic<unsigned int>& numberfinished)
 	m.unlock();
 }
 
-void Pieces::LoadPortraitM(std::atomic<unsigned int>& numberfinished)
+void Pieces::LoadPortraitM(std::atomic<uint32_t>& numberfinished)
 {
 	std::mutex m;
 	if (GetIconPath().empty())
@@ -781,30 +781,30 @@ const char* SpritePointer::GetSaveInformation()
 
 const char* SpritePointer::CreateSaveInformation()
 {
-	unsigned int uBufferSize = CalcSaveSize();										//get size of buffer
+	uint32_t uBufferSize = CalcSaveSize();										//get size of buffer
 	char* Buffer = new char[uBufferSize];											//allocate buffer
 	size_t pos = 0;
 	memcpy(Buffer, &uBufferSize, sizeof(uBufferSize));
 	pos += sizeof(uBufferSize);
 
 	/****Child Buffer Data***/
-	unsigned int uLen = static_cast<unsigned int>(vSpriteChild.size());
+	uint32_t uLen = static_cast<uint32_t>(vSpriteChild.size());
 	memcpy(Buffer + pos, &uLen, sizeof(uLen));
 	pos += sizeof(uLen);
 	for (auto& child : vSpriteChild)
 	{
-		unsigned int ilen = child->CalcSaveSize();
+		uint32_t ilen = child->CalcSaveSize();
 		const char* temp = child->GetSaveInformation();
 		memcpy(Buffer + pos, temp, ilen);
 		pos += ilen;
 		delete[] temp;
 	}
-	uLen = static_cast<unsigned int>(vPortraitChild.size());
+	uLen = static_cast<uint32_t>(vPortraitChild.size());
 	memcpy(Buffer + pos, &uLen, sizeof(uLen));
 	pos += sizeof(uLen);
 	for (auto& child : vPortraitChild)
 	{
-		unsigned int ilen = child->CalcSaveSize();
+		uint32_t ilen = child->CalcSaveSize();
 		const char* temp = child->GetSaveInformation();
 		memcpy(Buffer + pos, temp, ilen);
 		pos += ilen;
@@ -860,11 +860,11 @@ const char* SpritePointer::CreateSaveInformation()
 	memcpy(Buffer + pos, &fOpacity, sizeof(fOpacity));
 	pos += sizeof(fOpacity);
 
-	unsigned int uCreatureSize = static_cast<unsigned int>(mSize);
+	uint32_t uCreatureSize = static_cast<uint32_t>(mSize);
 	memcpy(Buffer + pos, &uCreatureSize, sizeof(uCreatureSize));
 	pos += sizeof(uCreatureSize);
 
-	unsigned int ilen = pPiece->CalcSaveSize();
+	uint32_t ilen = pPiece->CalcSaveSize();
 	const char* tempBuffer = pPiece->GetSaveBuffer();
 	memcpy(Buffer + pos, tempBuffer, ilen);
 	pos += ilen;
@@ -894,21 +894,52 @@ const D2D1_RECT_F SpritePointer::CalcDestTag()
 	return rect;
 }
 
+void SpritePointer::IncreaseCreatureSize()
+{
+	mSize = static_cast<CreatureSize>(static_cast<int>(mSize) + 1);
+	if (mSize > CreatureSize::Colossal)
+	{
+		mSize = CreatureSize::Small;
+	}
+	ResizeSprite();
+}
+
+void SpritePointer::ResizeSprite()
+{
+	D2D1_RECT_F r = D2D1::RectF();
+	float sizemod = 1.0f;
+	if (mSize != CreatureSize::Medium)
+	{
+		if (mSize < CreatureSize::Medium)
+			sizemod = static_cast<float>(1.0f / pow(2, static_cast<unsigned long>(CreatureSize::Medium) - static_cast<unsigned long>(mSize)));
+		else if (mSize < CreatureSize::OneX)
+			sizemod = static_cast<float>(static_cast<unsigned long>(mSize) - static_cast<unsigned long>(CreatureSize::Medium) + 1);
+		else
+			sizemod = static_cast<float>(mSize) - static_cast<float>(CreatureSize::Colossal);
+	}
+	r.left = mLocation.mDestSprite.left;
+	r.top = mLocation.mDestSprite.top;
+	r.right = r.left + pGridSquareSize->width * sizemod;
+	r.bottom = r.top + pGridSquareSize->height * sizemod;
+	mLocation.mDestSprite = r;
+	mLocation.mDestTag = CalcDestTag();
+}
+
 const bool SpritePointer::LoadSaveBuffer(const char* Buffer)
 {
 	if (!Buffer) return false;
-	unsigned int uBufferSize = 0;
+	uint32_t uBufferSize = 0;
 	size_t pos = 0;
 	memcpy(&uBufferSize, Buffer, sizeof(uBufferSize));
 	pos += sizeof(uBufferSize);
-	unsigned int uLen = 0;
+	uint32_t uLen = 0;
 	memcpy(&uLen, Buffer + pos, sizeof(uLen));
 	pos += sizeof(uLen);
 	if (uLen)
 	{
-		for (unsigned int i = 0; i < uLen; i++)
+		for (uint32_t i = 0; i < uLen; i++)
 		{
-			unsigned int ilen = 0;
+			uint32_t ilen = 0;
 			memcpy(&ilen, Buffer + pos, sizeof(ilen));
 			vSpriteChild.push_back(new SpritePointer(nullptr, mLocation, pGridSquareSize));
 			vSpriteChild.back()->LoadSaveBuffer(Buffer + pos);
@@ -919,9 +950,9 @@ const bool SpritePointer::LoadSaveBuffer(const char* Buffer)
 	pos += sizeof(uLen);
 	if (uLen)
 	{
-		for (unsigned int i = 0; i < uLen; i++)
+		for (uint32_t i = 0; i < uLen; i++)
 		{
-			unsigned int ilen = 0;
+			uint32_t ilen = 0;
 			memcpy(&ilen, Buffer + pos, sizeof(ilen));
 			vPortraitChild.push_back(new SpritePointer(nullptr, mLocation, pGridSquareSize));
 			vPortraitChild.back()->LoadSaveBuffer(Buffer + pos);
@@ -977,12 +1008,12 @@ const bool SpritePointer::LoadSaveBuffer(const char* Buffer)
 
 	memcpy(&fOpacity, Buffer + pos, sizeof(fOpacity));
 	pos += sizeof(fOpacity);
-	unsigned int uCreatureSize = 0;
+	uint32_t uCreatureSize = 0;
 	memcpy(&uCreatureSize, Buffer + pos, sizeof(uCreatureSize));
 	pos += sizeof(uCreatureSize);
 	mSize = static_cast<CreatureSize>(uCreatureSize);
 
-	unsigned int ilen = 0;
+	uint32_t ilen = 0;
 	memcpy(&ilen, Buffer + pos, sizeof(ilen));
 	SafeDeleteArray(&LoadedPiece);
 	LoadedPiece = new char[ilen];
@@ -991,18 +1022,18 @@ const bool SpritePointer::LoadSaveBuffer(const char* Buffer)
 	return true;
 }
 
-const unsigned int SpritePointer::CalcSaveSize()
+const uint32_t SpritePointer::CalcSaveSize()
 {
-	unsigned int uBufferSize = 0;
-	uBufferSize += sizeof(unsigned int);											//hold size of this buffer
-	uBufferSize += sizeof(unsigned int);											//holds vSpriteChild.size()
+	uint32_t uBufferSize = 0;
+	uBufferSize += sizeof(uint32_t);											//hold size of this buffer
+	uBufferSize += sizeof(uint32_t);											//holds vSpriteChild.size()
 	
 	for (auto& child : vSpriteChild)
 	{
 		uBufferSize += child->CalcSaveSize();										//stores vSpriteChild buffer for each vSpriteChild
 	}
 
-	uBufferSize += sizeof(unsigned int);											//holds vPortraitChild.size()
+	uBufferSize += sizeof(uint32_t);											//holds vPortraitChild.size()
 	
 	for (auto& child : vPortraitChild)
 	{
@@ -1018,26 +1049,26 @@ const unsigned int SpritePointer::CalcSaveSize()
 	uBufferSize += sizeof(mLocation.uRoom);											//stores room data
 	uBufferSize += sizeof(unsigned char);											//unsigned char to hold booleen data
 	uBufferSize += sizeof(float);													//stores opacity data
-	uBufferSize += sizeof(unsigned int);											//stores creature data as an unsigned int
+	uBufferSize += sizeof(uint32_t);											//stores creature data as an uint32_t
 	uBufferSize += pPiece->CalcSaveSize();											//stores piecew value
 	return uBufferSize;
 }
 
-const unsigned int PiecesW::CalcSaveSize()
+const uint32_t PiecesW::CalcSaveSize()
 {
-	unsigned int uBufferSize = 0;
-	uBufferSize += sizeof(unsigned int);											//holds size of this buffer
-	uBufferSize += sizeof(unsigned int);											//holds creature size
-	uBufferSize += sizeof(unsigned int);											//holds sType.size()
-	uBufferSize += static_cast<unsigned int>(sType.size()) * sizeof(wchar_t);		//holds sType wchar_t's
-	uBufferSize += sizeof(unsigned int);											//holds sName.size()
-	uBufferSize += static_cast<unsigned int>(sName.size()) * sizeof(wchar_t);		//holds sName wchar_t's
-	uBufferSize += sizeof(unsigned int);											//holds sIconPath.size()
-	uBufferSize += static_cast<unsigned int>(sIconPath.size()) * sizeof(wchar_t);	//holsd sIconPath wchar_t's
-	uBufferSize += sizeof(unsigned int);											//holds sSpritePath.size()
-	uBufferSize += static_cast<unsigned int>(sSpritePath.size()) * sizeof(wchar_t); //holds sSpritePath wchar_t's
-	uBufferSize += sizeof(unsigned int);											//holds sSubmenu.size()
-	uBufferSize += static_cast<unsigned int>(sSubMenu.size()) * sizeof(wchar_t);	//holds sSubmenu wchar_t's
+	uint32_t uBufferSize = 0;
+	uBufferSize += sizeof(uint32_t);											//holds size of this buffer
+	uBufferSize += sizeof(uint32_t);											//holds creature size
+	uBufferSize += sizeof(uint32_t);											//holds sType.size()
+	uBufferSize += static_cast<uint32_t>(sType.size()) * sizeof(wchar_t);		//holds sType wchar_t's
+	uBufferSize += sizeof(uint32_t);											//holds sName.size()
+	uBufferSize += static_cast<uint32_t>(sName.size()) * sizeof(wchar_t);		//holds sName wchar_t's
+	uBufferSize += sizeof(uint32_t);											//holds sIconPath.size()
+	uBufferSize += static_cast<uint32_t>(sIconPath.size()) * sizeof(wchar_t);	//holsd sIconPath wchar_t's
+	uBufferSize += sizeof(uint32_t);											//holds sSpritePath.size()
+	uBufferSize += static_cast<uint32_t>(sSpritePath.size()) * sizeof(wchar_t); //holds sSpritePath wchar_t's
+	uBufferSize += sizeof(uint32_t);											//holds sSubmenu.size()
+	uBufferSize += static_cast<uint32_t>(sSubMenu.size()) * sizeof(wchar_t);	//holds sSubmenu wchar_t's
 	uBufferSize += sizeof(unsigned char);											//holds bool values for bDefaultInit, bKeepAspect, bKeepIconAspect
 	uBufferSize += sizeof(float) * 4;												//holds color values
 	return uBufferSize;
@@ -1045,18 +1076,18 @@ const unsigned int PiecesW::CalcSaveSize()
 
 const char* PiecesW::BuildSaveBuffer()
 {
-	unsigned int uBufferSize = CalcSaveSize();
+	uint32_t uBufferSize = CalcSaveSize();
 	char* Buffer = new char[uBufferSize];
 	size_t pos = 0;
 
 	memcpy(Buffer, &uBufferSize, sizeof(uBufferSize));
 	pos += sizeof(uBufferSize);
 	
-	unsigned int uCreatureSize = static_cast<unsigned int>(mSize);
+	uint32_t uCreatureSize = static_cast<uint32_t>(mSize);
 	memcpy(Buffer + pos, &uCreatureSize, sizeof(uCreatureSize));
 	pos += sizeof(uCreatureSize);
 
-	unsigned int uLen = static_cast<unsigned int>(sType.size());
+	uint32_t uLen = static_cast<uint32_t>(sType.size());
 	memcpy(Buffer + pos, &uLen, sizeof(uLen));
 	pos += sizeof(uLen);	
 	if (sType.size())
@@ -1065,7 +1096,7 @@ const char* PiecesW::BuildSaveBuffer()
 		pos += sizeof(wchar_t) * uLen;
 	}
 
-	uLen = static_cast<unsigned int>(sName.size());
+	uLen = static_cast<uint32_t>(sName.size());
 	memcpy(Buffer + pos, &uLen, sizeof(uLen));
 	pos += sizeof(uLen);
 	if (sName.size())
@@ -1074,7 +1105,7 @@ const char* PiecesW::BuildSaveBuffer()
 		pos += sizeof(wchar_t) * uLen;
 	}
 
-	uLen = static_cast<unsigned int>(sIconPath.size());
+	uLen = static_cast<uint32_t>(sIconPath.size());
 	memcpy(Buffer + pos, &uLen, sizeof(uLen));
 	pos += sizeof(uLen);
 	if (sIconPath.size())
@@ -1083,7 +1114,7 @@ const char* PiecesW::BuildSaveBuffer()
 		pos += sizeof(wchar_t) * uLen;
 	}
 
-	uLen = static_cast<unsigned int>(sSpritePath.size());
+	uLen = static_cast<uint32_t>(sSpritePath.size());
 	memcpy(Buffer + pos, &uLen, sizeof(uLen));
 	pos += sizeof(uLen);
 	if (sSpritePath.size())
@@ -1092,7 +1123,7 @@ const char* PiecesW::BuildSaveBuffer()
 		pos += sizeof(wchar_t) * uLen;
 	}
 
-	uLen = static_cast<unsigned int>(sSubMenu.size());
+	uLen = static_cast<uint32_t>(sSubMenu.size());
 	memcpy(Buffer + pos, &uLen, sizeof(uLen));
 	pos += sizeof(uLen);
 	if (sSubMenu.size())
@@ -1124,18 +1155,18 @@ const bool PiecesW::LoadSaveBuffer(const char* Buffer)
 {
 	if (!Buffer) return false;
 
-	unsigned int uBufferSize = 0;
+	uint32_t uBufferSize = 0;
 	size_t pos = 0;
 
 	memcpy(&uBufferSize, Buffer, sizeof(uBufferSize));
 	pos += sizeof(uBufferSize);
 
-	unsigned int uCreatureSize = 0;
+	uint32_t uCreatureSize = 0;
 	memcpy(&uCreatureSize, Buffer + pos, sizeof(uCreatureSize));
 	mSize = static_cast<CreatureSize>(uCreatureSize);
 	pos += sizeof(uCreatureSize);
 
-	unsigned int uLen = 0;
+	uint32_t uLen = 0;
 	memcpy(&uLen, Buffer + pos, sizeof(uLen));
 	pos += sizeof(uLen);
 	sType = std::wstring(uLen, L'\0');

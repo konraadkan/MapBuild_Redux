@@ -116,7 +116,7 @@ private:
 	void OnWheelDown(float x, float y);
 	void TrimBuffer();
 private:
-	static constexpr unsigned int bufferSize = 4u;
+	static constexpr uint32_t bufferSize = 4u;
 	float x = 0.0f;
 	float y = 0.0f;
 	bool bLeftPressed = false;

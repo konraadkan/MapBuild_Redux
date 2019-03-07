@@ -49,8 +49,8 @@ private:
 	void ClearState();
 	template<typename T> void TrimBuffer(std::queue<T>& buffer);
 private:
-	static constexpr unsigned int m_nKeys = 256u;
-	static constexpr unsigned int m_BufferSize = 4u;
+	static constexpr uint32_t m_nKeys = 256u;
+	static constexpr uint32_t m_BufferSize = 4u;
 	bool bAutorepeatEnabled = false;
 	std::bitset<m_nKeys> m_Keystates;
 	std::queue<Event> m_Keybuffer;

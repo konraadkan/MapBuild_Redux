@@ -10,7 +10,7 @@ Sprite::Sprite(const wchar_t* sFilePath, Graphics* const graphics, HPTimer* cons
 	if (!_wcsicmp(ext.c_str(), L"spr3"))
 	{
 		SetIsSpr3();
-		unsigned int ImageBufferLen = 0;
+		uint32_t ImageBufferLen = 0;
 		char* ImageBuffer = DecodeSPR3(sFilePathW.c_str(), ImageBufferLen);
 		bLoadSuccess = InitFromMemory(ImageBuffer, ImageBufferLen);
 
@@ -140,7 +140,7 @@ void Sprite::TranslateLine(std::string sLine)
 	}
 }
 
-char* Sprite::DecodeSPR3(const wchar_t* FilePath, unsigned int& ImageBufferLen)
+char* Sprite::DecodeSPR3(const wchar_t* FilePath, uint32_t& ImageBufferLen)
 {
 	if (!IsSpr3()) return nullptr;
 
@@ -162,7 +162,7 @@ char* Sprite::DecodeSPR3(const wchar_t* FilePath, unsigned int& ImageBufferLen)
 
 	int frames = 0;
 	float version = 0.0f;
-	unsigned int position = sizeof(float) * 4;
+	uint32_t position = sizeof(float) * 4;
 
 	memcpy(&fFrameSpeed, Buffer + position, sizeof(fFrameSpeed));
 	position += sizeof(float) + sizeof(double);
@@ -226,7 +226,7 @@ bool Sprite::InitFromMemory(char* const Buffer, size_t BufferLen)
 
 	std::mutex m;
 	m.lock();
-	unsigned int MaxBitmapSize = gfx->GetRenderTarget()->GetMaximumBitmapSize();
+	uint32_t MaxBitmapSize = gfx->GetRenderTarget()->GetMaximumBitmapSize();
 	m.unlock();
 	//create stream
 	IWICStream* pIWICStream = nullptr;

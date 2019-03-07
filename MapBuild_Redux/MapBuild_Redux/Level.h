@@ -42,6 +42,7 @@ public:
 	{
 		return false;
 	}
+	virtual const bool Save(const std::wstring wFilePath) = 0;
 	virtual void SetGridOnTop() { bGridOnTop = true; }
 	virtual void UnsetGridOnTop() { bGridOnTop = false; }
 	virtual void SetUseTexture() { bUseTexture = true; }

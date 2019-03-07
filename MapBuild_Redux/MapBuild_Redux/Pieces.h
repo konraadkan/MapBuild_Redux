@@ -86,9 +86,9 @@ public:
 	void SetBackgroundB(const float b) { BackgroundColor.b = b; }
 	void SetBackgroundA(const float a) { BackgroundColor.a = a; }
 	void LoadSprite();
-	void LoadSpriteM(std::atomic<unsigned int>& numberfinished);
+	void LoadSpriteM(std::atomic<uint32_t>& numberfinished);
 	void LoadPortrait();
-	void LoadPortraitM(std::atomic<unsigned int>& numberfinished);
+	void LoadPortraitM(std::atomic<uint32_t>& numberfinished);
 	void UnloadSprite() { if (pSprite) SafeDelete(&pSprite); }
 	void UnloadPortrait() { if (pPortrait) SafeDelete(&pPortrait); }
 	Sprite* const GetSprite() { return pSprite; }
@@ -174,14 +174,14 @@ public:
 	void SetBackgroundB(const float b) { BackgroundColor.b = b; }
 	void SetBackgroundA(const float a) { BackgroundColor.a = a; }
 	void LoadSprite();
-	void LoadSpriteM(std::atomic<unsigned int>& numberfinished);
+	void LoadSpriteM(std::atomic<uint32_t>& numberfinished);
 	void LoadPortrait();
-	void LoadPortraitM(std::atomic<unsigned int>& numberfinished);
+	void LoadPortraitM(std::atomic<uint32_t>& numberfinished);
 	void UnloadSprite() { if (pSprite) SafeDelete(&pSprite); }
 	void UnloadPortrait() { if (pPortrait) SafeDelete(&pPortrait); }
 	Sprite* const GetSprite() { return pSprite; }
 	Sprite* const GetPortrait() { return pPortrait; }
-	const unsigned int CalcSaveSize();
+	const uint32_t CalcSaveSize();
 	const char* GetSaveBuffer() { return BuildSaveBuffer(); }
 	const char* BuildSaveBuffer();
 	const bool LoadSaveBuffer(const char* Buffer);
@@ -227,6 +227,7 @@ public:
 	void SetPortraitPosition(const D2D1_POINT_2F point);
 	void SetDestSprite(const D2D1_RECT_F d, bool ApplyRebuild = true);
 	void SetDestPortrait(const D2D1_RECT_F d);
+	void IncreaseCreatureSize();
 	const D2D1_RECT_F RectToAspectSprite(const D2D1_RECT_F d);
 	const D2D1_RECT_F RectToAspectPortrait(const D2D1_RECT_F d);
 	void SetLayer(const unsigned long layer) { mLocation.uLayer = layer; }
@@ -240,6 +241,7 @@ public:
 	void DrawSprite(Graphics* const gfx, bool back = true);
 	void DrawPortrait(Graphics* const gfx, bool back = true);
 	void BuildResizedDestSprite();
+	void ResizeSprite();
 	void SetKeepAspectSprite() { bKeepAspectRatioSprite = true; }
 	void UnsetKeepAspectSprite() { bKeepAspectRatioSprite = false; }
 	void ToggleAspectRatioSprite() { bKeepAspectRatioSprite ^= true; }
@@ -252,7 +254,7 @@ public:
 	void AddTag(wchar_t w);
 	const char* GetSaveInformation();
 	const char* CreateSaveInformation();
-	const unsigned int CalcSaveSize();
+	const uint32_t CalcSaveSize();
 	const bool LoadSaveBuffer(const char* Buffer);
 	const D2D1_RECT_F CalcDestTag();
 public:

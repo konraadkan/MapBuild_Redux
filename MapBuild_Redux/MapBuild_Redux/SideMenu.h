@@ -167,10 +167,10 @@ public:
 	void CreateLayerMenuSection();
 	void CreateLayer(size_t uRoomNumber);
 	void RealignAddLayerButton();
-	void RealignAddLayerButton(unsigned int uRoomNumber);
-	const unsigned int GetSelectedRoomNumber();
-	const unsigned int GetSelectedLayerNumber(const unsigned int uRoom);
-	const unsigned int GetSelectedLayerNumber();
+	void RealignAddLayerButton(uint32_t uRoomNumber);
+	const uint32_t GetSelectedRoomNumber();
+	const uint32_t GetSelectedLayerNumber(const uint32_t uRoom);
+	const uint32_t GetSelectedLayerNumber();
 	void SetRoom(size_t uRoomNumber) override;
 	void SetLayer(size_t uLayerNumber) override;
 	void BuildCategories(std::vector<PiecesW>* const wPieces);
@@ -185,7 +185,7 @@ public:
 	const bool ShowPieceColors() { return bShowPieceColors; }
 	const bool IsAttachObject() { return bAttachObject; }
 	const bool CreateNew() { return bNew; }
-	const unsigned int GetInitativeListSize() { return static_cast<unsigned int>(vInitativeList.size()); }
+	const uint32_t GetInitativeListSize() { return static_cast<uint32_t>(vInitativeList.size()); }
 	void BuildInitativeList();
 	void NextTurn();
 	void PreviousTurn();
