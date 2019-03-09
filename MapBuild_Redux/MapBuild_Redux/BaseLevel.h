@@ -61,6 +61,7 @@ private:
 	MeasurementMenu::SizeMenuType mSizeMenuType = MeasurementMenu::SizeMenuType::CreatureSize;
 	Ruler* pRuler = nullptr;
 	D2D1_RECT_F mRulerDest = D2D1::RectF();	
+	AoeSpritePointer* pLastAttachedSpritePointer = nullptr;
 public:
 	BaseLevel(const HWND hwnd, Graphics* const graphics, D2D1_POINT_2F* const pMousePosition, int WindowX, int WindowY, HPTimer* const timer);
 	BaseLevel(const BaseLevel&) = delete;
@@ -144,5 +145,4 @@ public:
 	std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>>* pvWalls = nullptr;
 	std::unique_ptr<Wall> wptest = nullptr;
 	SpritePointer* pSelectedObject = nullptr;
-	AoeSpritePointer* pDeleteMe = nullptr;
 };

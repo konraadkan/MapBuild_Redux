@@ -263,6 +263,7 @@ public:
 	const bool IsSelected() { return bSelected; }
 	const bool IsKeepAspectSprite() { return bKeepAspectRatioSprite; }
 	const bool IsKeepAspectPortrait() { return bKeepAspectRatioPortrait; }
+	virtual const bool IsAoe() { return false; }
 	virtual const bool PointInSprite(D2D1_POINT_2F p) { return (p.x > mLocation.mDestSprite.left && p.x < mLocation.mDestSprite.right && p.y > mLocation.mDestSprite.top && p.y < mLocation.mDestSprite.bottom); }
 	const D2D1_RECT_F GetDestSprite() { return mLocation.mDestSprite; }
 	const D2D1_RECT_F GetDestTag() { return mLocation.mDestTag; }
@@ -312,6 +313,7 @@ public:
 public:
 	AoeSpritePointer(Graphics* const graphics, const AoeTypes type, D2D1_COLOR_F EdgeColor, D2D1_COLOR_F FillColor, PiecesW* const p, const Location loc, D2D1_SIZE_F* const GridSquareSize) : mEdgeColor(EdgeColor), mFillColor(FillColor), mType(type), SpritePointer(graphics, p, loc, GridSquareSize, false, false) {}
 	~AoeSpritePointer() { SafeRelease(&pAoeBitmap); }
+	const bool IsAoe() override { return true; }
 	void SetRadius(const float rad) { fRadius = rad; }
 	void SetWidth(const float width) { fWidth = width; }
 	void SetThickness(const float thickness) { fThickness = thickness; }
@@ -324,7 +326,7 @@ public:
 	void SetDestSprite(const D2D1_RECT_F d, bool ApplyRebuild = true) override
 	{ 
 		//mLocation.mDestSprite = d; 
-		SetStartPoint(D2D1::Point2F(d.left, d.top));
+		SetStartPoint(D2D1::Point2F((d.left + d.right) * 0.5f, (d.top+ d.bottom) * 0.5f));
 	}
 	void UpdateRotationMatrix();
 	const D2D1_COLOR_F GetFillColor() { return mFillColor; }

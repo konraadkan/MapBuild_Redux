@@ -181,14 +181,6 @@ void BaseLevel::Render()
 	gfx->ClearScreen(gfx->GetCompatibleTarget(), GridBackgroundColor);
 	if (!bGridOnTop) gfx->DrawDefaultGrid(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), GridSquareSize, D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.9f), 3.0f);
 	
-	//gfx->DrawCircle(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), D2D1::Point2F(500, 500), 40, D2D1::ColorF(0, 1, 0), 5.0f);
-	//gfx->OutputTextSmall(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f,0.0f,WindowSize.width, WindowSize.height), L"Test Small", D2D1::RectF(0.0f, 64.0f, 64.0f, 128.0f));
-	//gfx->OutputText(gfx->GetCompatibleTarget(), std::wstring(std::to_wstring(static_cast<long>(TranslatedCoordinates.x)) + L"," + std::to_wstring(static_cast<long>(TranslatedCoordinates.y))).c_str(), D2D1::RectF(0, 0, 128, 128));
-	//gfx->FillCircle(gfx->GetCompatibleTarget(), D2D1::Point2F(800, 800), 100);
-	//gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), D2D1::RectF(1050, 100, 1900, 500), D2D1::ColorF(0,0,0), 25,25);
-	//gfx->FillRoundedRect(gfx->GetCompatibleTarget(), D2D1::RectF(1050, 505, 1900, 905));
-	//gfx->DrawRect(gfx->GetCompatibleTarget(), D2D1::RectF(500, 100, 1045, 500));
-
 	for (size_t i = 0; i < vVisibleRooms.size(); i++)
 	{
 		if (vVisibleRooms[i])
@@ -209,12 +201,11 @@ void BaseLevel::Render()
 		}
 	}
 
-	if (pSelectedObject) 
-		gfx->DrawRect(gfx->GetCompatibleTarget(), pSelectedObject->GetDestSprite(), D2D1::ColorF(1.0f, 0.0f, 1.0f), 3.0f);
-
-	if (pDeleteMe)
-		pDeleteMe->DrawSprite(gfx);
-	
+	if (pSelectedObject)
+	{
+		if (!pSelectedObject->IsAoe()) gfx->DrawRect(gfx->GetCompatibleTarget(), pSelectedObject->GetDestSprite(), D2D1::ColorF(1.0f, 0.0f, 1.0f), 3.0f);
+	}
+		
 	if (sptest && !pSideMenu->WallSelected() && !pSideMenu->AoeSelected())
 	{
 		if (pSideMenu->IsBuildMode() || pSelectedObject) gfx->DrawRect(gfx->GetCompatibleTarget(), mPreviewDest, D2D1::ColorF(1.0f, 0.1f, 0.05f, 1.0f), 5.0f);
@@ -232,7 +223,8 @@ void BaseLevel::Render()
 	}
 
 	if (bGridOnTop) gfx->DrawDefaultGrid(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), GridSquareSize, D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.9f), 3.0f);
-	if (pRuler) pRuler->DrawLine();
+	if (pRuler)	pRuler->DrawLine();
+
 	gfx->EndDraw(gfx->GetCompatibleTarget());
 
 	//render the frame
@@ -381,32 +373,32 @@ void BaseLevel::Update(double dDelta)
 				Offset.width -= (dX < 0 ? d * dX : d * dX);
 		}
 	}
-
-	if (pKeyboard->KeyIsPressed('V'))
+	
+	if (bUpdateRotation)
 	{
-		if (pDeleteMe)
+		if (pSideMenu->IsAttachObject())
 		{
-			//D2D1_POINT_2F p1 = gfx->GetTransformedPoint(gfx->GetCompatibleTarget(), D2D1::Point2F((pDeleteMe->GetLocation().mDestSprite.bottom + pDeleteMe->GetLocation().mDestSprite.top) * 0.5f, (pDeleteMe->GetLocation().mDestSprite.right + pDeleteMe->GetLocation().mDestSprite.left) * 0.5f));
-			D2D1::Matrix3x2F transforms = pDeleteMe->GetTransformsMatrix();
-			D2D1_POINT_2F p1 = transforms.TransformPoint(pDeleteMe->GetCenter());
+			if (pLastAttachedSpritePointer)
+			{
+				D2D1::Matrix3x2F transforms = pLastAttachedSpritePointer->GetTransformsMatrix();
+				D2D1_POINT_2F p1 = transforms.TransformPoint(pLastAttachedSpritePointer->GetCenter());
+				float deltax = TranslatedCoordinates.x - p1.x;
+				float deltay = TranslatedCoordinates.y - p1.y;
+				float theta = atan2(deltay, deltax);
+				pLastAttachedSpritePointer->SetRotation(theta);
+				pLastAttachedSpritePointer->UpdateRotationMatrix();
+			}
+		}
+		else
+		{
+			D2D1::Matrix3x2F transforms = static_cast<AoeSpritePointer*>(pSelectedLayer->back())->GetTransformsMatrix();
+			D2D1_POINT_2F p1 = transforms.TransformPoint(static_cast<AoeSpritePointer*>(pSelectedLayer->back())->GetCenter());
 			float deltax = TranslatedCoordinates.x - p1.x;
 			float deltay = TranslatedCoordinates.y - p1.y;
 			float theta = atan2(deltay, deltax);
-
-			pDeleteMe->SetRotation(theta);
-			pDeleteMe->UpdateRotationMatrix();
+			static_cast<AoeSpritePointer*>(pSelectedLayer->back())->SetRotation(theta);
+			static_cast<AoeSpritePointer*>(pSelectedLayer->back())->UpdateRotationMatrix();
 		}
-	}
-
-	if (bUpdateRotation)
-	{
-		D2D1::Matrix3x2F transforms = static_cast<AoeSpritePointer*>(pSelectedLayer->back())->GetTransformsMatrix();
-		D2D1_POINT_2F p1 = transforms.TransformPoint(static_cast<AoeSpritePointer*>(pSelectedLayer->back())->GetCenter());
-		float deltax = TranslatedCoordinates.x - p1.x;
-		float deltay = TranslatedCoordinates.y - p1.y;
-		float theta = atan2(deltay, deltax);
-		static_cast<AoeSpritePointer*>(pSelectedLayer->back())->SetRotation(theta);
-		static_cast<AoeSpritePointer*>(pSelectedLayer->back())->UpdateRotationMatrix();
 	}
 }
 
@@ -457,7 +449,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 		case Mouse::Event::Type::LPress:
 			if (pSelectedLayer && !pSideMenu->IsInRealRect() && !pSizeMenu->IsInRealRect() && pSideMenu->IsBuildMode())
 			{
-				if (sptest && !pSideMenu->WallSelected() && !pSideMenu->AoeSelected())
+				if (!pSideMenu->WallSelected())
 				{
 					if (pSideMenu->IsAttachObject())
 					{
@@ -468,13 +460,26 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 								if (pSideMenu->AoeSelected())
 								{
 									//for aoe sprites
+									D2D1_COLOR_F color_ = pSideMenu->GetSelectedAoeColor();
+									color_.a = pAoeSizeMenu->GetOpacity();
+									AoeSpritePointer* p = new AoeSpritePointer(gfx, pSideMenu->GetSelectedAoeType(), D2D1::ColorF(0, 0, 0), color_, nullptr, Location(), &GridSquareSize);
+									
+									p->SetLength(static_cast<int>(pAoeSizeMenu->GetLength()) * GridSquareSize.width);
+									p->SetRadius(static_cast<int>(pAoeSizeMenu->GetRadius()) * GridSquareSize.width);
+									p->SetThickness(3.0f);
+									p->SetWidth(static_cast<int>(pAoeSizeMenu->GetWidth()) * GridSquareSize.width);
+									p->BuildShape();
+									p->SetStartPoint(D2D1::Point2F((sprite->GetDestSprite().right + sprite->GetDestSprite().left) * 0.5f, (sprite->GetDestSprite().bottom + sprite->GetDestSprite().top) * 0.5f));
+									sprite->AddAoeSpriteChild(p);
+									pLastAttachedSpritePointer = p;
+									bUpdateRotation = true;
 								}
-								else sprite->AddSpriteChild(sptest->GetPieces());
+								else if (sptest) sprite->AddSpriteChild(sptest->GetPieces());
 								break;
 							}
 						}
 					}
-					else
+					else if (sptest)
 					{
 						pSelectedLayer->push_back(new SpritePointer(gfx, sptest->GetPieces(), Location(), &GridSquareSize));
 						pSelectedLayer->back()->SetCreatureSize(sptest->GetCreatureSize());
@@ -492,7 +497,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 					sptest ? wptest->SetColor(D2D1::ColorF(0.0f, 0.0f, 0.0f)) : wptest->SetColor(pSideMenu->GetSelectedWallColor());
 					wptest->AddPoint(bLockToGrid ? mPreviewPoint : TranslatedCoordinates);
 				}
-				else if (pSideMenu->AoeSelected())
+				if (pSideMenu->AoeSelected() && !pSideMenu->IsAttachObject())
 				{
 					D2D1_COLOR_F fillcolor = pSideMenu->GetSelectedAoeColor();
 					fillcolor.a = pAoeSizeMenu->GetOpacity();
@@ -576,20 +581,10 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 							if (!pSelectedObject)
 							{
 								pSelectedObject = c;
+								if (!pSelectedObject->IsAoe())
 								if (!pRuler) pRuler = new Ruler(gfx, GridSquareSize, D2D1::Point2F(pSelectedObject->GetDestSprite().left + (pSelectedObject->GetDestSprite().right - pSelectedObject->GetDestSprite().left) * 0.5f,
 									pSelectedObject->GetDestSprite().top + (pSelectedObject->GetDestSprite().bottom - pSelectedObject->GetDestSprite().top) * 0.5f), mRulerDest);
 							}
-							/*else
-							{
-								if (c == pSelectedObject) pSelectedObject = nullptr;
-								else
-								{
-									D2D1_RECT_F temp = c->GetDestSprite();
-									c->SetDestSprite(pSelectedObject->GetDestSprite());
-									pSelectedObject->SetDestSprite(temp);
-									pSelectedObject = nullptr;
-								}
-							}*/
 							move = false;
 						}
 					}
@@ -611,7 +606,11 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			break;
 		case Mouse::Event::Type::LRelease:
 		{
-			bUpdateRotation = false;
+			if (bUpdateRotation)
+			{
+				bUpdateRotation = false;
+				pLastAttachedSpritePointer = nullptr;
+			}
 			if (mSizeMenuType == MeasurementMenu::SizeMenuType::CreatureSize && pSizeMenu->Interact())
 			{
 				if (sptest) sptest->SetCreatureSize(pSizeMenu->GetSelectedCreatureSize());
@@ -1008,20 +1007,6 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 			case 'F':
 				if (pKeyboard->KeyIsPressed(VK_CONTROL)) bShowFPS ^= true;
 				break;
-			case 'V':
-			{
-				if (!pDeleteMe)
-				{
-					pDeleteMe = new AoeSpritePointer(gfx, AoeSpritePointer::AoeTypes::Cone, D2D1::ColorF(0, 0, 0), D2D1::ColorF(1, 0, 0, 0.5), &vPiecesW.back(), Location(), &GridSquareSize);
-					pDeleteMe->SetLength(3.0f * GridSquareSize.width);
-					pDeleteMe->SetRadius(GridSquareSize.width);
-					pDeleteMe->SetThickness(3.0f);
-					//pDeleteMe->SetTranslation(D2D1::SizeF(1920.0f*0.5f, 1080.0f*0.5f));
-					pDeleteMe->BuildShape();
-					pDeleteMe->SetStartPoint(D2D1::Point2F(13.0f * GridSquareSize.width, 5.0f * GridSquareSize.height)); //shape must be built before setstartpoint can be called
-				}
-			}
-			break;
 			default:
 			{
 				if ((keyEvents.GetCode() >= L'0' && keyEvents.GetCode() <= L'9') || (keyEvents.GetCode() >= 'A' && keyEvents.GetCode() <= 'Z'))
@@ -1336,7 +1321,7 @@ const D2D1_RECT_F BaseLevel::GetPreviewRect(SpritePointer* const pSpritePointer,
 
 		return D2D1::RectF(lockedPoint.x, lockedPoint.y, lockedPoint.x + size.width, lockedPoint.y + size.height);
 	}
-	return D2D1::RectF(p.x, p.y, p.x + size.width, p.y + size.height);
+	return D2D1::RectF(p.x - size.width * 0.5f, p.y - size.height * 0.5f, p.x + size.width * 0.5f, p.y + size.height * 0.5f);
 }
 
 const D2D1_POINT_2F BaseLevel::GetNearestCorner()
