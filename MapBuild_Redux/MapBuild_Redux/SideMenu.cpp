@@ -637,6 +637,78 @@ void SideMenu::BuildSubcategories(std::vector<PiecesW>* const wPieces)
 	}
 }
 
+void SideMenu::BuildAoeMenu(std::vector<PiecesW>* const wPieces)
+{
+	CategoryMenu->AddChild(new TypeButtons(&bAoeMenuSelected, true, gfx, pTransforms, pClientRect, pMouseCoordinates, L"AOE", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), MainMenuSize, 2.0f);
+	CategoryMenu->CreateSubsection(L"AOE", D2D1::RectF(pClientRect->right, pClientRect->top + 3.0f, pClientRect->right + GetSize().width, pClientRect->top + MainMenuSize.height + 3.0f));
+	CategoryMenu->vSubsections.back()->SetTranslation(D2D1::SizeF(0.0f, CategoryMenu->GetSize().height + 5.0f));
+	CategoryMenu->vSubsections.back()->UpdateInvTranforms(CategoryMenu->GetTransforms() * CategoryMenu->vSubsections.back()->GetTransforms());
+	CategoryMenu->vSubsections.back()->pParent = this;
+	MenuSection* targetSubmenu = CategoryMenu->vSubsections.back();
+	targetSubmenu->SetHidden();
+
+	//****Aoe Shape options*****//
+	//cone
+	targetSubmenu->CreateSubsection(L"Cone", D2D1::RectF(pClientRect->right, pClientRect->top + 3.0f, pClientRect->right + GetSize().width, pClientRect->top + MainMenuSize.height + 3.0f), true, ItemMenuSize.height);
+	targetSubmenu->AddChild(new AoeSubsectionButtons(&SelectedAoeType, AoeSpritePointer::AoeTypes::Cone, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Cone", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubmenu), true), SubMenuSize, 2.0f);
+	targetSubmenu->SetBorderStyle(BorderStyle::Dotted);
+	MenuSection* targetSubSubmenu = targetSubmenu->vSubsections.back();
+	FillWithColorButtons(targetSubSubmenu);
+	targetSubSubmenu->SetTranslation(D2D1::SizeF(0.0f, targetSubmenu->GetSize().height + 5.0f));
+	targetSubSubmenu->UpdateInvTranforms(CategoryMenu->GetTransforms() * targetSubmenu->GetTransforms() * targetSubmenu->vSubsections.back()->GetTransforms());
+	targetSubSubmenu->SetHidden();
+	targetSubSubmenu->pParent = targetSubmenu;
+	targetSubSubmenu->SetDestBottom(targetSubSubmenu->pChild.back()->GetRect().bottom + targetSubSubmenu->pChild.back()->GetSize().height);
+	static_cast<ColorButtons*>(targetSubSubmenu->pChild.back())->SetMatrixPointer(&targetSubSubmenu->AllTransforms);
+	//line
+	targetSubmenu->CreateSubsection(L"Line", D2D1::RectF(pClientRect->right, pClientRect->top + 3.0f, pClientRect->right + GetSize().width, pClientRect->top + MainMenuSize.height + 3.0f), true, ItemMenuSize.height);
+	targetSubmenu->AddChild(new AoeSubsectionButtons(&SelectedAoeType, AoeSpritePointer::AoeTypes::Line, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Line", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubmenu), true), SubMenuSize, 2.0f);
+	targetSubmenu->SetBorderStyle(BorderStyle::Dotted);
+	targetSubSubmenu = targetSubmenu->vSubsections.back();
+	FillWithColorButtons(targetSubSubmenu);
+	targetSubSubmenu->SetTranslation(D2D1::SizeF(0.0f, targetSubmenu->GetSize().height + 5.0f));
+	targetSubSubmenu->UpdateInvTranforms(CategoryMenu->GetTransforms() * targetSubmenu->GetTransforms() * targetSubmenu->vSubsections.back()->GetTransforms());
+	targetSubSubmenu->SetHidden();
+	targetSubSubmenu->pParent = targetSubmenu;
+	targetSubSubmenu->SetDestBottom(targetSubSubmenu->pChild.back()->GetRect().bottom + targetSubSubmenu->pChild.back()->GetSize().height);
+	static_cast<ColorButtons*>(targetSubSubmenu->pChild.back())->SetMatrixPointer(&targetSubSubmenu->AllTransforms);
+	//Cube
+	targetSubmenu->CreateSubsection(L"Cube", D2D1::RectF(pClientRect->right, pClientRect->top + 3.0f, pClientRect->right + GetSize().width, pClientRect->top + MainMenuSize.height + 3.0f), true, ItemMenuSize.height);
+	targetSubmenu->AddChild(new AoeSubsectionButtons(&SelectedAoeType, AoeSpritePointer::AoeTypes::Cube, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Cube", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubmenu), true), SubMenuSize, 2.0f);
+	targetSubmenu->SetBorderStyle(BorderStyle::Dotted);
+	targetSubSubmenu = targetSubmenu->vSubsections.back();
+	FillWithColorButtons(targetSubSubmenu);
+	targetSubSubmenu->SetTranslation(D2D1::SizeF(0.0f, targetSubmenu->GetSize().height + 5.0f));
+	targetSubSubmenu->UpdateInvTranforms(CategoryMenu->GetTransforms() * targetSubmenu->GetTransforms() * targetSubmenu->vSubsections.back()->GetTransforms());
+	targetSubSubmenu->SetHidden();
+	targetSubSubmenu->pParent = targetSubmenu;
+	targetSubSubmenu->SetDestBottom(targetSubSubmenu->pChild.back()->GetRect().bottom + targetSubSubmenu->pChild.back()->GetSize().height);
+	static_cast<ColorButtons*>(targetSubSubmenu->pChild.back())->SetMatrixPointer(&targetSubSubmenu->AllTransforms);
+	//Sphere
+	targetSubmenu->CreateSubsection(L"Sphere", D2D1::RectF(pClientRect->right, pClientRect->top + 3.0f, pClientRect->right + GetSize().width, pClientRect->top + MainMenuSize.height + 3.0f), true, ItemMenuSize.height);
+	targetSubmenu->AddChild(new AoeSubsectionButtons(&SelectedAoeType, AoeSpritePointer::AoeTypes::Sphere, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Sphere", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubmenu), true), SubMenuSize, 2.0f);
+	targetSubmenu->SetBorderStyle(BorderStyle::Dotted);
+	targetSubSubmenu = targetSubmenu->vSubsections.back();
+	FillWithColorButtons(targetSubSubmenu);
+	targetSubSubmenu->SetTranslation(D2D1::SizeF(0.0f, targetSubmenu->GetSize().height + 5.0f));
+	targetSubSubmenu->UpdateInvTranforms(CategoryMenu->GetTransforms() * targetSubmenu->GetTransforms() * targetSubmenu->vSubsections.back()->GetTransforms());
+	targetSubSubmenu->SetHidden();
+	targetSubSubmenu->pParent = targetSubmenu;
+	targetSubSubmenu->SetDestBottom(targetSubSubmenu->pChild.back()->GetRect().bottom + targetSubSubmenu->pChild.back()->GetSize().height);
+	static_cast<ColorButtons*>(targetSubSubmenu->pChild.back())->SetMatrixPointer(&targetSubSubmenu->AllTransforms);
+}
+
+void SideMenu::FillWithColorButtons(MenuSection* const targetSubSubmenu)
+{
+	targetSubSubmenu->AddChild(new ColorButtons(D2D1::ColorF(0.0f, 0.0f, 0.0f), ppSelectedSprite, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Black", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), true), ItemMenuSize);
+	targetSubSubmenu->AddChild(new ColorButtons(D2D1::ColorF(1.0f, 1.0f, 1.0f), ppSelectedSprite, gfx, pTransforms, pClientRect, pMouseCoordinates, L"White", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), true), ItemMenuSize);
+	targetSubSubmenu->AddChild(new ColorButtons(D2D1::ColorF(0.6f, 0.6f, 0.6f), ppSelectedSprite, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Gray", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), true), ItemMenuSize);
+	targetSubSubmenu->AddChild(new ColorButtons(D2D1::ColorF(0.58f, 0.0f, 0.83f), ppSelectedSprite, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Purple", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), true), ItemMenuSize);
+	targetSubSubmenu->AddChild(new ColorButtons(D2D1::ColorF(1.0f, 0.0f, 0.0f), ppSelectedSprite, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Reg", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), true), ItemMenuSize);
+	targetSubSubmenu->AddChild(new ColorButtons(D2D1::ColorF(0.0f, 0.0f, 1.0f), ppSelectedSprite, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Blue", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), true), ItemMenuSize);
+	targetSubSubmenu->AddChild(new ColorButtons(D2D1::ColorF(0.0f, 1.0f, 0.0f), ppSelectedSprite, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Green", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), true), ItemMenuSize);
+}
+
 void SideMenu::BuildWallMenu(std::vector<PiecesW>* const wPieces)
 {
 	CategoryMenu->AddChild(new TypeButtons(&bWallMenuSelected, true, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Walls", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), MainMenuSize, 2.0f);
@@ -652,14 +724,8 @@ void SideMenu::BuildWallMenu(std::vector<PiecesW>* const wPieces)
 	targetSubmenu->AddChild(new WallSubsectionButtons(&bUseTexture, false, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Solid Color", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubmenu), true), SubMenuSize, 2.0f);
 	targetSubmenu->SetBorderStyle(BorderStyle::Dotted);
 	MenuSection* targetSubSubmenu = targetSubmenu->vSubsections.back();
-
-	targetSubSubmenu->AddChild(new ColorButtons(D2D1::ColorF(0.0f, 0.0f, 0.0f), ppSelectedSprite, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Black", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), true), ItemMenuSize);
-	targetSubSubmenu->AddChild(new ColorButtons(D2D1::ColorF(1.0f, 1.0f, 1.0f), ppSelectedSprite, gfx, pTransforms, pClientRect, pMouseCoordinates, L"White", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), true), ItemMenuSize);
-	targetSubSubmenu->AddChild(new ColorButtons(D2D1::ColorF(0.6f, 0.6f, 0.6f), ppSelectedSprite, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Gray", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), true), ItemMenuSize);
-	targetSubSubmenu->AddChild(new ColorButtons(D2D1::ColorF(0.58f, 0.0f, 0.83f), ppSelectedSprite, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Purple", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), true), ItemMenuSize);
-	targetSubSubmenu->AddChild(new ColorButtons(D2D1::ColorF(1.0f, 0.0f, 0.0f), ppSelectedSprite, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Reg", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), true), ItemMenuSize);
-	targetSubSubmenu->AddChild(new ColorButtons(D2D1::ColorF(0.0f, 0.0f, 1.0f), ppSelectedSprite, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Blue", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), true), ItemMenuSize);
-	targetSubSubmenu->AddChild(new ColorButtons(D2D1::ColorF(0.0f, 1.0f, 0.0f), ppSelectedSprite, gfx, pTransforms, pClientRect, pMouseCoordinates, L"Green", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(targetSubSubmenu), true), ItemMenuSize);
+	FillWithColorButtons(targetSubSubmenu);
+	
 	targetSubSubmenu->SetTranslation(D2D1::SizeF(0.0f, targetSubmenu->GetSize().height + 5.0f));
 	targetSubSubmenu->UpdateInvTranforms(CategoryMenu->GetTransforms() * targetSubmenu->GetTransforms() * targetSubmenu->vSubsections.back()->GetTransforms());
 	targetSubSubmenu->SetHidden();
@@ -704,6 +770,46 @@ const D2D1_COLOR_F SideMenu::GetSelectedWallColor()
 	return D2D1::ColorF(0.0f, 0.0f, 0.0f);
 }
 
+const D2D1_COLOR_F SideMenu::GetSelectedAoeColor()
+{
+	for (auto& cat : CategoryMenu->vSubsections)
+	{
+		if (_wcsicmp(cat->GetLabel(), L"AOE"))
+			continue;
+		for (auto& child : cat->vSubsections)
+		{
+			if (!StringIsShapeType(child->GetLabel(), GetSelectedAoeType()))
+				continue;
+			for (auto& c : child->pChild)
+			{
+				if (c->IsSelected())
+					return static_cast<ColorButtons*>(c)->GetDrawColor();
+			}
+		}
+	}
+	return D2D1::ColorF(0.0f, 0.0f, 0.0f);
+}
+
+const bool SideMenu::StringIsShapeType(const std::wstring name, const AoeSpritePointer::AoeTypes type)
+{
+	return StringToShapeType(name) == type;
+}
+
+const AoeSpritePointer::AoeTypes SideMenu::StringToShapeType(const std::wstring name)
+{
+	if (!_wcsicmp(name.c_str(), L"Cone"))
+		return AoeSpritePointer::AoeTypes::Cone;
+	if (!_wcsicmp(name.c_str(), L"Line"))
+		return AoeSpritePointer::AoeTypes::Line;
+	if (!_wcsicmp(name.c_str(), L"Cube"))
+		return AoeSpritePointer::AoeTypes::Cube;
+	if (!_wcsicmp(name.c_str(), L"Cylinder"))
+		return AoeSpritePointer::AoeTypes::Cylinder;
+	if (!_wcsicmp(name.c_str(), L"Sphere"))
+		return AoeSpritePointer::AoeTypes::Sphere;
+	return AoeSpritePointer::AoeTypes::Invalid;
+}
+
 void SideMenu::RealignCategories()
 {
 	if (!CategoryMenu) return;
@@ -735,6 +841,10 @@ const MeasurementMenu::SizeMenuType SideMenu::GetSizeMenuType()
 			if (!_wcsicmp(category->GetLabel(), L"Walls"))
 			{
 				return MeasurementMenu::SizeMenuType::ThicknessSize;
+			}
+			if (!_wcsicmp(category->GetLabel(), L"AOE"))
+			{
+				return MeasurementMenu::SizeMenuType::AoeSize;
 			}
 			break;
 		}

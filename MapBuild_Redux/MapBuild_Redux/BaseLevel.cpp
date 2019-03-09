@@ -1,6 +1,7 @@
 #include "BaseLevel.h"
 #include <thread>
 #include <mutex>
+#include <cmath>
 #include <comdef.h>
 
 const bool AlphaSortSubType(PiecesW& p1, PiecesW& p2)
@@ -55,6 +56,7 @@ BaseLevel::BaseLevel(const HWND hwnd, Graphics* const graphics, D2D1_POINT_2F* c
 	pSideMenu->BuildCategories(&vPiecesW);
 	std::sort(vPiecesW.begin(), vPiecesW.end(), AlphaSortSubType);
 	pSideMenu->BuildWallMenu(&vPiecesW);	
+	pSideMenu->BuildAoeMenu(&vPiecesW);
 	pSideMenu->BuildSubcategories(&vPiecesW);	
 
 	pSizeMenu = new SizeMenu(gfx, D2D1::RectF(WindowSize.width * 0.75f, WindowSize.height - 133.0f, WindowSize.width, WindowSize.height), pMouseCoordinate);
@@ -62,8 +64,9 @@ BaseLevel::BaseLevel(const HWND hwnd, Graphics* const graphics, D2D1_POINT_2F* c
 	pSizeMenu->SetSelectedCreatureSize(vPiecesW.front().GetSize());
 
 	pThicknessMenu = new ThicknessMenu(gfx, D2D1::RectF(WindowSize.width * 0.75f, WindowSize.height - 98.0f, WindowSize.width, WindowSize.height), pMouseCoordinate);
+	pAoeSizeMenu = new AoeSizeMenu(&pSideMenu->SelectedAoeType, gfx, D2D1::RectF(WindowSize.width * 0.75f, WindowSize.height * 0.5f, WindowSize.width, WindowSize.height), pMouseCoordinate);
 	
-	sptest = new SpritePointer(&vPiecesW.front(), Location(), &GridSquareSize);
+	sptest = new SpritePointer(gfx, &vPiecesW.front(), Location(), &GridSquareSize);
 	sptest->SetDestSprite(D2D1::RectF(-sptest->GetSpriteFrameSize().width, -sptest->GetSpriteFrameSize().height, 0.0f, 0.0f));
 	sptest->SetCreatureSize(vPiecesW.front().GetSize());
 	
@@ -118,6 +121,7 @@ void BaseLevel::Unload()
 	SafeDelete(&sptest);
 	SafeDelete(&pSideMenu);
 	SafeDelete(&pSizeMenu);
+	SafeDelete(&pAoeSizeMenu);
 	SafeDelete(&pRuler);
 	wptest.reset();
 
@@ -207,17 +211,24 @@ void BaseLevel::Render()
 
 	if (pSelectedObject) 
 		gfx->DrawRect(gfx->GetCompatibleTarget(), pSelectedObject->GetDestSprite(), D2D1::ColorF(1.0f, 0.0f, 1.0f), 3.0f);
+
+	if (pDeleteMe)
+		pDeleteMe->DrawSprite(gfx);
 	
-	if (sptest && !pSideMenu->WallSelected())
+	if (sptest && !pSideMenu->WallSelected() && !pSideMenu->AoeSelected())
 	{
 		if (pSideMenu->IsBuildMode() || pSelectedObject) gfx->DrawRect(gfx->GetCompatibleTarget(), mPreviewDest, D2D1::ColorF(1.0f, 0.1f, 0.05f, 1.0f), 5.0f);
 	}
-
-	if (wptest && pSideMenu->WallSelected())
+	else if (wptest && pSideMenu->WallSelected() && !pSideMenu->AoeSelected())
 	{
 		if (bLockToGrid) wptest->DrawPreview(mPreviewPoint);
 		else wptest->DrawPreview();
 		if (bLockToGrid) gfx->FillCircle(gfx->GetCompatibleTarget(), mPreviewPoint, 3.0f, D2D1::ColorF(1.0f, 0.0f, 0.0f));
+	}
+	else if (pSideMenu->AoeSelected())
+	{
+		if (bLockToGrid) gfx->FillCircle(gfx->GetCompatibleTarget(), mPreviewPoint, 3.0f, D2D1::ColorF(1.0f, 0.0f, 0.0f, 0.85f));
+		else gfx->FillCircle(gfx->GetCompatibleTarget(), TranslatedCoordinates, 3.0f, D2D1::ColorF(1.0f, 0.0f, 0.0f, 0.85f));
 	}
 
 	if (bGridOnTop) gfx->DrawDefaultGrid(gfx->GetCompatibleTarget(), Transforms, D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height), GridSquareSize, D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.9f), 3.0f);
@@ -243,11 +254,12 @@ void BaseLevel::Render()
 	gfx->BeginDraw(gfx->GetCompatibleTarget());
 	gfx->ClearScreen(gfx->GetCompatibleTarget(), D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.0f));
 	DrawSideMenu();
+//	DrawAoeMenu();
 	DrawSizeMenu();
 	gfx->EndDraw(gfx->GetCompatibleTarget());
 
 	gfx->SwapBuffer();
-//	gfx->OutputText(gfx->GetRenderTarget(), std::to_wstring(afps).c_str(), D2D1::RectF(0, 500, 500, 564));			//remove comment to display avg. FPS
+	if (bShowFPS) gfx->OutputText(gfx->GetRenderTarget(), std::to_wstring(afps).c_str(), D2D1::RectF(0, 500, 500, 564));			//remove comment to display avg. FPS
 	if (pRuler) pRuler->DrawDistance();
 	gfx->EndDraw(gfx->GetRenderTarget());
 }
@@ -274,6 +286,9 @@ void BaseLevel::DrawSizeMenu()
 		break;
 	case MeasurementMenu::SizeMenuType::ThicknessSize:
 		if (pThicknessMenu) pThicknessMenu->Draw();
+		break;
+	case MeasurementMenu::SizeMenuType::AoeSize:
+		if (pAoeSizeMenu) pAoeSizeMenu->Draw();
 		break;
 	}
 }
@@ -366,6 +381,33 @@ void BaseLevel::Update(double dDelta)
 				Offset.width -= (dX < 0 ? d * dX : d * dX);
 		}
 	}
+
+	if (pKeyboard->KeyIsPressed('V'))
+	{
+		if (pDeleteMe)
+		{
+			//D2D1_POINT_2F p1 = gfx->GetTransformedPoint(gfx->GetCompatibleTarget(), D2D1::Point2F((pDeleteMe->GetLocation().mDestSprite.bottom + pDeleteMe->GetLocation().mDestSprite.top) * 0.5f, (pDeleteMe->GetLocation().mDestSprite.right + pDeleteMe->GetLocation().mDestSprite.left) * 0.5f));
+			D2D1::Matrix3x2F transforms = pDeleteMe->GetTransformsMatrix();
+			D2D1_POINT_2F p1 = transforms.TransformPoint(pDeleteMe->GetCenter());
+			float deltax = TranslatedCoordinates.x - p1.x;
+			float deltay = TranslatedCoordinates.y - p1.y;
+			float theta = atan2(deltay, deltax);
+
+			pDeleteMe->SetRotation(theta);
+			pDeleteMe->UpdateRotationMatrix();
+		}
+	}
+
+	if (bUpdateRotation)
+	{
+		D2D1::Matrix3x2F transforms = static_cast<AoeSpritePointer*>(pSelectedLayer->back())->GetTransformsMatrix();
+		D2D1_POINT_2F p1 = transforms.TransformPoint(static_cast<AoeSpritePointer*>(pSelectedLayer->back())->GetCenter());
+		float deltax = TranslatedCoordinates.x - p1.x;
+		float deltay = TranslatedCoordinates.y - p1.y;
+		float theta = atan2(deltay, deltax);
+		static_cast<AoeSpritePointer*>(pSelectedLayer->back())->SetRotation(theta);
+		static_cast<AoeSpritePointer*>(pSelectedLayer->back())->UpdateRotationMatrix();
+	}
 }
 
 void BaseLevel::ProcessEvents(double dDelta)
@@ -401,6 +443,10 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 				pThicknessMenu->UpdateSlider();
 				wptest->SetThickness(pThicknessMenu->GetSelectedThickness());								
 			}
+			if (pAoeSizeMenu->IsSelected())
+			{
+				pAoeSizeMenu->UpdateSlider();
+			}
 			if (pRuler)
 			{
 				pRuler->SetEndPoint(TranslatedCoordinates);
@@ -411,7 +457,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 		case Mouse::Event::Type::LPress:
 			if (pSelectedLayer && !pSideMenu->IsInRealRect() && !pSizeMenu->IsInRealRect() && pSideMenu->IsBuildMode())
 			{
-				if (sptest && !pSideMenu->WallSelected())
+				if (sptest && !pSideMenu->WallSelected() && !pSideMenu->AoeSelected())
 				{
 					if (pSideMenu->IsAttachObject())
 					{
@@ -419,14 +465,18 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 						{
 							if (sprite->PointInSprite(TranslatedCoordinates))
 							{
-								sprite->AddSpriteChild(sptest->GetPieces());
+								if (pSideMenu->AoeSelected())
+								{
+									//for aoe sprites
+								}
+								else sprite->AddSpriteChild(sptest->GetPieces());
 								break;
 							}
 						}
 					}
 					else
 					{
-						pSelectedLayer->push_back(new SpritePointer(sptest->GetPieces(), Location(), &GridSquareSize));
+						pSelectedLayer->push_back(new SpritePointer(gfx, sptest->GetPieces(), Location(), &GridSquareSize));
 						pSelectedLayer->back()->SetCreatureSize(sptest->GetCreatureSize());
 						bKeepAspect ? pSelectedLayer->back()->SetKeepAspectSprite() : pSelectedLayer->back()->UnsetKeepAspectSprite();
 
@@ -437,10 +487,24 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 						//pSelectedLayer->back()->SetDestSprite(D2D1::RectF(TranslatedCoordinates.x, TranslatedCoordinates.y, TranslatedCoordinates.x + sptest->GetDestResizedSpriteSize().width, TranslatedCoordinates.y + sptest->GetDestResizedSpriteSize().height));
 					}
 				}
-				else if (wptest)
+				else if (wptest && !pSideMenu->AoeSelected())
 				{
 					sptest ? wptest->SetColor(D2D1::ColorF(0.0f, 0.0f, 0.0f)) : wptest->SetColor(pSideMenu->GetSelectedWallColor());
 					wptest->AddPoint(bLockToGrid ? mPreviewPoint : TranslatedCoordinates);
+				}
+				else if (pSideMenu->AoeSelected())
+				{
+					D2D1_COLOR_F fillcolor = pSideMenu->GetSelectedAoeColor();
+					fillcolor.a = pAoeSizeMenu->GetOpacity();
+					AoeSpritePointer* tSprite = new AoeSpritePointer(gfx, pSideMenu->GetSelectedAoeType(), D2D1::ColorF(0.0f, 0.0f, 0.0f), fillcolor, nullptr, Location(), &GridSquareSize);
+					tSprite->SetLength(static_cast<int>(pAoeSizeMenu->GetLength()) * GridSquareSize.width);
+					tSprite->SetRadius(static_cast<int>(pAoeSizeMenu->GetRadius()) * GridSquareSize.width);
+					tSprite->SetThickness(3.0f);
+					tSprite->SetWidth(static_cast<int>(pAoeSizeMenu->GetWidth()) * GridSquareSize.width);
+					tSprite->BuildShape();
+					tSprite->SetStartPoint(bLockToGrid ? mPreviewPoint : TranslatedCoordinates);
+					pSelectedLayer->push_back(tSprite);
+					bUpdateRotation = true;
 				}
 			}
 			else if (pSideMenu->IsInRealRect())
@@ -458,6 +522,44 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 							pThicknessMenu->JumpPosition();
 							pThicknessMenu->SetPreviewRadius(pThicknessMenu->CalcRadius());
 							wptest->SetThickness(pThicknessMenu->GetSelectedThickness());
+						}
+					}
+				}
+				else if (mSizeMenuType == MeasurementMenu::SizeMenuType::AoeSize)
+				{
+					if (!pAoeSizeMenu->IsHidden())
+					{
+						if (pAoeSizeMenu->PointInOpacitySlider())
+						{
+							pAoeSizeMenu->SetOpacitySelected();
+						}
+						else if (pAoeSizeMenu->PointOnOpacitySlideLine())
+						{
+							//jumpposition needs to be tweaked to support multiples before it can do this
+						}
+						if (pAoeSizeMenu->PointInLengthSlider())
+						{
+							pAoeSizeMenu->SetLengthSelected();
+						}
+						else if (pAoeSizeMenu->PointOnLengthSlideLine())
+						{
+
+						}
+						if (pAoeSizeMenu->PointInWidthSlider())
+						{
+							pAoeSizeMenu->SetWidthSelected();
+						}
+						else if (pAoeSizeMenu->PointOnWidthSlideLine())
+						{
+
+						}
+						 if (pAoeSizeMenu->PointInRadiusSlider())
+						{
+							pAoeSizeMenu->SetRadiusSelected();
+						}
+						else if (pAoeSizeMenu->PointOnRadiusSlideLine())
+						{
+
 						}
 					}
 				}
@@ -509,6 +611,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			break;
 		case Mouse::Event::Type::LRelease:
 		{
+			bUpdateRotation = false;
 			if (mSizeMenuType == MeasurementMenu::SizeMenuType::CreatureSize && pSizeMenu->Interact())
 			{
 				if (sptest) sptest->SetCreatureSize(pSizeMenu->GetSelectedCreatureSize());
@@ -520,6 +623,25 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 					pThicknessMenu->UnsetSelected();					
 				}
 			}
+			else if (mSizeMenuType == MeasurementMenu::SizeMenuType::AoeSize && pAoeSizeMenu->Interact())
+			{
+				if (pAoeSizeMenu->OpacitySelected())
+				{
+					pAoeSizeMenu->UnsetOpacitySelected();
+				}
+				if (pAoeSizeMenu->LengthSelected())
+				{
+					pAoeSizeMenu->UnsetLengthSelected();
+				}
+				if (pAoeSizeMenu->WidthSelected())
+				{
+					pAoeSizeMenu->UnsetWidthSelected();
+				}
+				if (pAoeSizeMenu->RadiusSelected())
+				{
+					pAoeSizeMenu->UnsetRadiusSelected();
+				}
+			}
 			else 
 			{
 				for (auto& io : IObjects)
@@ -527,7 +649,6 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 					if (io->PointInRect())
 					{
 						io->Interact();
-						break;
 					}
 				}
 				if (!pSideMenu->IsBuildMode())
@@ -884,20 +1005,23 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 				SafeDelete(&pRuler);
 				pRuler = new Ruler(gfx, GridSquareSize, TranslatedCoordinates, mRulerDest);
 				break;
+			case 'F':
+				if (pKeyboard->KeyIsPressed(VK_CONTROL)) bShowFPS ^= true;
+				break;
 			case 'V':
 			{
-				Open(L"delme.dat");
+				if (!pDeleteMe)
+				{
+					pDeleteMe = new AoeSpritePointer(gfx, AoeSpritePointer::AoeTypes::Cone, D2D1::ColorF(0, 0, 0), D2D1::ColorF(1, 0, 0, 0.5), &vPiecesW.back(), Location(), &GridSquareSize);
+					pDeleteMe->SetLength(3.0f * GridSquareSize.width);
+					pDeleteMe->SetRadius(GridSquareSize.width);
+					pDeleteMe->SetThickness(3.0f);
+					//pDeleteMe->SetTranslation(D2D1::SizeF(1920.0f*0.5f, 1080.0f*0.5f));
+					pDeleteMe->BuildShape();
+					pDeleteMe->SetStartPoint(D2D1::Point2F(13.0f * GridSquareSize.width, 5.0f * GridSquareSize.height)); //shape must be built before setstartpoint can be called
+				}
 			}
-				break;
-			case 'B':
-			{
-				Save(L"delme.dat");
-				break;
-			}
-			case 'H':
-			{
-				break;
-			}
+			break;
 			default:
 			{
 				if ((keyEvents.GetCode() >= L'0' && keyEvents.GetCode() <= L'9') || (keyEvents.GetCode() >= 'A' && keyEvents.GetCode() <= 'Z'))
@@ -1185,6 +1309,9 @@ const D2D1_RECT_F BaseLevel::GetPreviewRect(SpritePointer* const pSpritePointer,
 		sizemod = static_cast<float>(1 + static_cast<uint32_t>(pSpritePointer->GetCreatureSize()) - static_cast<uint32_t>(CreatureSize::Medium));
 		size = D2D1::SizeF(GridSquareSize.width * sizemod, GridSquareSize.height * sizemod);
 		break;
+	case CreatureSize::Invalid:
+		size = D2D1::SizeF(pSpritePointer->GetDestSprite().right - pSpritePointer->GetDestSprite().left, pSpritePointer->GetDestSprite().bottom - pSpritePointer->GetDestSprite().top);
+		break;
 	default:
 		sizemod = static_cast<float>(pSpritePointer->GetCreatureSize()) - static_cast<float>(CreatureSize::Colossal);
 		size = D2D1::SizeF(pSpritePointer->GetSpriteFrameSize().width * sizemod, pSpritePointer->GetSpriteFrameSize().height * sizemod);
@@ -1271,19 +1398,39 @@ const bool BaseLevel::LoadMapSpriteList(const char* Buffer)
 			{
 				uint32_t uSpriteSize = 0;
 				memcpy(&uSpriteSize, Buffer + pos, sizeof(uSpriteSize));
-				SpritePointer* p = new SpritePointer(nullptr, Location(), &GridSquareSize);
-				p->LoadSaveBuffer(Buffer + pos);
-				p->SetPiecePointer(FindPiece(p->GetPieceBuffer()));
-				for (auto c : p->vSpriteChild)
+				uint32_t spritetype = 0;
+				memcpy(&spritetype, Buffer + pos + sizeof(uSpriteSize), sizeof(spritetype));
+				if (spritetype == 0)
 				{
-					c->SetPiecePointer(FindPiece(c->GetPieceBuffer()));
+					SpritePointer* p = new SpritePointer(gfx, nullptr, Location(), &GridSquareSize);
+					p->LoadSaveBuffer(Buffer + pos);
+					p->SetPiecePointer(FindPiece(p->GetPieceBuffer()));
+					for (auto c : p->vSpriteChild)
+					{
+						c->SetPiecePointer(FindPiece(c->GetPieceBuffer()));
+					}
+					for (auto c : p->vPortraitChild)
+					{
+						c->SetPiecePointer(FindPiece(c->GetPieceBuffer()));
+					}
+					pos += uSpriteSize;
+					vSprites.back().back().push_back(p);
 				}
-				for (auto c : p->vPortraitChild)
+				else if (spritetype == 1)
 				{
-					c->SetPiecePointer(FindPiece(c->GetPieceBuffer()));
+					SpritePointer* p = new AoeSpritePointer(gfx, AoeSpritePointer::AoeTypes::Invalid, D2D1::ColorF(0,0,0), D2D1::ColorF(0,0,0), nullptr, Location(), &GridSquareSize);
+					p->LoadSaveBuffer(Buffer + pos);
+					for (auto c : p->vSpriteChild)
+					{
+						c->SetPiecePointer(FindPiece(c->GetPieceBuffer()));
+					}
+					for (auto c : p->vPortraitChild)
+					{
+						c->SetPiecePointer(FindPiece(c->GetPieceBuffer()));
+					}
+					pos += uSpriteSize;
+					vSprites.back().back().push_back(p);
 				}
-				pos += uSpriteSize;
-				vSprites.back().back().push_back(p);
 			}
 		}
 	}
@@ -1622,6 +1769,7 @@ const uint32_t BaseLevel::CalcSaveBufferSize()
 {
 	uint32_t uBufferSize = 0;
 	uBufferSize += sizeof(uBufferSize);					//store total size
+	uBufferSize += sizeof(fVERSION_NUMBER);				//store the version number of the program when the map was created
 	uBufferSize += sizeof(float) * 2;					//store GrdiSquareSize
 	uBufferSize += sizeof(float) * 2;					//store scaling
 	uBufferSize += sizeof(float) * 2;					//store scaling speed
@@ -1674,6 +1822,8 @@ const char* BaseLevel::CreateSaveInformation()
 	size_t pos = 0;
 	memcpy(Buffer, &uBufferSize, sizeof(uBufferSize));
 	pos += sizeof(uBufferSize);
+	memcpy(Buffer, &fVERSION_NUMBER, sizeof(fVERSION_NUMBER));
+	pos += sizeof(fVERSION_NUMBER);
 	memcpy(Buffer + pos, &GridSquareSize.width, sizeof(GridSquareSize.width));
 	pos += sizeof(GridSquareSize.width);
 	memcpy(Buffer + pos, &GridSquareSize.height, sizeof(GridSquareSize.height));
@@ -1771,6 +1921,9 @@ const bool BaseLevel::LoadSaveBuffer(const char* Buffer)
 	size_t pos = 0;
 	memcpy(&uBufferSize, Buffer, sizeof(uBufferSize));
 	pos += sizeof(uBufferSize);
+	float fVersion = 0;
+	memcpy(&fVersion, Buffer + pos, sizeof(fVersion));
+	pos += sizeof(fVersion);
 	memcpy(&GridSquareSize.width, Buffer + pos, sizeof(GridSquareSize.width));
 	pos += sizeof(GridSquareSize.width);
 	memcpy(&GridSquareSize.height, Buffer + pos, sizeof(GridSquareSize.height));

@@ -150,6 +150,7 @@ public:
 	virtual void SetCenter(const D2D1_POINT_2F p);
 	virtual void SetHidden();
 	virtual void SetUnhidden();
+	virtual void ToggleHidden();
 	virtual void SetFill() {}
 	virtual void UnsetFill() {}
 	virtual bool IsBack() { return false; }

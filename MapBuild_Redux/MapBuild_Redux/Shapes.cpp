@@ -156,3 +156,29 @@ void ClassShapes::Unload()
 		pPathGeometry.pop_back();
 	}
 }
+
+ShowHideParentShape::ShowHideParentShape(InteractObjects* const Parent, ShapeTypes Type, Graphics* const graphics, bool UseTransform,
+	D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, bool Back) : ClassShapes(Type, graphics, UseTransform, Transform, area, p, Back), pParent(Parent)
+{
+
+}
+
+const bool ShowHideParentShape::Interact()
+{
+	if (PointInRect())
+	{
+		if (pParent) pParent->ToggleHidden();
+		return false;
+	}
+	return true;
+}
+
+const bool ShowHideParentShape::Interact(const D2D1_POINT_2F p)
+{
+	if (PointInRect(p))
+	{
+		if (pParent) pParent->ToggleHidden();
+		return false;
+	}
+	return true;
+}

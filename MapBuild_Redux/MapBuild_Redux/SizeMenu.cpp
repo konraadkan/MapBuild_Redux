@@ -109,6 +109,48 @@ void MeasurementMenu::UpdateTransform()
 	mInvTransform.Invert();
 }
 
+void AoeSizeMenu::UpdateTransform()
+{
+	if (bHidden)
+	{
+		mTransform = D2D1::Matrix3x2F::Translation(D2D1::SizeF(0.0f, GetSize().height - 25));
+	}
+	else
+	{
+		if (pSelectedType)
+		{
+			switch (*pSelectedType)
+			{
+			case AoeSpritePointer::AoeTypes::Cone:
+				if (pLengthSlider)	mTransform = D2D1::Matrix3x2F::Translation(D2D1::SizeF(0.0f, -(pLengthSlider->GetDest().bottom - (mDest.bottom - 30.0f))));
+				else mTransform = D2D1::Matrix3x2F::Translation(D2D1::SizeF(0.0f, GetSize().height - 25));
+				break;
+			case AoeSpritePointer::AoeTypes::Cube:
+				if (pLengthSlider)	mTransform = D2D1::Matrix3x2F::Translation(D2D1::SizeF(0.0f, -(pLengthSlider->GetDest().bottom - (mDest.bottom - 30.0f))));
+				else mTransform = D2D1::Matrix3x2F::Translation(D2D1::SizeF(0.0f, GetSize().height - 25));
+				break;
+			case AoeSpritePointer::AoeTypes::Cylinder:
+				if (pLengthSlider)	mTransform = D2D1::Matrix3x2F::Translation(D2D1::SizeF(0.0f, -(pRadiusSlider->GetDest().bottom - (mDest.bottom - 30.0f))));
+				else mTransform = D2D1::Matrix3x2F::Translation(D2D1::SizeF(0.0f, GetSize().height - 25));
+				break;
+			case AoeSpritePointer::AoeTypes::Line:
+				if (pLengthSlider)	mTransform = D2D1::Matrix3x2F::Translation(D2D1::SizeF(0.0f, -(pWidthSlider->GetDest().bottom - (mDest.bottom - 30.0f))));
+				else mTransform = D2D1::Matrix3x2F::Translation(D2D1::SizeF(0.0f, GetSize().height - 25));
+				break;
+			case AoeSpritePointer::AoeTypes::Sphere:
+				if (pLengthSlider)	mTransform = D2D1::Matrix3x2F::Translation(D2D1::SizeF(0.0f, -(pRadiusSlider->GetDest().bottom - (mDest.bottom - 30.0f))));
+				else mTransform = D2D1::Matrix3x2F::Translation(D2D1::SizeF(0.0f, GetSize().height - 25));
+				break;
+			default:
+				mTransform = D2D1::Matrix3x2F::Translation(D2D1::SizeF(0.0f, GetSize().height - 25));
+			}
+		}
+		else mTransform = D2D1::Matrix3x2F::Identity();
+	}
+	mInvTransform = mTransform;
+	mInvTransform.Invert();
+}
+
 const bool SizeMenu::Interact()
 {
 	if (ShowHide->PointInRect())
@@ -244,7 +286,7 @@ void ThicknessMenu::Draw()
 }
 
 const bool ThicknessMenu::Interact()
-{//add a variable to baselevel or sidemenu to control which size menu to display
+{
 	if (ShowHide->PointInRect())
 	{
 		ToggleHidden();
@@ -260,6 +302,179 @@ const bool ThicknessMenu::Interact()
 		return true;
 	}
 	return false;
+}
+
+const bool AoeSizeMenu::Interact()
+{
+	if (ShowHide->PointInRect())
+	{
+		ToggleHidden();
+		return true;
+	}
+	if (PointInRect())
+	{
+		//check children
+		for (auto& child : vpChild)
+			if (child->PointInRect())
+			{
+				child->Interact();
+			}
+		return true;
+	}
+	return false;
+}
+
+void AoeSizeMenu::DrawConeMenu()
+{
+	std::wostringstream out;
+	out.precision(4);
+	out << std::fixed << pOpacitySlider->GetSize();
+	gfx->OutputText(gfx->GetCompatibleTarget(), out.str().c_str(), OpacityTextBox, D2D1::ColorF(0,0,0), DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+	out.str(std::wstring());
+	out.precision(0);
+	out << std::fixed << pLengthSlider->GetSize();
+	gfx->OutputText(gfx->GetCompatibleTarget(), out.str().c_str(), LengthTextBox, D2D1::ColorF(0, 0, 0), DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+	out.str(std::wstring());
+
+	gfx->OutputTextSmall(gfx->GetCompatibleTarget(), L"Opacity", D2D1::RectF(pOpacitySlider->GetDest().left, mDest.top + 2.0f, pOpacitySlider->GetDest().right, pOpacitySlider->GetDest().top), D2D1::ColorF(0, 0, 0), DWRITE_TEXT_ALIGNMENT_CENTER), DWRITE_PARAGRAPH_ALIGNMENT_FAR;
+	gfx->OutputTextSmall(gfx->GetCompatibleTarget(), L"Length (Feet)", D2D1::RectF(pOpacitySlider->GetDest().left, pOpacitySlider->GetDest().bottom, pOpacitySlider->GetDest().right, pLengthSlider->GetDest().top), D2D1::ColorF(0, 0, 0), DWRITE_TEXT_ALIGNMENT_CENTER), DWRITE_PARAGRAPH_ALIGNMENT_FAR;
+	if (pOpacitySlider) pOpacitySlider->Draw();
+	if (pLengthSlider) pLengthSlider->Draw();
+	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), OpacityTextBox, D2D1::ColorF(0.0f, 0.0f, 0.0f), 5.0f, 5.0f, 2.0f);
+	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), LengthTextBox, D2D1::ColorF(0.0f, 0.0f, 0.0f), 5.0f, 5.0f, 2.0f);
+}
+
+void AoeSizeMenu::DrawCubeMenu()
+{
+	std::wostringstream out;
+	out.precision(4);
+	out << std::fixed << pOpacitySlider->GetSize();
+	gfx->OutputText(gfx->GetCompatibleTarget(), out.str().c_str(), OpacityTextBox, D2D1::ColorF(0, 0, 0), DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+	out.str(std::wstring());
+	out.precision(0);
+	out << std::fixed << pLengthSlider->GetSize();
+	gfx->OutputText(gfx->GetCompatibleTarget(), out.str().c_str(), LengthTextBox, D2D1::ColorF(0, 0, 0), DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+	out.str(std::wstring());
+
+	gfx->OutputTextSmall(gfx->GetCompatibleTarget(), L"Opacity", D2D1::RectF(pOpacitySlider->GetDest().left, mDest.top + 2.0f, pOpacitySlider->GetDest().right, pOpacitySlider->GetDest().top), D2D1::ColorF(0, 0, 0), DWRITE_TEXT_ALIGNMENT_CENTER), DWRITE_PARAGRAPH_ALIGNMENT_FAR;
+	gfx->OutputTextSmall(gfx->GetCompatibleTarget(), L"Length (Feet)", D2D1::RectF(pOpacitySlider->GetDest().left, pOpacitySlider->GetDest().bottom, pOpacitySlider->GetDest().right, pLengthSlider->GetDest().top), D2D1::ColorF(0, 0, 0), DWRITE_TEXT_ALIGNMENT_CENTER), DWRITE_PARAGRAPH_ALIGNMENT_FAR;
+	if (pOpacitySlider) pOpacitySlider->Draw();
+	if (pLengthSlider) pLengthSlider->Draw();
+	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), OpacityTextBox, D2D1::ColorF(0.0f, 0.0f, 0.0f), 5.0f, 5.0f, 2.0f);
+	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), LengthTextBox, D2D1::ColorF(0.0f, 0.0f, 0.0f), 5.0f, 5.0f, 2.0f);
+}
+
+void AoeSizeMenu::DrawCylinderMenu()
+{
+	DrawSphereMenu();
+}
+
+void AoeSizeMenu::DrawLineMenu()
+{
+	std::wostringstream out;
+	out.precision(4);
+	out << std::fixed << pOpacitySlider->GetSize();
+	gfx->OutputText(gfx->GetCompatibleTarget(), out.str().c_str(), OpacityTextBox, D2D1::ColorF(0, 0, 0), DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+	out.str(std::wstring());
+	out.precision(0);
+	out << std::fixed << pLengthSlider->GetSize();
+	gfx->OutputText(gfx->GetCompatibleTarget(), out.str().c_str(), LengthTextBox, D2D1::ColorF(0, 0, 0), DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+	out.str(std::wstring());
+	out.precision(0);
+	out << std::fixed << pWidthSlider->GetSize();
+	gfx->OutputText(gfx->GetCompatibleTarget(), out.str().c_str(), WidthTextBox, D2D1::ColorF(0, 0, 0), DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+	out.str(std::wstring());
+
+	gfx->OutputTextSmall(gfx->GetCompatibleTarget(), L"Opacity", D2D1::RectF(pOpacitySlider->GetDest().left, mDest.top + 2.0f, pOpacitySlider->GetDest().right, pOpacitySlider->GetDest().top), D2D1::ColorF(0, 0, 0), DWRITE_TEXT_ALIGNMENT_CENTER), DWRITE_PARAGRAPH_ALIGNMENT_FAR;
+	gfx->OutputTextSmall(gfx->GetCompatibleTarget(), L"Length (Feet)", D2D1::RectF(pOpacitySlider->GetDest().left, pOpacitySlider->GetDest().bottom, pOpacitySlider->GetDest().right, pLengthSlider->GetDest().top), D2D1::ColorF(0, 0, 0), DWRITE_TEXT_ALIGNMENT_CENTER), DWRITE_PARAGRAPH_ALIGNMENT_FAR;
+	gfx->OutputTextSmall(gfx->GetCompatibleTarget(), L"Width (Feet)", D2D1::RectF(pOpacitySlider->GetDest().left, pLengthSlider->GetDest().bottom, pOpacitySlider->GetDest().right, pWidthSlider->GetDest().top), D2D1::ColorF(0, 0, 0), DWRITE_TEXT_ALIGNMENT_CENTER), DWRITE_PARAGRAPH_ALIGNMENT_FAR;
+	if (pOpacitySlider) pOpacitySlider->Draw();
+	if (pLengthSlider) pLengthSlider->Draw();
+	if (pWidthSlider) pWidthSlider->Draw();
+	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), OpacityTextBox, D2D1::ColorF(0.0f, 0.0f, 0.0f), 5.0f, 5.0f, 2.0f);
+	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), LengthTextBox, D2D1::ColorF(0.0f, 0.0f, 0.0f), 5.0f, 5.0f, 2.0f);
+	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), WidthTextBox, D2D1::ColorF(0.0f, 0.0f, 0.0f), 5.0f, 5.0f, 2.0f);
+}
+
+void AoeSizeMenu::DrawSphereMenu()
+{
+	std::wostringstream out;
+	out.precision(4);
+	out << std::fixed << pOpacitySlider->GetSize();
+	gfx->OutputText(gfx->GetCompatibleTarget(), out.str().c_str(), OpacityTextBox, D2D1::ColorF(0, 0, 0), DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+	out.str(std::wstring());
+	out.precision(0);
+	out << std::fixed << pRadiusSlider->GetSize();
+	gfx->OutputText(gfx->GetCompatibleTarget(), out.str().c_str(), RadiusTextBox, D2D1::ColorF(0, 0, 0), DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+	out.str(std::wstring());
+
+	gfx->OutputTextSmall(gfx->GetCompatibleTarget(), L"Opacity", D2D1::RectF(pOpacitySlider->GetDest().left, mDest.top + 2.0f, pOpacitySlider->GetDest().right, pOpacitySlider->GetDest().top), D2D1::ColorF(0, 0, 0), DWRITE_TEXT_ALIGNMENT_CENTER), DWRITE_PARAGRAPH_ALIGNMENT_FAR;
+	gfx->OutputTextSmall(gfx->GetCompatibleTarget(), L"Radius (Feet)", D2D1::RectF(pOpacitySlider->GetDest().left, pOpacitySlider->GetDest().bottom, pOpacitySlider->GetDest().right, pRadiusSlider ->GetDest().top), D2D1::ColorF(0, 0, 0), DWRITE_TEXT_ALIGNMENT_CENTER), DWRITE_PARAGRAPH_ALIGNMENT_FAR;
+	if (pOpacitySlider) pOpacitySlider->Draw();
+	if (pRadiusSlider) pRadiusSlider->Draw();
+	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), OpacityTextBox, D2D1::ColorF(0.0f, 0.0f, 0.0f), 5.0f, 5.0f, 2.0f);
+	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), RadiusTextBox, D2D1::ColorF(0.0f, 0.0f, 0.0f), 5.0f, 5.0f, 2.0f);
+}
+
+void AoeSizeMenu::Draw()
+{
+	if (CurrentSelectedType != *pSelectedType)
+	{
+		CurrentSelectedType = *pSelectedType;
+		UpdateTransform();
+	}
+	D2D1::Matrix3x2F temp;
+	gfx->GetCompatibleTarget()->GetTransform(&temp);
+	gfx->GetCompatibleTarget()->SetTransform(mTransform);
+	if (!gfx) return;
+	ShowHide->Draw();
+
+	gfx->FillRect(gfx->GetCompatibleTarget(), mDest, D2D1::ColorF(0.75f, 0.75f, 0.75f));
+	gfx->DrawRect(gfx->GetCompatibleTarget(), mDest, D2D1::ColorF(0.0f, 0.0f, 0.0f), 2.0f);
+	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), PreviewBox, D2D1::ColorF(0.0f, 0.0f, 0.0f), 5.0f, 5.0f, 2.0f);
+	switch (*pSelectedType)
+	{
+	case AoeSpritePointer::AoeTypes::Cone:
+		DrawConeMenu();
+		break;
+	case AoeSpritePointer::AoeTypes::Cube:
+		DrawCubeMenu();
+		break;
+	case AoeSpritePointer::AoeTypes::Cylinder:
+		DrawCylinderMenu();
+		break;
+	case AoeSpritePointer::AoeTypes::Line:
+		DrawLineMenu();
+		break;
+	case AoeSpritePointer::AoeTypes::Sphere:
+		DrawSphereMenu();
+		break;
+	}
+
+	gfx->GetCompatibleTarget()->SetTransform(temp);
+	/*D2D1::Matrix3x2F temp;
+	gfx->GetCompatibleTarget()->GetTransform(&temp);
+	if (IsHidden()) gfx->GetCompatibleTarget()->SetTransform(mTransform);
+	if (!gfx) return;
+	ShowHide->Draw();
+
+	gfx->FillRect(gfx->GetCompatibleTarget(), mDest, D2D1::ColorF(0.75f, 0.75f, 0.75f));
+	std::wostringstream out;
+	out.precision(4);
+	out << std::fixed << pSliderBar->GetSize();
+	gfx->OutputText(gfx->GetCompatibleTarget(), out.str().c_str(), mTextDest);
+	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), mTextDest, D2D1::ColorF(0.0f, 0.0f, 0.0f), 5.0f, 5.0f, 2.0f);
+	gfx->DrawRoundedRect(gfx->GetCompatibleTarget(), mPreviewDest, D2D1::ColorF(0.0f, 0.0f, 0.0f), 5.0f, 5.0f, 2.0f);
+	gfx->FillCircle(gfx->GetCompatibleTarget(), mPreviewCenter, fPreviewCirlceRadius);
+	if (pSliderBar) pSliderBar->Draw();
+	for (auto& child : vpChild)
+	{
+		if (!child) continue;
+		child->Draw();
+	}
+
+	gfx->DrawRect(gfx->GetCompatibleTarget(), mDest, D2D1::ColorF(0.0f, 0.0f, 0.0f), 2.0f);
+	gfx->GetCompatibleTarget()->SetTransform(temp);*/
 }
 
 void ThicknessMenu::UpdateSlider()
@@ -280,4 +495,29 @@ void ThicknessMenu::JumpPosition()
 		pSliderBar->ShiftSlider(-10.0f);
 		pSliderBar->UpdateSize();
 	}
+}
+
+void AoeSizeMenu::UpdateSlider()
+{
+	if (pOpacitySlider->IsSelected())
+	{		
+		pOpacitySlider->UpdateSliderPosition(mInvTransform.TransformPoint(*pMouseCoordinates));
+	}
+	if (pLengthSlider->IsSelected())
+	{
+		pLengthSlider->UpdateSliderPosition(mInvTransform.TransformPoint(*pMouseCoordinates));
+	}
+	if (pWidthSlider->IsSelected())
+	{
+		pWidthSlider->UpdateSliderPosition(mInvTransform.TransformPoint(*pMouseCoordinates));
+	}
+	if (pRadiusSlider->IsSelected())
+	{
+		pRadiusSlider->UpdateSliderPosition(mInvTransform.TransformPoint(*pMouseCoordinates));
+	}
+}
+
+void AoeSizeMenu::JumpPosition()
+{
+
 }

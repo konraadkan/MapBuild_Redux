@@ -169,6 +169,8 @@ public:
 	TypeButtons(const TypeButtons&) = delete;
 	TypeButtons& operator=(const TypeButtons&) = delete;
 	const bool Interact(const D2D1_POINT_2F p) override;
+	void SetIsSelected() override { bSelected = true; if (bIsWall) if (pWallMenuSelected) *pWallMenuSelected = true; }
+	void UnsetIsSelected() override { bSelected = false; if (pWallMenuSelected) *pWallMenuSelected = false; }
 };
 
 class SubsectionButtons : public Buttons
@@ -192,6 +194,18 @@ public:
 		pUseTexture(pusetexture), bUseTexture(usetexture), SubsectionButtons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
 	WallSubsectionButtons(const WallSubsectionButtons&) = delete;
 	WallSubsectionButtons& operator=(const WallSubsectionButtons&) = delete;
+	const bool Interact(const D2D1_POINT_2F p) override;
+};
+
+class AoeSubsectionButtons : public SubsectionButtons
+{
+private:
+	const AoeSpritePointer::AoeTypes mType;
+	AoeSpritePointer::AoeTypes* pType;
+public:
+	AoeSubsectionButtons(AoeSpritePointer::AoeTypes* const ptype, const AoeSpritePointer::AoeTypes type, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, bool enableselection = false, bool selected = false,
+		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) :
+		mType(type), pType(ptype), SubsectionButtons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
 	const bool Interact(const D2D1_POINT_2F p) override;
 };
 

@@ -86,6 +86,7 @@ bool Graphics::Init(HWND hWnd, D2D1_SIZE_F CompatibleRenderSize)
 
 float Graphics::GetOutputTextWidth(const wchar_t* string, D2D1_SIZE_F maxsize, bool bFormatSmall)
 {
+	if (!string) return 0.0f;
 	IDWriteTextLayout* textlayout = NULL;
 	if (!SUCCEEDED(m_WriteFactory->CreateTextLayout(string, lstrlenW(string), (bFormatSmall ? m_WriteFormatSmall : m_WriteFormat), maxsize.width, maxsize.height, &textlayout))) return -1;
 	DWRITE_TEXT_METRICS metrics = {};
@@ -100,6 +101,7 @@ float Graphics::GetOutputTextWidth(const wchar_t* string, D2D1_SIZE_F maxsize, b
 
 float Graphics::GetOutputTextHeight(const wchar_t* string, D2D1_SIZE_F maxsize, bool bFormatSmall)
 {
+	if (!string) return 0.0f;
 	IDWriteTextLayout* textlayout = NULL;
 	if (!SUCCEEDED(m_WriteFactory->CreateTextLayout(string, lstrlenW(string), (bFormatSmall ? m_WriteFormatSmall : m_WriteFormat), maxsize.width, maxsize.height, &textlayout))) return -1;
 	DWRITE_TEXT_METRICS metrics = {};

@@ -29,6 +29,7 @@ private:
 		}
 	}
 private:
+	const float fVERSION_NUMBER = 0.1f;
 	std::vector<InteractObjects*> IObjects;
 	D2D1_POINT_2F Center = D2D1::Point2F();
 	D2D1_SIZE_F GridSquareSize = D2D1::SizeF(64.0f, 64.0f);
@@ -109,6 +110,7 @@ private:
 	void CreateRoom();
 	void CreateLayer(size_t uRoomNumber);
 	int afps = 0;
+	bool bShowFPS = false;
 	void BuildObjects(const wchar_t* sFilePath);
 	void LoadSprites();
 	void LoadPortraits();
@@ -127,6 +129,7 @@ public:
 	SideMenu* pSideMenu = nullptr;
 	SizeMenu* pSizeMenu = nullptr;
 	ThicknessMenu* pThicknessMenu = nullptr;
+	AoeSizeMenu* pAoeSizeMenu = nullptr;
 	std::vector<PiecesW> vPiecesW;
 	std::vector<Pieces> vPieces;
 	std::vector< std::vector< std::vector<SpritePointer*>>> vSprites;
@@ -141,4 +144,5 @@ public:
 	std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>>* pvWalls = nullptr;
 	std::unique_ptr<Wall> wptest = nullptr;
 	SpritePointer* pSelectedObject = nullptr;
+	AoeSpritePointer* pDeleteMe = nullptr;
 };

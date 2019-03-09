@@ -199,7 +199,8 @@ struct Location
 
 class SpritePointer : public SafeReleaseMemory
 {
-private:
+protected:
+	Graphics* gfx = nullptr;
 	Location mLocation;
 	PiecesW* pPiece = nullptr;
 	char* LoadedPiece = nullptr;
@@ -211,8 +212,8 @@ private:
 	bool bKeepAspectRatioPortrait = true;
 	D2D1_SIZE_F* pGridSquareSize = nullptr;
 public:
-	SpritePointer(PiecesW* const p, const Location loc, D2D1_SIZE_F* const GridSquareSize, bool keepaspectsprite = true, bool keepaspectportrait = true) : 
-		mLocation(loc), pPiece(p), bKeepAspectRatioSprite(keepaspectsprite), bKeepAspectRatioPortrait(keepaspectportrait), pGridSquareSize(GridSquareSize) { mLocation.mDestTag = CalcDestTag(); }
+	SpritePointer(Graphics* const graphics, PiecesW* const p, const Location loc, D2D1_SIZE_F* const GridSquareSize, bool keepaspectsprite = true, bool keepaspectportrait = true) : 
+		gfx(graphics), mLocation(loc), pPiece(p), bKeepAspectRatioSprite(keepaspectsprite), bKeepAspectRatioPortrait(keepaspectportrait), pGridSquareSize(GridSquareSize) { mLocation.mDestTag = CalcDestTag(); }
 	~SpritePointer() { for (auto& child : vSpriteChild) SafeDelete(&child); for (auto& child : vPortraitChild) SafeDelete(&child); SafeDeleteArray(&LoadedPiece); }
 	SpritePointer(const SpritePointer&) = delete;
 	SpritePointer& operator=(const SpritePointer&) = delete;
@@ -225,7 +226,7 @@ public:
 	void SetDestSpritePosition(const D2D1_POINT_2F point);
 	void SetDestResizedSpritePosition(const D2D1_POINT_2F point);
 	void SetPortraitPosition(const D2D1_POINT_2F point);
-	void SetDestSprite(const D2D1_RECT_F d, bool ApplyRebuild = true);
+	virtual void SetDestSprite(const D2D1_RECT_F d, bool ApplyRebuild = true);
 	void SetDestPortrait(const D2D1_RECT_F d);
 	void IncreaseCreatureSize();
 	const D2D1_RECT_F RectToAspectSprite(const D2D1_RECT_F d);
@@ -238,7 +239,7 @@ public:
 	const CreatureSize GetCreatureSize() { return mSize; }
 	void UnsetSelected() { bSelected = false; }
 	void ToggleSelected() { bSelected ^= true; }
-	void DrawSprite(Graphics* const gfx, bool back = true);
+	virtual void DrawSprite(Graphics* const gfx, bool back = true);
 	void DrawPortrait(Graphics* const gfx, bool back = true);
 	void BuildResizedDestSprite();
 	void ResizeSprite();
@@ -249,19 +250,20 @@ public:
 	void UnsetKeepAspectPortrait() { bKeepAspectRatioPortrait = false; }
 	void ToggleAspectRatioPortrait() { bKeepAspectRatioPortrait ^= true; }
 	void AddSpriteChild(PiecesW* const piece);
+	void AddAoeSpriteChild(SpritePointer* const p);
 	void AddPortraitChild(PiecesW* const piece);
 	void RemoveChildren();
 	void AddTag(wchar_t w);
-	const char* GetSaveInformation();
-	const char* CreateSaveInformation();
-	const uint32_t CalcSaveSize();
-	const bool LoadSaveBuffer(const char* Buffer);
+	virtual const char* GetSaveInformation();
+	virtual const char* CreateSaveInformation();
+	virtual const uint32_t CalcSaveSize();
+	virtual const bool LoadSaveBuffer(const char* Buffer);
 	const D2D1_RECT_F CalcDestTag();
 public:
 	const bool IsSelected() { return bSelected; }
 	const bool IsKeepAspectSprite() { return bKeepAspectRatioSprite; }
 	const bool IsKeepAspectPortrait() { return bKeepAspectRatioPortrait; }
-	const bool PointInSprite(D2D1_POINT_2F p) { return (p.x > mLocation.mDestSprite.left && p.x < mLocation.mDestSprite.right && p.y > mLocation.mDestSprite.top && p.y < mLocation.mDestSprite.bottom); }
+	virtual const bool PointInSprite(D2D1_POINT_2F p) { return (p.x > mLocation.mDestSprite.left && p.x < mLocation.mDestSprite.right && p.y > mLocation.mDestSprite.top && p.y < mLocation.mDestSprite.bottom); }
 	const D2D1_RECT_F GetDestSprite() { return mLocation.mDestSprite; }
 	const D2D1_RECT_F GetDestTag() { return mLocation.mDestTag; }
 	const D2D1_RECT_F GetDestResizedSprite() { return mLocation.mResizedDestSprite; }
@@ -279,3 +281,78 @@ public:
 	std::vector<SpritePointer*> vPortraitChild;
 };
 
+class AoeSpritePointer : public SpritePointer
+{
+private:
+	const float PI = 3.141592658f;
+protected:
+	D2D1::Matrix3x2F RotationMatrix = D2D1::Matrix3x2F::Identity();
+	D2D1::Matrix3x2F TranslationMatrix = D2D1::Matrix3x2F::Identity();
+	D2D1_COLOR_F mEdgeColor;
+	D2D1_COLOR_F mFillColor;
+	float fRadius = 0.0f;
+	float fWidth = 0.0f;
+	float fLength = 0.0f;
+	float fThickness = 1.0f;
+	float fRotation = 0.0f;
+	D2D1_POINT_2F mCenter = D2D1::Point2F();
+	D2D1_SIZE_F mBitmapSize = D2D1::SizeF();
+	ID2D1Bitmap* pAoeBitmap = nullptr;
+	D2D1_SIZE_F mTranslation = D2D1::SizeF();
+public:
+	enum class AoeTypes
+	{
+		Cone,
+		Cube,
+		Sphere,
+		Line,
+		Cylinder,
+		Invalid
+	} mType;
+public:
+	AoeSpritePointer(Graphics* const graphics, const AoeTypes type, D2D1_COLOR_F EdgeColor, D2D1_COLOR_F FillColor, PiecesW* const p, const Location loc, D2D1_SIZE_F* const GridSquareSize) : mEdgeColor(EdgeColor), mFillColor(FillColor), mType(type), SpritePointer(graphics, p, loc, GridSquareSize, false, false) {}
+	~AoeSpritePointer() { SafeRelease(&pAoeBitmap); }
+	void SetRadius(const float rad) { fRadius = rad; }
+	void SetWidth(const float width) { fWidth = width; }
+	void SetThickness(const float thickness) { fThickness = thickness; }
+	void SetLength(const float len) { fLength = len; }
+	void SetFillColor(const D2D1_COLOR_F c) { mFillColor = c; }
+	void SetEdgeColor(const D2D1_COLOR_F c) { mEdgeColor = c; }
+	void SetRotation(const float r) { fRotation = r * (180.0f / PI); }
+	void SetTranslation(const D2D1_SIZE_F dist) { TranslationMatrix = D2D1::Matrix3x2F::Translation(dist); }
+	void SetStartPoint(const D2D1_POINT_2F p);
+	void SetDestSprite(const D2D1_RECT_F d, bool ApplyRebuild = true) override
+	{ 
+		//mLocation.mDestSprite = d; 
+		SetStartPoint(D2D1::Point2F(d.left, d.top));
+	}
+	void UpdateRotationMatrix();
+	const D2D1_COLOR_F GetFillColor() { return mFillColor; }
+	const D2D1_COLOR_F GetEdgeColor() { return mEdgeColor; }
+	const float GetRotation() { return fRotation; }
+	const float GetThickness() { return fThickness; }
+	const float GetRadius() { return fRadius; }
+	const float GetWidth() { return fWidth; }
+	const float GetLength() { return fLength; }
+	const D2D1_POINT_2F GetCenter() { return mCenter; }
+	const ID2D1Bitmap* GetAoeBitmap() { return pAoeBitmap; }
+	const D2D1::Matrix3x2F GetTransformsMatrix() { return RotationMatrix * TranslationMatrix; }
+	void BuildShape();
+	void BuildCone();
+	void BuildSphere();
+	void BuildLine();
+	void BuildCube();
+	void Draw();
+	void DrawSprite(Graphics* const gfx, bool back = true) override { Draw(); }
+	const bool PointInSprite(const D2D1_POINT_2F p) override;
+	const bool PointInCone(const D2D1_POINT_2F p);
+	const bool PointInSphere(const D2D1_POINT_2F p);
+	const bool PointInCylinder(const D2D1_POINT_2F p);
+	const bool PointInCube(const D2D1_POINT_2F p);
+	const bool PointInLine(const D2D1_POINT_2F p);
+
+	const char* GetSaveInformation() override;
+	const char* CreateSaveInformation() override;
+	const bool LoadSaveBuffer(const char* Buffer) override;
+	const uint32_t CalcSaveSize() override;
+};

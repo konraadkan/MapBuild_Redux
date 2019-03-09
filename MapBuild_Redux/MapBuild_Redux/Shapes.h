@@ -5,7 +5,7 @@
 
 class ClassShapes : public InteractObjects
 {
-private:
+protected:
 	ShapeTypes ShapeType;
 	D2D1_POINT_2F Center;
 	std::vector<D2D1_POINT_2F> vPoints;
@@ -40,5 +40,18 @@ public:
 	bool BuildCustomShape(std::queue<D2D1_POINT_2F> p, D2D1_COLOR_F color = D2D1::ColorF(0.0f, 0.0f, 0.0f)) override;
 	bool IsBack() override { return bBack; }
 	void Unload() override;
-	void AddPoint(const D2D1_POINT_2F p) { vPoints.push_back(p); }
+	virtual void AddPoint(const D2D1_POINT_2F p) { vPoints.push_back(p); }
+};
+
+class ShowHideParentShape : public ClassShapes
+{
+private:
+	InteractObjects* const pParent;
+public:
+	ShowHideParentShape(InteractObjects* const Parent, ShapeTypes Type, Graphics* const graphics, bool UseTransform, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, bool Back = false);
+	~ShowHideParentShape() = default;
+	ShowHideParentShape(const ShowHideParentShape&) = delete;
+	ShowHideParentShape& operator=(const ShowHideParentShape&) = delete;
+	const bool Interact() override;
+	const bool Interact(const D2D1_POINT_2F p) override;
 };

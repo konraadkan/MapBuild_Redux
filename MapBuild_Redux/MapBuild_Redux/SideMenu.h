@@ -104,10 +104,11 @@ private:
 	void AddInitiativeObject(InteractObjects* const Io);
 	void AddBuildObject(InteractObjects* const Io);
 	bool bWallMenuSelected = false;
+	bool bAoeMenuSelected = false;
 	bool bUseTexture = false;
 	bool bShowPieceColors = false;
 	bool bNew = false;
-	bool* const pExit;
+	bool* const pExit;	
 public:
 	SideMenu(const HWND hwnd, bool* const Exit, const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p,
 		std::vector< std::vector<SpritePointer*>>** const ppRoom, std::vector<SpritePointer*>** const ppLayer, std::vector< std::vector< std::vector<SpritePointer*>>>** const ppRL,
@@ -147,6 +148,7 @@ public:
 	const bool Interact() override;
 	const bool AlternateInteract() override;
 	const bool AlternateInteract(const D2D1_POINT_2F p) override;
+	const AoeSpritePointer::AoeTypes GetSelectedAoeType() { return SelectedAoeType; }
 	bool PointInRect(const D2D1_POINT_2F p) override;
 	void WheelUp() override;
 	void WheelDown() override;
@@ -181,11 +183,17 @@ public:
 	void BuildCategories(std::vector<PiecesW>* const wPieces);
 	void BuildSubcategories(std::vector<PiecesW>* const wPieces);
 	void BuildWallMenu(std::vector<PiecesW>* const wPieces);
+	void FillWithColorButtons(MenuSection* const targetSubSubmenu);
+	void BuildAoeMenu(std::vector<PiecesW>* const wPieces);
 	void RealignCategories();
 	void RealignSubcategory(MenuSection* const subcategory, const D2D1::Matrix3x2F parentTranforms);
 	const D2D1_COLOR_F GetSelectedWallColor();
+	const D2D1_COLOR_F GetSelectedAoeColor();
+	const bool StringIsShapeType(const std::wstring name, const AoeSpritePointer::AoeTypes type);
+	const AoeSpritePointer::AoeTypes StringToShapeType(const std::wstring name);
 	const MeasurementMenu::SizeMenuType GetSizeMenuType();
 	const bool WallSelected() { return bWallMenuSelected; }
+	const bool AoeSelected() { return bAoeMenuSelected; }
 	const bool UseTexture() { return bUseTexture; }
 	const bool ShowPieceColors() { return bShowPieceColors; }
 	const bool IsAttachObject() { return bAttachObject; }
@@ -208,5 +216,6 @@ public:
 	MenuSection* pSelectedSubcategory = nullptr;	
 	SpritePointer** ppSelectedSprite = nullptr;
 	void* pBaseLevel = nullptr;
+	AoeSpritePointer::AoeTypes SelectedAoeType = AoeSpritePointer::AoeTypes::Invalid;
 	std::vector<PiecesW*> vInitativeList;
 };

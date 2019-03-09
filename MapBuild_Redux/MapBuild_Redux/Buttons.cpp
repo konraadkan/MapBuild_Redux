@@ -328,6 +328,44 @@ const bool WallSubsectionButtons::Interact(const D2D1_POINT_2F p)
 	return true;
 }
 
+const bool AoeSubsectionButtons::Interact(const D2D1_POINT_2F p)
+{
+	if (IsHidden()) return true;
+	if (!pParent) return true;
+
+	for (auto& child : pChild)
+	{
+		if (child)
+		{
+			if (child->PointInRect(p))
+			{
+				if (!child->Interact(p)) return false;
+				return true;
+			}
+		}
+	}
+
+	if (bEnableSelection)
+	{
+		MenuSection* parent = static_cast<MenuSection*>(pParent);
+		for (uint32_t i = 0; i < parent->pChild.size(); i++)
+		{
+			if (parent->pChild.at(i) == this)
+			{
+				parent->vSubsections.at(i)->SetUnhidden();
+				continue;
+			}
+			parent->pChild.at(i)->UnsetIsSelected();
+			parent->vSubsections.at(i)->SetHidden();
+			for (auto& t : parent->vSubsections.at(i)->pChild)
+				t->UnsetIsSelected();
+		}
+		SetIsSelected();
+		if (pType) *pType = mType;
+	}
+	return true;
+}
+
 const bool SpriteItemButtons::Interact(const D2D1_POINT_2F p)
 {
 	if (IsHidden()) return true;
@@ -360,7 +398,7 @@ const bool SpriteItemButtons::Interact(const D2D1_POINT_2F p)
 	if (ppSelectedSprite)
 	{
 		SafeDelete(&(*ppSelectedSprite));
-		(*ppSelectedSprite) = new SpritePointer(pPiecesW, Location(), pGridSquareSize);
+		(*ppSelectedSprite) = new SpritePointer(gfx, pPiecesW, Location(), pGridSquareSize);
 		(*ppSelectedSprite)->SetCreatureSize(pPiecesW->GetSize());
 	}
 	return true;

@@ -744,14 +744,20 @@ void SpritePointer::SetPortraitPosition(const D2D1_POINT_2F point)
 
 void SpritePointer::AddSpriteChild(PiecesW* const piece)
 {
-	vSpriteChild.push_back(new SpritePointer(piece, mLocation, pGridSquareSize, bKeepAspectRatioSprite, bKeepAspectRatioPortrait));
+	vSpriteChild.push_back(new SpritePointer(gfx, piece, mLocation, pGridSquareSize, bKeepAspectRatioSprite, bKeepAspectRatioPortrait));
 	vSpriteChild.back()->SetCreatureSize(GetCreatureSize());
 	vSpriteChild.back()->SetOpacity(0.60f);
 }
 
+void SpritePointer::AddAoeSpriteChild(SpritePointer* const p)
+{
+	if (!p) return;
+	vSpriteChild.push_back(p);
+}
+
 void SpritePointer::AddPortraitChild(PiecesW* const piece)
 {
-	vPortraitChild.push_back(new SpritePointer(piece, mLocation, pGridSquareSize, bKeepAspectRatioSprite, bKeepAspectRatioPortrait));
+	vPortraitChild.push_back(new SpritePointer(gfx, piece, mLocation, pGridSquareSize, bKeepAspectRatioSprite, bKeepAspectRatioPortrait));
 }
 
 void SpritePointer::RemoveChildren()
@@ -781,11 +787,15 @@ const char* SpritePointer::GetSaveInformation()
 
 const char* SpritePointer::CreateSaveInformation()
 {
-	uint32_t uBufferSize = CalcSaveSize();										//get size of buffer
+	uint32_t uBufferSize = CalcSaveSize();											//get size of buffer
 	char* Buffer = new char[uBufferSize];											//allocate buffer
 	size_t pos = 0;
 	memcpy(Buffer, &uBufferSize, sizeof(uBufferSize));
 	pos += sizeof(uBufferSize);
+																					//store sprintpointer type
+	uint32_t uSpritePointerType = 0;
+	memcpy(Buffer + pos, &uSpritePointerType, sizeof(uSpritePointerType));
+	pos += sizeof(uSpritePointerType);
 
 	/****Child Buffer Data***/
 	uint32_t uLen = static_cast<uint32_t>(vSpriteChild.size());
@@ -932,6 +942,11 @@ const bool SpritePointer::LoadSaveBuffer(const char* Buffer)
 	size_t pos = 0;
 	memcpy(&uBufferSize, Buffer, sizeof(uBufferSize));
 	pos += sizeof(uBufferSize);
+
+	uint32_t uSpritePointerType = 0;
+	memcpy(&uSpritePointerType, Buffer + pos, sizeof(uSpritePointerType));
+	pos += sizeof(uSpritePointerType);
+
 	uint32_t uLen = 0;
 	memcpy(&uLen, Buffer + pos, sizeof(uLen));
 	pos += sizeof(uLen);
@@ -941,8 +956,18 @@ const bool SpritePointer::LoadSaveBuffer(const char* Buffer)
 		{
 			uint32_t ilen = 0;
 			memcpy(&ilen, Buffer + pos, sizeof(ilen));
-			vSpriteChild.push_back(new SpritePointer(nullptr, mLocation, pGridSquareSize));
-			vSpriteChild.back()->LoadSaveBuffer(Buffer + pos);
+			uint32_t ttype = 0;
+			memcpy(&ttype, Buffer + pos + sizeof(ilen), sizeof(ttype));
+			if (ttype == 0)
+			{
+				vSpriteChild.push_back(new SpritePointer(gfx, nullptr, mLocation, pGridSquareSize));
+				vSpriteChild.back()->LoadSaveBuffer(Buffer + pos);
+			}
+			else if (ttype == 1)
+			{
+				vSpriteChild.push_back(new AoeSpritePointer(gfx, AoeSpritePointer::AoeTypes::Invalid, D2D1::ColorF(0, 0, 0), D2D1::ColorF(0, 0, 0), nullptr, Location(), pGridSquareSize));
+				vSpriteChild.back()->LoadSaveBuffer(Buffer + pos);
+			}
 			pos += ilen;
 		}
 	}
@@ -954,8 +979,18 @@ const bool SpritePointer::LoadSaveBuffer(const char* Buffer)
 		{
 			uint32_t ilen = 0;
 			memcpy(&ilen, Buffer + pos, sizeof(ilen));
-			vPortraitChild.push_back(new SpritePointer(nullptr, mLocation, pGridSquareSize));
-			vPortraitChild.back()->LoadSaveBuffer(Buffer + pos);
+			uint32_t ttype = 0;
+			memcpy(&ttype, Buffer + pos + sizeof(ilen), sizeof(ttype));
+			if (ttype == 0)
+			{
+				vPortraitChild.push_back(new SpritePointer(gfx, nullptr, mLocation, pGridSquareSize));
+				vPortraitChild.back()->LoadSaveBuffer(Buffer + pos);
+			}
+			else if (ttype == 1)
+			{
+				vPortraitChild.push_back(new AoeSpritePointer(gfx, AoeSpritePointer::AoeTypes::Invalid, D2D1::ColorF(0, 0, 0), D2D1::ColorF(0, 0, 0), nullptr, Location(), pGridSquareSize));
+				vPortraitChild.back()->LoadSaveBuffer(Buffer + pos);
+			}
 			pos += ilen;
 		}
 	}
@@ -1022,10 +1057,189 @@ const bool SpritePointer::LoadSaveBuffer(const char* Buffer)
 	return true;
 }
 
+const char* AoeSpritePointer::GetSaveInformation()
+{
+	return CreateSaveInformation();
+}
+
+const char* AoeSpritePointer::CreateSaveInformation()
+{
+	uint32_t uBufferSize = CalcSaveSize();
+	char* Buffer = new char[uBufferSize];
+	size_t pos = 0;
+
+	memcpy(Buffer, &uBufferSize, sizeof(uBufferSize));
+	pos += sizeof(uBufferSize);
+	uint32_t uSpritePointerType = 1;
+	memcpy(Buffer + pos, &uSpritePointerType, sizeof(uSpritePointerType));
+	pos += sizeof(uSpritePointerType);
+
+	memcpy(Buffer + pos, &fRadius, sizeof(fRadius));
+	pos += sizeof(fRadius);
+	memcpy(Buffer + pos, &fWidth, sizeof(fWidth));
+	pos += sizeof(fWidth);
+	memcpy(Buffer + pos, &fLength, sizeof(fLength));
+	pos += sizeof(fLength);
+	memcpy(Buffer + pos, &fThickness, sizeof(fThickness));
+	pos += sizeof(fThickness);
+	memcpy(Buffer + pos, &fRotation, sizeof(fRotation));
+	pos += sizeof(fRotation);
+	memcpy(Buffer + pos, &mEdgeColor.r, sizeof(mEdgeColor.r));
+	pos += sizeof(mEdgeColor.r);
+	memcpy(Buffer + pos, &mEdgeColor.g, sizeof(mEdgeColor.g));
+	pos += sizeof(mEdgeColor.g);
+	memcpy(Buffer + pos, &mEdgeColor.b, sizeof(mEdgeColor.b));
+	pos += sizeof(mEdgeColor.b);
+	memcpy(Buffer + pos, &mEdgeColor.a, sizeof(mEdgeColor.a));
+	pos += sizeof(mEdgeColor.a);
+	memcpy(Buffer + pos, &mFillColor.r, sizeof(mFillColor.r));
+	pos += sizeof(mFillColor.r);
+	memcpy(Buffer + pos, &mFillColor.g, sizeof(mFillColor.g));
+	pos += sizeof(mFillColor.g);
+	memcpy(Buffer + pos, &mFillColor.b, sizeof(mFillColor.b));
+	pos += sizeof(mFillColor.b);
+	memcpy(Buffer + pos, &mFillColor.a, sizeof(mFillColor.a));
+	pos += sizeof(mFillColor.a);
+
+	uint32_t ttype = static_cast<uint32_t>(mType);
+	memcpy(Buffer + pos, &ttype, sizeof(ttype));
+	pos += sizeof(ttype);
+	memcpy(Buffer + pos, &mTranslation.width, sizeof(mTranslation.width));
+	pos += sizeof(mTranslation.width);
+	memcpy(Buffer + pos, &mTranslation.height, sizeof(mTranslation.height));
+	pos += sizeof(mTranslation.height);
+
+	uint32_t numberchild = static_cast<uint32_t>(vSpriteChild.size());
+	memcpy(Buffer + pos, &numberchild, sizeof(numberchild));
+	pos += sizeof(numberchild);
+	for (uint32_t i = 0; i < numberchild; i++)
+	{
+		uint32_t size = vSpriteChild.at(i)->CalcSaveSize();
+		const char* tbuff = vSpriteChild.at(i)->GetSaveInformation();
+		memcpy(Buffer + pos, tbuff, size);
+		pos += size;
+		SafeDeleteArray(&tbuff);
+	}
+	numberchild = static_cast<uint32_t>(vPortraitChild.size());
+	memcpy(Buffer + pos, &numberchild, sizeof(numberchild));
+	pos += sizeof(numberchild);
+	for (uint32_t i = 0; i < numberchild; i++)
+	{
+		uint32_t size = vPortraitChild.at(i)->CalcSaveSize();
+		const char* tbuff = vPortraitChild.at(i)->GetSaveInformation();
+		memcpy(Buffer + pos, tbuff, size);
+		pos += size;
+	}
+
+	return Buffer;
+}
+
+const bool AoeSpritePointer::LoadSaveBuffer(const char* Buffer)
+{
+	if (!Buffer) return false;
+	uint32_t uBufferSize = 0;
+	size_t pos = 0;
+	memcpy(&uBufferSize, Buffer, sizeof(uBufferSize));
+	pos += sizeof(uBufferSize);
+
+	uint32_t uSpritePointerType = 0;
+	memcpy(&uSpritePointerType, Buffer + pos, sizeof(uSpritePointerType));
+	pos += sizeof(uSpritePointerType);
+	if (uSpritePointerType != 1) return false;
+
+	memcpy(&fRadius, Buffer + pos, sizeof(fRadius));
+	pos += sizeof(fRadius);
+	memcpy(&fWidth, Buffer + pos, sizeof(fWidth));
+	pos += sizeof(fWidth);
+	memcpy(&fLength, Buffer + pos, sizeof(fLength));
+	pos += sizeof(fLength);
+	memcpy(&fThickness, Buffer + pos, sizeof(fThickness));
+	pos += sizeof(fThickness);
+	memcpy(&fRotation, Buffer + pos, sizeof(fRotation));
+	pos += sizeof(fRotation);
+	memcpy(&mEdgeColor.r, Buffer + pos, sizeof(mEdgeColor.r));
+	pos += sizeof(mEdgeColor.r);
+	memcpy(&mEdgeColor.g, Buffer + pos, sizeof(mEdgeColor.g));
+	pos += sizeof(mEdgeColor.g);
+	memcpy(&mEdgeColor.b, Buffer + pos, sizeof(mEdgeColor.b));
+	pos += sizeof(mEdgeColor.b);
+	memcpy(&mEdgeColor.a, Buffer + pos, sizeof(mEdgeColor.a));
+	pos += sizeof(mEdgeColor.a);
+	memcpy(&mFillColor.r, Buffer + pos, sizeof(mFillColor.r));
+	pos += sizeof(mFillColor.r);
+	memcpy(&mFillColor.g, Buffer + pos, sizeof(mFillColor.g));
+	pos += sizeof(mFillColor.g);
+	memcpy(&mFillColor.b, Buffer + pos, sizeof(mFillColor.b));
+	pos += sizeof(mFillColor.b);
+	memcpy(&mFillColor.a, Buffer + pos, sizeof(mFillColor.a));
+	pos += sizeof(mFillColor.a);
+	uint32_t aoetype = 0;
+	memcpy(&aoetype, Buffer + pos, sizeof(aoetype));
+	pos += sizeof(aoetype);
+	mType = static_cast<AoeSpritePointer::AoeTypes>(aoetype);
+	memcpy(&mTranslation.width, Buffer + pos, sizeof(mTranslation.width));
+	pos += sizeof(mTranslation.width);
+	memcpy(&mTranslation.height, Buffer + pos, sizeof(mTranslation.height));
+	pos += sizeof(mTranslation.height);
+
+	uint32_t numchild = 0;
+	memcpy(&numchild, Buffer + pos, sizeof(numchild));
+	for (uint32_t i = 0; i < numchild; i++)
+	{
+		uint32_t ilen = 0;
+		memcpy(&ilen, Buffer + pos, sizeof(ilen));
+		vSpriteChild.push_back(new SpritePointer(gfx, nullptr, mLocation, pGridSquareSize));
+		vSpriteChild.back()->LoadSaveBuffer(Buffer + pos);
+		pos += ilen;
+	}
+	memcpy(&numchild, Buffer + pos, sizeof(numchild));
+	for (uint32_t i = 0; i < numchild; i++)
+	{
+		uint32_t ilen = 0;
+		memcpy(&ilen, Buffer + pos, sizeof(ilen));
+		vPortraitChild.push_back(new SpritePointer(gfx, nullptr, mLocation, pGridSquareSize));
+		vPortraitChild.back()->LoadSaveBuffer(Buffer + pos);
+		pos += ilen;
+	}
+	BuildShape();
+	SetTranslation(mTranslation);
+	UpdateRotationMatrix();
+	return true;
+}
+
+const uint32_t AoeSpritePointer::CalcSaveSize()
+{
+	uint32_t uBufferSize = 0;
+	uBufferSize += sizeof(uint32_t);											//hold size of this buffer
+	uBufferSize += sizeof(uint32_t);											//holds the type of SpritePointer that is being stored
+	uBufferSize += sizeof(float);												//holds radius
+	uBufferSize += sizeof(float);												//holds width
+	uBufferSize += sizeof(float);												//holds length
+	uBufferSize += sizeof(float);												//holds thickness
+	uBufferSize += sizeof(float);												//holds rotation
+	uBufferSize += sizeof(float) * 4;											//holds edge color
+	uBufferSize += sizeof(float) * 4;											//holds fill color
+	uBufferSize += sizeof(uint32_t);											//holds Aoe Shape Type
+	uBufferSize += sizeof(float) * 2;											//holds translation
+	uBufferSize += sizeof(uint32_t);											//holds Number Sprite Child objects (usually be zero)
+	for (size_t i = 0; i < vSpriteChild.size(); i++)
+	{
+		uBufferSize += vSpriteChild.at(i)->CalcSaveSize();						//holds size of each sprite child object
+	}
+	uBufferSize += sizeof(uint32_t);											//holds Number of Portrait child objects (usually be zero)
+	for (size_t i = 0; i < vPortraitChild.size(); i++)
+	{
+		uBufferSize += vPortraitChild.at(i)->CalcSaveSize();					//holds size of each portrait child object
+	}
+	
+	return uBufferSize;
+}
+
 const uint32_t SpritePointer::CalcSaveSize()
 {
 	uint32_t uBufferSize = 0;
 	uBufferSize += sizeof(uint32_t);											//hold size of this buffer
+	uBufferSize += sizeof(uint32_t);											//holds the type of SpritePointer that is being stored
 	uBufferSize += sizeof(uint32_t);											//holds vSpriteChild.size()
 	
 	for (auto& child : vSpriteChild)
@@ -1229,4 +1443,222 @@ const bool PiecesW::LoadSaveBuffer(const char* Buffer)
 	pos += sizeof(BackgroundColor.a);
 
 	return true;
+}
+
+void AoeSpritePointer::BuildShape()
+{
+	switch (mType)
+	{
+	case AoeTypes::Cone:
+		BuildCone();
+		break;
+	case AoeTypes::Cube:
+		BuildCube();
+		break;
+	case AoeTypes::Line:
+		BuildLine();
+		break;
+	case AoeTypes::Sphere:
+	case AoeTypes::Cylinder:
+		BuildSphere();
+		break;
+	}
+}
+
+void AoeSpritePointer::UpdateRotationMatrix()
+{
+	RotationMatrix = D2D1::Matrix3x2F::Rotation(fRotation, mCenter);
+}
+
+void AoeSpritePointer::Draw()
+{
+	if (!pAoeBitmap) return;
+	D2D1::Matrix3x2F oMatrix;
+	gfx->GetCompatibleTarget()->GetTransform(&oMatrix);
+	D2D1::Matrix3x2F tMatrix = RotationMatrix * TranslationMatrix * oMatrix;
+	gfx->GetCompatibleTarget()->SetTransform(&tMatrix);
+//	gfx->DrawRect(gfx->GetCompatibleTarget(), mLocation.mDestSprite);					//this can be useful while debugging; otherwise leave commented out
+	gfx->DrawBitmap(gfx->GetCompatibleTarget(), pAoeBitmap, mLocation.mDestSprite, fOpacity, D2D1::RectF(0.0f, 0.0f, mBitmapSize.width, mBitmapSize.height));
+	gfx->GetCompatibleTarget()->SetTransform(&oMatrix);
+}
+
+const bool AoeSpritePointer::PointInSprite(const D2D1_POINT_2F p)
+{
+	switch (mType)
+	{
+	case AoeTypes::Cone:
+		return PointInCone(p);
+	case AoeTypes::Cube:
+		return PointInCube(p);
+	case AoeTypes::Cylinder:
+		return PointInCylinder(p);
+	case AoeTypes::Line:
+		return PointInCylinder(p);
+	case AoeTypes::Sphere:
+		return PointInSphere(p);
+	}
+	return false;
+}
+
+const bool AoeSpritePointer::PointInCone(const D2D1_POINT_2F p)
+{
+	//this is not a very accurate means of detection, but will work for now. Maybe come back to later to make it more accurate
+	D2D1::Matrix3x2F invtrans = GetTransformsMatrix();
+	invtrans.Invert();
+	D2D1_POINT_2F t = invtrans.TransformPoint(p);
+	return (t.x > mLocation.mDestSprite.left && t.x < mLocation.mDestSprite.right && t.y > mLocation.mDestSprite.top && t.y < mLocation.mDestSprite.bottom);
+}
+
+const bool AoeSpritePointer::PointInSphere(const D2D1_POINT_2F p)
+{
+	D2D1::Matrix3x2F invtrans = GetTransformsMatrix();
+	invtrans.Invert();
+	D2D1_POINT_2F t = invtrans.TransformPoint(p);
+	return (t.x > mLocation.mDestSprite.left && t.x < mLocation.mDestSprite.right && t.y > mLocation.mDestSprite.top && t.y < mLocation.mDestSprite.bottom);
+}
+
+const bool AoeSpritePointer::PointInCylinder(const D2D1_POINT_2F p)
+{
+	return PointInSphere(p);
+}
+
+const bool AoeSpritePointer::PointInCube(const D2D1_POINT_2F p)
+{
+	D2D1::Matrix3x2F invtrans = GetTransformsMatrix();
+	invtrans.Invert();
+	D2D1_POINT_2F t = invtrans.TransformPoint(p);
+	return (t.x > mLocation.mDestSprite.left && t.x < mLocation.mDestSprite.right && t.y > mLocation.mDestSprite.top && t.y < mLocation.mDestSprite.bottom);
+}
+
+const bool AoeSpritePointer::PointInLine(const D2D1_POINT_2F p)
+{
+	D2D1::Matrix3x2F invtrans = GetTransformsMatrix();
+	invtrans.Invert();
+	D2D1_POINT_2F t = invtrans.TransformPoint(p);
+	return (t.x > mLocation.mDestSprite.left && t.x < mLocation.mDestSprite.right && t.y > mLocation.mDestSprite.top && t.y < mLocation.mDestSprite.bottom);
+}
+
+void AoeSpritePointer::SetStartPoint(const D2D1_POINT_2F p)
+{
+	mTranslation.width = p.x - mCenter.x;
+	mTranslation.height = p.y - mCenter.y;
+	SetTranslation(mTranslation);
+}
+
+void AoeSpritePointer::BuildCone()
+{	
+	//build cone
+	ID2D1BitmapRenderTarget* tcompatibletarget = nullptr;
+	ID2D1PathGeometry* pGeometry = nullptr;
+	ID2D1GeometrySink* pSink = nullptr;
+	float fAngle = PI * 0.15f;
+	mBitmapSize = D2D1::SizeF(fLength + fThickness, fLength + fThickness);
+	mCenter = D2D1::Point2F(0.0f, mBitmapSize.height * 0.5f);
+	D2D1_POINT_2F p2 = D2D1::Point2F(fLength * cos(fAngle), mCenter.y + fLength * sin(fAngle));
+	D2D1_POINT_2F p1 = D2D1::Point2F(fLength * cos(fAngle), mCenter.y + fLength * -sin(fAngle));
+	
+
+	if (FAILED(gfx->GetRenderTarget()->CreateCompatibleRenderTarget(mBitmapSize, &tcompatibletarget))) return;
+	if (FAILED(gfx->GetFactory()->CreatePathGeometry(&pGeometry))) { SafeRelease(&tcompatibletarget);  return; }
+	if (FAILED(pGeometry->Open(&pSink))) { SafeRelease(&tcompatibletarget); SafeRelease(&pGeometry); return; }
+	
+	pSink->BeginFigure(mCenter, D2D1_FIGURE_BEGIN_FILLED);
+	pSink->AddLine(p1);
+	pSink->AddArc(D2D1::ArcSegment(p2, D2D1::SizeF(fLength, fLength), fAngle, D2D1_SWEEP_DIRECTION_CLOCKWISE, D2D1_ARC_SIZE_SMALL));
+	pSink->EndFigure(D2D1_FIGURE_END_CLOSED);
+	pSink->Close();
+
+	//draw cone
+	ID2D1SolidColorBrush* pBrush = nullptr;
+	tcompatibletarget->CreateSolidColorBrush(mFillColor, &pBrush);
+	tcompatibletarget->BeginDraw();
+	tcompatibletarget->Clear(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f));
+	tcompatibletarget->FillGeometry(pGeometry, pBrush);
+	pBrush->SetColor(mEdgeColor);
+	tcompatibletarget->DrawGeometry(pGeometry, pBrush, fThickness);
+	tcompatibletarget->EndDraw();
+
+	//store bitmap
+	SafeRelease(&pAoeBitmap);
+	/*gfx->GetCompatibleTarget()->GetBitmap(&pAoeBitmap);*/
+	tcompatibletarget->GetBitmap(&pAoeBitmap);
+	mLocation.mDestSprite = D2D1::RectF(0.0f, 0.0f, mBitmapSize.width, mBitmapSize.height);
+
+	//Release geometry
+	SafeRelease(&pSink);
+	SafeRelease(&pGeometry);
+	SafeRelease(&pBrush);
+	SafeRelease(&tcompatibletarget);	
+}
+
+void AoeSpritePointer::BuildSphere()
+{
+	ID2D1BitmapRenderTarget* tcompatibletarget = nullptr;
+	mBitmapSize = D2D1::SizeF(fRadius * 2.0f + fThickness, fRadius * 2.0f + fThickness);
+	mCenter = D2D1::Point2F(fRadius, fRadius);
+	if (FAILED(gfx->GetRenderTarget()->CreateCompatibleRenderTarget(mBitmapSize, &tcompatibletarget))) return;
+
+	ID2D1SolidColorBrush* pBrush = nullptr;
+	tcompatibletarget->CreateSolidColorBrush(mFillColor, &pBrush);
+	tcompatibletarget->BeginDraw();
+	tcompatibletarget->Clear(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f));
+	tcompatibletarget->FillEllipse(D2D1::Ellipse(mCenter, fRadius, fRadius), pBrush);
+	pBrush->SetColor(mEdgeColor);
+	tcompatibletarget->DrawEllipse(D2D1::Ellipse(mCenter, fRadius, fRadius), pBrush, fThickness);
+	tcompatibletarget->EndDraw();
+
+	SafeRelease(&pAoeBitmap);
+	tcompatibletarget->GetBitmap(&pAoeBitmap);
+	mLocation.mDestSprite = D2D1::RectF(0.0f, 0.0f, mBitmapSize.width, mBitmapSize.height);
+
+	SafeRelease(&pBrush);
+	SafeRelease(&tcompatibletarget);
+}
+
+void AoeSpritePointer::BuildLine()
+{
+	ID2D1BitmapRenderTarget* tcompatibletarget = nullptr;
+	mBitmapSize = D2D1::SizeF(fLength + fThickness, fWidth + fThickness);
+	mCenter = D2D1::Point2F(0.0f, fWidth * 0.5f);
+	if (FAILED(gfx->GetRenderTarget()->CreateCompatibleRenderTarget(mBitmapSize, &tcompatibletarget))) return;
+
+	ID2D1SolidColorBrush* pBrush = nullptr;
+	tcompatibletarget->CreateSolidColorBrush(mFillColor, &pBrush);
+	tcompatibletarget->BeginDraw();
+	tcompatibletarget->Clear(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f));
+	tcompatibletarget->FillRectangle(D2D1::RectF(0.0f, 0.0f, fLength, fWidth), pBrush);
+	pBrush->SetColor(mEdgeColor);
+	tcompatibletarget->DrawRectangle(D2D1::RectF(0.0f, 0.0f, fLength, fWidth), pBrush, fThickness);
+	tcompatibletarget->EndDraw();
+
+	SafeRelease(&pAoeBitmap);
+	tcompatibletarget->GetBitmap(&pAoeBitmap);
+	mLocation.mDestSprite = D2D1::RectF(0.0f, 0.0f, mBitmapSize.width, mBitmapSize.height);
+
+	SafeRelease(&pBrush);
+	SafeRelease(&tcompatibletarget);
+}
+
+void AoeSpritePointer::BuildCube()
+{
+	ID2D1BitmapRenderTarget* tcompatibletarget = nullptr;
+	mBitmapSize = D2D1::SizeF(fLength + fThickness, fLength + fThickness);
+	mCenter = D2D1::Point2F(fLength * 0.5f, fLength * 0.5f);
+	if (FAILED(gfx->GetRenderTarget()->CreateCompatibleRenderTarget(mBitmapSize, &tcompatibletarget))) return;
+
+	ID2D1SolidColorBrush* pBrush = nullptr;
+	tcompatibletarget->CreateSolidColorBrush(mFillColor, &pBrush);
+	tcompatibletarget->BeginDraw();
+	tcompatibletarget->Clear(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f));
+	tcompatibletarget->FillRectangle(D2D1::RectF(0.0f, 0.0f, fLength, fLength), pBrush);
+	pBrush->SetColor(mEdgeColor);
+	tcompatibletarget->DrawRectangle(D2D1::RectF(0.0f, 0.0f, fLength, fLength), pBrush, fThickness);
+	tcompatibletarget->EndDraw();
+
+	SafeRelease(&pAoeBitmap);
+	tcompatibletarget->GetBitmap(&pAoeBitmap);
+	mLocation.mDestSprite = D2D1::RectF(0.0f, 0.0f, mBitmapSize.width, mBitmapSize.height);
+
+	SafeRelease(&pBrush);
+	SafeRelease(&tcompatibletarget);
 }

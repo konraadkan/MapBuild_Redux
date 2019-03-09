@@ -99,7 +99,7 @@ void Wall::SetTexture(SpritePointer* const p)
 {
 	if (!p) return;
 	SafeDelete(&pTexture);
-	pTexture = new SpritePointer(p->GetPieces(), p->GetLocation(), pGridSquareSize, p->IsKeepAspectSprite(), p->IsKeepAspectPortrait());
+	pTexture = new SpritePointer(gfx, p->GetPieces(), p->GetLocation(), pGridSquareSize, p->IsKeepAspectSprite(), p->IsKeepAspectPortrait());
 	pTexture->SetCreatureSize(p->GetCreatureSize());
 	if (pTexture->GetSprite())
 	{
@@ -238,7 +238,7 @@ const bool Wall::LoadSaveBuffer(const char* Buffer)
 	if (pos < uLen)
 	{
 		SafeDelete(&pTexture);
-		SpritePointer* tempP = new SpritePointer(nullptr, Location(), pGridSquareSize);
+		SpritePointer* tempP = new SpritePointer(gfx, nullptr, Location(), pGridSquareSize);
 		tempP->LoadSaveBuffer(Buffer + pos);
 		tempP->SetPiecePointer(static_cast<BaseLevel*>(pBaseLevel)->FindPiece(tempP->GetPieceBuffer()));
 		SetTexture(tempP);

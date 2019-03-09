@@ -24,6 +24,7 @@ protected:
 	bool bKeepAspect = true;
 	bool bUseTexture = false;	
 	bool bExit = false;
+	bool bUpdateRotation = false;
 public:	
 	virtual const bool CreateNew() = 0;
 	virtual const bool IsExit() { return bExit; }

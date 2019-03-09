@@ -129,6 +129,11 @@ void InteractObjects::SetUnhidden()
 	bHide = false;
 }
 
+void InteractObjects::ToggleHidden()
+{
+	bHide ^= true;
+}
+
 const bool InteractObjects::Interact(const D2D1_POINT_2F p)
 {
 	for (auto& child : pChild)

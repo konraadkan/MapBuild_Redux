@@ -13,6 +13,7 @@ public:
 		CreatureSize,
 		ThicknessSize,
 		DistanceSize,
+		AoeSize,
 		Error
 	};
 protected:
@@ -96,7 +97,7 @@ protected:
 public:
 	ThicknessMenu(Graphics* const graphics, const D2D1_RECT_F dest, D2D1_POINT_2F* const p) : MeasurementMenu(graphics, dest, p)
 	{
-		pSliderBar = new SliderBar(graphics, D2D1::RectF(dest.left + (dest.right - dest.left) * 0.25f, dest.top + (dest.bottom - dest.top) * 0.10f, dest.right - (dest.right - dest.left) * 0.25f, dest.bottom - (dest.bottom - dest.top) * 0.30f),
+		pSliderBar = new SliderBar(40.0f, 1.0f, 8.0f, graphics, D2D1::RectF(dest.left + (dest.right - dest.left) * 0.25f, dest.top + (dest.bottom - dest.top) * 0.10f, dest.right - (dest.right - dest.left) * 0.25f, dest.bottom - (dest.bottom - dest.top) * 0.30f),
 			D2D1::ColorF(1, 0, 0));
 		mTextDest.left = dest.left + 5.0f;
 		mTextDest.right = pSliderBar->GetDest().left - 5.0f;
@@ -128,4 +129,98 @@ public:
 public:
 	const float GetSelectedThickness() { return pSliderBar->GetSize(); }
 	std::vector<InteractObjects*> vpChild;
+};
+
+class AoeSizeMenu : public MeasurementMenu
+{
+private:
+	AoeSpritePointer::AoeTypes CurrentSelectedType = AoeSpritePointer::AoeTypes::Invalid;
+	AoeSpritePointer::AoeTypes* pSelectedType;
+	SliderBar* pOpacitySlider = nullptr;
+	SliderBar* pLengthSlider = nullptr;
+	SliderBar* pRadiusSlider = nullptr;
+	SliderBar* pWidthSlider = nullptr;
+	D2D1_RECT_F OpacityTextBox = D2D1::RectF();
+	D2D1_RECT_F LengthTextBox = D2D1::RectF();
+	D2D1_RECT_F RadiusTextBox = D2D1::RectF();
+	D2D1_RECT_F WidthTextBox = D2D1::RectF();
+	D2D1_RECT_F PreviewBox = D2D1::RectF();
+	std::vector<InteractObjects*> vpChild;
+public:
+	AoeSizeMenu(AoeSpritePointer::AoeTypes* const pselectedtype, Graphics* const graphics, const D2D1_RECT_F dest, D2D1_POINT_2F* const p) : pSelectedType(pselectedtype), MeasurementMenu(graphics, dest, p)
+	{
+		pOpacitySlider = new SliderBar(100.0f, 0.0f, 60.0f, graphics, D2D1::RectF(dest.left + (dest.right - dest.left) * 0.25f, dest.top + 20.0f, dest.right - (dest.right - dest.left) * 0.25f, dest.top + 64.0f),
+			D2D1::ColorF(1, 0, 0));
+		OpacityTextBox.left = dest.left + 5.0f;
+		OpacityTextBox.right = pOpacitySlider->GetDest().left - 5.0f;
+		OpacityTextBox.top = pOpacitySlider->GetDest().top;
+		OpacityTextBox.bottom = pOpacitySlider->GetDest().bottom;
+
+		pLengthSlider = new SliderBar(200.0f, 5.0f, 15.0f, graphics, D2D1::RectF(pOpacitySlider->GetDest().left, pOpacitySlider->GetDest().bottom + 20.0f, pOpacitySlider->GetDest().right, pOpacitySlider->GetDest().bottom + 20.0f + (pOpacitySlider->GetDest().bottom - pOpacitySlider->GetDest().top)),
+			D2D1::ColorF(1, 0, 0));
+		LengthTextBox.left = dest.left + 5.0f;
+		LengthTextBox.right = pLengthSlider->GetDest().left - 5.0f;
+		LengthTextBox.top = pLengthSlider->GetDest().top;
+		LengthTextBox.bottom = pLengthSlider->GetDest().bottom;
+
+		pRadiusSlider = new SliderBar(200.0f, 5.0f, 15.0f, graphics, D2D1::RectF(pOpacitySlider->GetDest().left, pOpacitySlider->GetDest().bottom + 20.0f, pOpacitySlider->GetDest().right, pOpacitySlider->GetDest().bottom + 20.0f + (pOpacitySlider->GetDest().bottom - pOpacitySlider->GetDest().top)),
+			D2D1::ColorF(1, 0, 0));
+		RadiusTextBox.left = dest.left + 5.0f;
+		RadiusTextBox.right = pRadiusSlider->GetDest().left - 5.0f;
+		RadiusTextBox.top = pRadiusSlider->GetDest().top;
+		RadiusTextBox.bottom = pRadiusSlider->GetDest().bottom;
+
+		pWidthSlider = new SliderBar(200.0f, 5.0f, 5.0f, graphics, D2D1::RectF(pLengthSlider->GetDest().left, pLengthSlider->GetDest().bottom + 20.0f, pLengthSlider->GetDest().right, pLengthSlider->GetDest().bottom + 20.0f + (pLengthSlider->GetDest().bottom - pLengthSlider->GetDest().top)),
+			D2D1::ColorF(1, 0, 0));
+		WidthTextBox.left = dest.left + 5.0f;
+		WidthTextBox.right = pWidthSlider->GetDest().left - 5.0f;
+		WidthTextBox.top = pWidthSlider->GetDest().top;
+		WidthTextBox.bottom = pWidthSlider->GetDest().bottom;
+
+		PreviewBox = D2D1::RectF(pOpacitySlider->GetDest().right + 5.0f, pOpacitySlider->GetDest().top, dest.right - 5.0f, pLengthSlider->GetDest().bottom);
+		UpdateTransform();
+	}
+	AoeSizeMenu(const AoeSizeMenu&) = delete;
+	AoeSizeMenu& operator=(const AoeSizeMenu&) = delete;
+	~AoeSizeMenu() { SafeDelete(&pOpacitySlider); SafeDelete(&pLengthSlider); SafeDelete(&pWidthSlider); SafeDelete(&pRadiusSlider); }
+public:
+	void Draw() override;
+	const bool Interact() override;
+	void DrawConeMenu();
+	void DrawCubeMenu();
+	void DrawCylinderMenu();
+	void DrawLineMenu();
+	void DrawSphereMenu();
+	void UpdateTransform() override;
+	void UpdateSlider();
+	void JumpPosition();
+	
+	const bool PointInOpacitySlider() { return pOpacitySlider->PointOnSlider(mInvTransform.TransformPoint(*pMouseCoordinates)); }
+	const bool PointOnOpacitySlideLine() { return pOpacitySlider->PointOnLine(mInvTransform.TransformPoint(*pMouseCoordinates)); }
+	const bool PointInLengthSlider() { return pLengthSlider->PointOnSlider(mInvTransform.TransformPoint(*pMouseCoordinates)); }
+	const bool PointOnLengthSlideLine() { return pLengthSlider->PointOnLine(mInvTransform.TransformPoint(*pMouseCoordinates)); }
+	const bool PointInWidthSlider() { return pWidthSlider->PointOnSlider(mInvTransform.TransformPoint(*pMouseCoordinates)); }
+	const bool PointOnWidthSlideLine() { return pWidthSlider->PointOnLine(mInvTransform.TransformPoint(*pMouseCoordinates)); }
+	const bool PointInRadiusSlider() { return pRadiusSlider->PointOnSlider(mInvTransform.TransformPoint(*pMouseCoordinates)); }
+	const bool PointOnRadiusSlideLine() { return pRadiusSlider->PointOnLine(mInvTransform.TransformPoint(*pMouseCoordinates)); }
+
+	void SetOpacitySelected() { pOpacitySlider->SetSelected(); }
+	void UnsetOpacitySelected() { pOpacitySlider->UnsetSelected(); }
+	void SetLengthSelected() { pLengthSlider->SetSelected(); }
+	void UnsetLengthSelected() { pLengthSlider->UnsetSelected(); }
+	void SetWidthSelected() { pWidthSlider->SetSelected(); }
+	void UnsetWidthSelected() { pWidthSlider->UnsetSelected(); }
+	void SetRadiusSelected() { pRadiusSlider->SetSelected(); }
+	void UnsetRadiusSelected() { pRadiusSlider->UnsetSelected(); }
+
+	const bool OpacitySelected() { return pOpacitySlider->IsSelected(); }
+	const bool LengthSelected() { return pLengthSlider->IsSelected(); }
+	const bool WidthSelected() { return pWidthSlider->IsSelected(); }
+	const bool RadiusSelected() { return pRadiusSlider->IsSelected(); }
+	const bool IsSelected() { return WidthSelected() || RadiusSelected() || LengthSelected() || OpacitySelected(); }
+
+	const float GetOpacity() { return pOpacitySlider->GetSize() * 0.01f; }
+	const float GetLength() { return pLengthSlider->GetSize() / 5.0f; }
+	const float GetWidth() { return pWidthSlider->GetSize() / 5.0f; }
+	const float GetRadius() { return pRadiusSlider->GetSize() / 5.0f; }
 };

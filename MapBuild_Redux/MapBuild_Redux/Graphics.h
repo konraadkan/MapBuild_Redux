@@ -266,6 +266,19 @@ public:
 		float temp = GetOutputTextWidth(text, D2D1::SizeF((targetArea.right - targetArea.left) * 2.5f, targetArea.bottom - targetArea.top));
 		if (temp <= (targetArea.right - targetArea.left))
 		{
+			float textHeight = GetOutputTextHeight(text, D2D1::SizeF(targetArea.bottom - targetArea.top), false);
+			//if (textHeight > targetArea.bottom - targetArea.top)
+			//{
+			//	float scale = (targetArea.bottom - targetArea.top) / textHeight;
+			//	D2D1::Matrix3x2F oMatrix = D2D1::Matrix3x2F::Identity();
+			//	target->GetTransform(&oMatrix);
+			//	D2D1_RECT_F trect = D2D1::RectF(targetArea.left, targetArea.top, targetArea.left + temp, targetArea.bottom);
+			//	//target->SetTransform(oMatrix * D2D1::Matrix3x2F::Scale(D2D1::SizeF(scale, scale), D2D1::Point2F(targetArea.left, (targetArea.bottom + targetArea.top) * 0.5f)));
+			//	target->SetTransform(D2D1::Matrix3x2F::Scale(D2D1::SizeF(scale, scale), D2D1::Point2F(targetArea.left, (targetArea.bottom + targetArea.top) * 0.5f)) * oMatrix);
+			//	OutputText(target, text, trect, color, alignment, p_alignment);
+			//	target->SetTransform(oMatrix);
+			//}
+			//else 
 			if (temp >= 0.0f) target->DrawTextA(text, lstrlenW(text), m_WriteFormat, targetArea, m_Brush, D2D1_DRAW_TEXT_OPTIONS_NONE, DWRITE_MEASURING_MODE_NATURAL);
 		}
 		else
