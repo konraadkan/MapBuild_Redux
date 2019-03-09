@@ -516,8 +516,12 @@ void Pieces::LoadPortrait()
 void SpritePointer::DrawSprite(Graphics* const gfx, bool back)
 {
 	if (!GetSprite()) return;
+	D2D1::Matrix3x2F oTransforms = D2D1::Matrix3x2F::Identity();
+	gfx->GetCompatibleTarget()->GetTransform(&oTransforms);
+	gfx->GetCompatibleTarget()->SetTransform(RotationMatrix * oTransforms);
 	if (back) gfx->DrawBitmap(gfx->GetCompatibleTarget(), GetSprite()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetSprite()->GetFrame());
 	else gfx->DrawBitmap(gfx->GetRenderTarget(), GetSprite()->GetBitmap(), mLocation.mDestSprite, fOpacity, GetSprite()->GetFrame());
+	gfx->GetCompatibleTarget()->SetTransform(oTransforms);
 	GetSprite()->NextFrame();
 
 	if (wTag[0] != L'\0')
@@ -797,6 +801,9 @@ const char* SpritePointer::CreateSaveInformation()
 	memcpy(Buffer + pos, &uSpritePointerType, sizeof(uSpritePointerType));
 	pos += sizeof(uSpritePointerType);
 
+	memcpy(Buffer + pos, &fRotation, sizeof(fRotation));
+	pos += sizeof(fRotation);
+
 	/****Child Buffer Data***/
 	uint32_t uLen = static_cast<uint32_t>(vSpriteChild.size());
 	memcpy(Buffer + pos, &uLen, sizeof(uLen));
@@ -947,6 +954,9 @@ const bool SpritePointer::LoadSaveBuffer(const char* Buffer)
 	memcpy(&uSpritePointerType, Buffer + pos, sizeof(uSpritePointerType));
 	pos += sizeof(uSpritePointerType);
 
+	memcpy(&fRotation, Buffer + pos, sizeof(fRotation));
+	pos += sizeof(fRotation);
+
 	uint32_t uLen = 0;
 	memcpy(&uLen, Buffer + pos, sizeof(uLen));
 	pos += sizeof(uLen);
@@ -1054,6 +1064,7 @@ const bool SpritePointer::LoadSaveBuffer(const char* Buffer)
 	LoadedPiece = new char[ilen];
 	memcpy(LoadedPiece, Buffer + pos, ilen);
 	pos += ilen;
+	UpdateRotationMatrix();
 	return true;
 }
 
@@ -1240,6 +1251,7 @@ const uint32_t SpritePointer::CalcSaveSize()
 	uint32_t uBufferSize = 0;
 	uBufferSize += sizeof(uint32_t);											//hold size of this buffer
 	uBufferSize += sizeof(uint32_t);											//holds the type of SpritePointer that is being stored
+	uBufferSize += sizeof(float);												//holds rotation
 	uBufferSize += sizeof(uint32_t);											//holds vSpriteChild.size()
 	
 	for (auto& child : vSpriteChild)
@@ -1468,6 +1480,11 @@ void AoeSpritePointer::BuildShape()
 void AoeSpritePointer::UpdateRotationMatrix()
 {
 	RotationMatrix = D2D1::Matrix3x2F::Rotation(fRotation, mCenter);
+}
+
+void SpritePointer::UpdateRotationMatrix()
+{
+	RotationMatrix = D2D1::Matrix3x2F::Rotation(fRotation, D2D1::Point2F(mLocation.mDestSprite.left + (mLocation.mDestSprite.right - mLocation.mDestSprite.left) * 0.5f, mLocation.mDestSprite.top + (mLocation.mDestSprite.bottom - mLocation.mDestSprite.top) * 0.5f));
 }
 
 void AoeSpritePointer::Draw()

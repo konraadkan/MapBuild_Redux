@@ -200,6 +200,9 @@ struct Location
 class SpritePointer : public SafeReleaseMemory
 {
 protected:
+	const float PI = 3.141592658f;	
+	D2D1::Matrix3x2F RotationMatrix = D2D1::Matrix3x2F::Identity();
+	float fRotation = 0.0f;
 	Graphics* gfx = nullptr;
 	Location mLocation;
 	PiecesW* pPiece = nullptr;
@@ -259,7 +262,10 @@ public:
 	virtual const uint32_t CalcSaveSize();
 	virtual const bool LoadSaveBuffer(const char* Buffer);
 	const D2D1_RECT_F CalcDestTag();
+	virtual void UpdateRotationMatrix();
 public:
+	void SetRotation(const float r) { fRotation = r * (180.0f / PI); }
+	void IncreaseRotation(const float degree) { fRotation += degree; }
 	const bool IsSelected() { return bSelected; }
 	const bool IsKeepAspectSprite() { return bKeepAspectRatioSprite; }
 	const bool IsKeepAspectPortrait() { return bKeepAspectRatioPortrait; }
@@ -284,19 +290,15 @@ public:
 
 class AoeSpritePointer : public SpritePointer
 {
-private:
-	const float PI = 3.141592658f;
-protected:
-	D2D1::Matrix3x2F RotationMatrix = D2D1::Matrix3x2F::Identity();
+protected:	
+	D2D1_POINT_2F mCenter = D2D1::Point2F();
 	D2D1::Matrix3x2F TranslationMatrix = D2D1::Matrix3x2F::Identity();
 	D2D1_COLOR_F mEdgeColor;
 	D2D1_COLOR_F mFillColor;
 	float fRadius = 0.0f;
 	float fWidth = 0.0f;
 	float fLength = 0.0f;
-	float fThickness = 1.0f;
-	float fRotation = 0.0f;
-	D2D1_POINT_2F mCenter = D2D1::Point2F();
+	float fThickness = 1.0f;		
 	D2D1_SIZE_F mBitmapSize = D2D1::SizeF();
 	ID2D1Bitmap* pAoeBitmap = nullptr;
 	D2D1_SIZE_F mTranslation = D2D1::SizeF();
@@ -319,16 +321,14 @@ public:
 	void SetThickness(const float thickness) { fThickness = thickness; }
 	void SetLength(const float len) { fLength = len; }
 	void SetFillColor(const D2D1_COLOR_F c) { mFillColor = c; }
-	void SetEdgeColor(const D2D1_COLOR_F c) { mEdgeColor = c; }
-	void SetRotation(const float r) { fRotation = r * (180.0f / PI); }
+	void SetEdgeColor(const D2D1_COLOR_F c) { mEdgeColor = c; }	
 	void SetTranslation(const D2D1_SIZE_F dist) { TranslationMatrix = D2D1::Matrix3x2F::Translation(dist); }
 	void SetStartPoint(const D2D1_POINT_2F p);
 	void SetDestSprite(const D2D1_RECT_F d, bool ApplyRebuild = true) override
 	{ 
 		//mLocation.mDestSprite = d; 
 		SetStartPoint(D2D1::Point2F((d.left + d.right) * 0.5f, (d.top+ d.bottom) * 0.5f));
-	}
-	void UpdateRotationMatrix();
+	}	
 	const D2D1_COLOR_F GetFillColor() { return mFillColor; }
 	const D2D1_COLOR_F GetEdgeColor() { return mEdgeColor; }
 	const float GetRotation() { return fRotation; }
@@ -345,6 +345,7 @@ public:
 	void BuildLine();
 	void BuildCube();
 	void Draw();
+	void UpdateRotationMatrix() override;
 	void DrawSprite(Graphics* const gfx, bool back = true) override { Draw(); }
 	const bool PointInSprite(const D2D1_POINT_2F p) override;
 	const bool PointInCone(const D2D1_POINT_2F p);

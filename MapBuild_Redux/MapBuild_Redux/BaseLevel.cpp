@@ -922,7 +922,7 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 				pSideMenu->NextTurn();
 			}
 			break;
-		}
+		}		
 		case VK_BACK:
 		{
 			if (!pSideMenu->IsBuildMode())
@@ -1003,6 +1003,28 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 			case VK_SHIFT:
 				SafeDelete(&pRuler);
 				pRuler = new Ruler(gfx, GridSquareSize, TranslatedCoordinates, mRulerDest);
+				break;
+			case VK_NEXT:
+				for (auto& child : *pSelectedLayer)
+				{
+					if (child->PointInSprite(TranslatedCoordinates))
+					{
+						child->IncreaseRotation(45.0f);
+						child->UpdateRotationMatrix();
+						break;
+					}
+				}
+				break;
+			case VK_PRIOR:
+				for (auto& child : *pSelectedLayer)
+				{
+					if (child->PointInSprite(TranslatedCoordinates))
+					{
+						child->IncreaseRotation(-45.0f);
+						child->UpdateRotationMatrix();
+						break;
+					}
+				}
 				break;
 			case 'F':
 				if (pKeyboard->KeyIsPressed(VK_CONTROL)) bShowFPS ^= true;
