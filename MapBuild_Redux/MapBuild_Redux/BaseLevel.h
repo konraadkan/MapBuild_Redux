@@ -8,6 +8,7 @@
 #include "ruler.h"
 #include <vector>
 #include <atomic>
+#include "TurnCounter.h"
 
 class BaseLevel : public Level
 {
@@ -29,7 +30,7 @@ private:
 		}
 	}
 private:
-	const float fVERSION_NUMBER = 0.2f;
+	const float fVERSION_NUMBER = 0.21f;
 	std::vector<InteractObjects*> IObjects;
 	D2D1_POINT_2F Center = D2D1::Point2F();
 	D2D1_SIZE_F GridSquareSize = D2D1::SizeF(64.0f, 64.0f);
@@ -125,7 +126,7 @@ private:
 	const uint32_t CalcSaveBufferSize();
 	const char* CreateSaveInformation();
 	const uint32_t GetRoomsStates();
-	const uint32_t GetLayersStates(const uint32_t uRoom);
+	const uint32_t GetLayersStates(const uint32_t uRoom);	
 public:
 	SideMenu* pSideMenu = nullptr;
 	SizeMenu* pSizeMenu = nullptr;
@@ -145,4 +146,5 @@ public:
 	std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>>* pvWalls = nullptr;
 	std::unique_ptr<Wall> wptest = nullptr;
 	SpritePointer* pSelectedObject = nullptr;
+	TurnCounter* pTurnCounter = nullptr;
 };

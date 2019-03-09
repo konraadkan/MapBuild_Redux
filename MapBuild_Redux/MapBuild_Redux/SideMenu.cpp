@@ -229,9 +229,9 @@ void SideMenu::UpdateNextButtonRect(MenuItemType type)
 	}
 }
 
-SideMenu::SideMenu(const HWND hwnd, bool* const Exit, const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, std::vector< std::vector<SpritePointer*>>** const ppRoom, std::vector<SpritePointer*>** const ppLayer,
+SideMenu::SideMenu(bool* const showcounter, TurnCounter** const TurnCounter, const HWND hwnd, bool* const Exit, const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, std::vector< std::vector<SpritePointer*>>** const ppRoom, std::vector<SpritePointer*>** const ppLayer,
 	std::vector< std::vector< std::vector<SpritePointer*>>>** const ppRL, std::vector<bool>* const VisibleRooms, std::vector< std::vector<bool>>* const VisibleLayers, SpritePointer** const ppsprite, std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>>** const ppW,
-	std::vector< std::vector<std::unique_ptr<Wall>>>** const ppSWR, std::vector<std::unique_ptr<Wall>>** const ppSWL) : hWnd(hwnd), ppSelectedWallRoom(ppSWR), ppSelectedWallLayer(ppSWL), pSelectedRoom(ppRoom), pSelectWallRoomsandLayers(ppW), pSelectedLayer(ppLayer), vSelectRoomsandLayers(ppRL), ppSelectedSprite(ppsprite), Buttons(graphics, Transform, area, p), pExit(Exit)
+	std::vector< std::vector<std::unique_ptr<Wall>>>** const ppSWR, std::vector<std::unique_ptr<Wall>>** const ppSWL) : pShowCounter(showcounter), ppTurnCounter(TurnCounter), hWnd(hwnd), ppSelectedWallRoom(ppSWR), ppSelectedWallLayer(ppSWL), pSelectedRoom(ppRoom), pSelectWallRoomsandLayers(ppW), pSelectedLayer(ppLayer), vSelectRoomsandLayers(ppRL), ppSelectedSprite(ppsprite), Buttons(graphics, Transform, area, p), pExit(Exit)
 {
 	pVisibleLayers = VisibleLayers;
 	pVisibleRooms = VisibleRooms;
@@ -296,7 +296,7 @@ SideMenu::SideMenu(const HWND hwnd, bool* const Exit, const D2D1_RECT_F targetDe
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Add Custom Colors", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), false), OptionMenuSize);
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Initiative", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), false), OptionMenuSize);
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Keep Aspect", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true, true), OptionMenuSize);
-	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Turn Counter", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
+	pMenuSections.back()->AddChild(new CounterButton(ppTurnCounter, &pFirstPieceW, &pShowCounter, gfx, Transform, area, pMouseCoordinates, L"Turn Counter", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
 	pMenuSections.back()->AddChild(new AttachObjectButtons(&bAttachObject, gfx, Transform, area, pMouseCoordinates, L"Attach Object", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true, false), OptionMenuSize);
 	pMenuSections.back()->SetBorderStyle(BorderStyle::Solid);
 	//pOptionsMenu->SetHidden();
@@ -878,9 +878,14 @@ void SideMenu::NextTurn()
 {
 	if (InitiativeList)
 	{
+		if (!pFirstPieceW && !(*ppTurnCounter)->IsHidden())	pFirstPieceW = vInitativeList.front();
 		auto temp = vInitativeList.begin();
 		std::rotate(temp, temp + 1, vInitativeList.end());
 		BuildInitativeList();
+		if (pFirstPieceW)
+		{
+			if (pFirstPieceW == vInitativeList.front() && !(*ppTurnCounter)->IsHidden()) (*ppTurnCounter)->IncreaseTurnCounter();
+		}
 	}
 }
 
@@ -891,6 +896,13 @@ void SideMenu::PreviousTurn()
 		auto temp = vInitativeList.begin() + vInitativeList.size() - 1;
 		std::rotate(vInitativeList.begin(), temp, vInitativeList.end());
 		BuildInitativeList();
+	}
+	if (pFirstPieceW)
+	{
+		if (vInitativeList.size() > 1)
+		{
+			if (pFirstPieceW == vInitativeList.at(1) && !(*ppTurnCounter)->IsHidden()) (*ppTurnCounter)->DecreaseTurnCounter();
+		}
 	}
 }
 
@@ -905,4 +917,16 @@ void SideMenu::RemoveFromMenuSection(MenuSection* const p)
 		}
 	}
 	pMenuSections.shrink_to_fit();
+}
+
+const uint32_t SideMenu::GetTopOfTheRoundPosition()
+{
+	if (!pFirstPieceW) return 0u;
+
+	for (uint32_t i = 0; i < static_cast<uint32_t>(vInitativeList.size()); i++)
+	{
+		if (vInitativeList.at(i) == pFirstPieceW)
+			return i;
+	}
+	return 0u;
 }

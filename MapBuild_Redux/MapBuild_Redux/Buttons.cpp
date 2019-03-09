@@ -49,6 +49,42 @@ const bool Buttons::Interact()
 	return true;
 }
 
+const bool CounterButton::Interact()
+{
+	if (IsHidden()) return true;
+	if (!Interact(*pMouseCoordinates)) return false;
+	return true;
+}
+
+const bool CounterButton::Interact(const D2D1_POINT_2F p)
+{
+	if (IsHidden()) return true;
+	
+	if (!(*ppTurnCounter)->IsHidden())
+	{
+		if ((*ppTurnCounter)->GetTurnNumber() > 0)
+		{
+			(*ppTurnCounter)->ResetCounter();
+			(*ppTurnCounter)->Update();
+			(*ppFirstPiecesW) = nullptr;
+		}
+		else
+		{
+			if (bEnableSelection) bSelected = false;
+			(*ppTurnCounter)->SetHidden();
+			(*ppFirstPiecesW) = nullptr;
+		}
+	}
+	else
+	{
+		(*ppTurnCounter)->UnsetHidden();
+		if (bEnableSelection) bSelected = true;
+		(*ppFirstPiecesW) = nullptr;
+	}
+	if (ppShowCounter) **ppShowCounter = !(*ppTurnCounter)->IsHidden();
+	return true;
+}
+
 const bool Buttons::AlternateInteract()
 {
 	if (IsHidden()) return true;

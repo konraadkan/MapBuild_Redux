@@ -2,6 +2,7 @@
 #include "MenuSection.h"
 #include "Buttons.h"
 #include "Shapes.h"
+#include "TurnCounter.h"
 
 class SideMenu : public Buttons
 {
@@ -90,6 +91,7 @@ public:
 	MenuSection* pSizeMenu = nullptr;
 	MenuSection* ItemMenu = nullptr;
 	MenuSection* InitiativeList = nullptr;
+	PiecesW* pFirstPieceW = nullptr;
 	HWND hWnd;
 private:
 	std::vector<D2D1_RECT_F> CategoryStartPoints;	
@@ -110,7 +112,7 @@ private:
 	bool bNew = false;
 	bool* const pExit;	
 public:
-	SideMenu(const HWND hwnd, bool* const Exit, const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p,
+	SideMenu(bool* const showcounter, TurnCounter** const TurnCounter, const HWND hwnd, bool* const Exit, const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p,
 		std::vector< std::vector<SpritePointer*>>** const ppRoom, std::vector<SpritePointer*>** const ppLayer, std::vector< std::vector< std::vector<SpritePointer*>>>** const ppRL,
 		std::vector<bool>* const VisibleRooms, std::vector< std::vector<bool>>* const VisibleLayers, SpritePointer** const ppsprite,
 		std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>>** const ppW, std::vector< std::vector<std::unique_ptr<Wall>>>** const ppSWR, std::vector<std::unique_ptr<Wall>>** const ppSWL);
@@ -144,6 +146,7 @@ public:
 	SideMenu(const SideMenu&) = delete;
 	SideMenu& operator=(const SideMenu&) = delete;
 	void Draw() override;
+	const uint32_t GetTopOfTheRoundPosition();
 	const bool Interact(const D2D1_POINT_2F p) override;
 	const bool Interact() override;
 	const bool AlternateInteract() override;
@@ -218,4 +221,6 @@ public:
 	void* pBaseLevel = nullptr;
 	AoeSpritePointer::AoeTypes SelectedAoeType = AoeSpritePointer::AoeTypes::Invalid;
 	std::vector<PiecesW*> vInitativeList;
+	TurnCounter** ppTurnCounter = nullptr;
+	bool* pShowCounter = nullptr;
 };

@@ -3,6 +3,7 @@
 #include "Pieces.h"
 #include "Walls.h"
 #include "SizeMenu.h"
+#include "TurnCounter.h"
 
 class Buttons : public InteractObjects
 {
@@ -44,6 +45,22 @@ public:
 	void SetIsSelected() override { bSelected = true; }
 	void UnsetIsSelected() override { bSelected = false; }
 	void ToggleIsSelected() { bSelected ^= true; }
+};
+
+class CounterButton : public Buttons
+{
+private:
+	bool** ppShowCounter;
+	TurnCounter** ppTurnCounter;
+	PiecesW** ppFirstPiecesW;
+public:
+	CounterButton(TurnCounter** const counter, PiecesW** const first, bool** const showcount, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, const wchar_t* text = nullptr, const D2D1_RECT_F dest = D2D1::RectF(), D2D1_COLOR_F textColor = D2D1::ColorF(0.0f, 0.0f, 0.0f), InteractObjects* const parent = nullptr, bool enableselection = false, bool selected = false,
+		D2D1_COLOR_F highlight = D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.60f), DWRITE_TEXT_ALIGNMENT talign = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT palign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) : ppTurnCounter(counter), ppFirstPiecesW(first), ppShowCounter(showcount), Buttons(graphics, Transform, area, p, text, dest, textColor, parent, enableselection, selected, highlight, talign, palign) {}
+	CounterButton(const CounterButton&) = delete;
+	CounterButton& operator=(const CounterButton&) = delete;
+	~CounterButton() = default;
+	const bool Interact(const D2D1_POINT_2F p) override;
+	const bool Interact() override;
 };
 
 class AttachObjectButtons : public Buttons

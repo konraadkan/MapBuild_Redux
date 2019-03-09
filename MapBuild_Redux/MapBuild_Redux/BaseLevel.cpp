@@ -33,7 +33,7 @@ BaseLevel::BaseLevel(const HWND hwnd, Graphics* const graphics, D2D1_POINT_2F* c
 	m_ClientWindow = D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height);
 	RotationCenter = D2D1::Point2F(WindowSize.width * 0.5f, WindowSize.height * 0.5f);
 
-	pSideMenu = new SideMenu(hWnd, &bExit, D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow, &MenuCoordinates, &pSelectedRoom, &pSelectedLayer, &ppvSprites, &vVisibleRooms, &vVisibleLayers, &sptest, &pvWalls, &pSelectedRoomWall, &pSelectedLayerWall);
+	pSideMenu = new SideMenu(&bShowCounter, &pTurnCounter, hWnd, &bExit, D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow, &MenuCoordinates, &pSelectedRoom, &pSelectedLayer, &ppvSprites, &vVisibleRooms, &vVisibleLayers, &sptest, &pvWalls, &pSelectedRoomWall, &pSelectedLayerWall);
 	pSideMenu->pBaseLevel = this;
 	pSideMenu->SetMousePointer(&MenuCoordinates);
 	IObjects.push_back(pSideMenu);
@@ -99,6 +99,7 @@ BaseLevel::BaseLevel(const HWND hwnd, Graphics* const graphics, D2D1_POINT_2F* c
 	pSideMenu->BuildInitativeList();
 
 	mRulerDest = D2D1::RectF(5.0f, (WindowSize.height * 0.5f) - 16.0f, 105.0f, (WindowSize.height * 0.5f) + 16.0f);
+	pTurnCounter = new TurnCounter(gfx, D2D1::Ellipse(D2D1::Point2F(0.0f, 0.0f), GridSquareSize.width * 3.0f, GridSquareSize.height * 3.0f), &uCounterValue, D2D1::ColorF(0.69f, 0.89f, 0.91f, 0.6f));
 }
 
 BaseLevel::~BaseLevel()
@@ -123,6 +124,7 @@ void BaseLevel::Unload()
 	SafeDelete(&pSizeMenu);
 	SafeDelete(&pAoeSizeMenu);
 	SafeDelete(&pRuler);
+	SafeDelete(&pTurnCounter);
 	wptest.reset();
 
 	while (vPieces.size())
@@ -246,8 +248,8 @@ void BaseLevel::Render()
 	gfx->BeginDraw(gfx->GetCompatibleTarget());
 	gfx->ClearScreen(gfx->GetCompatibleTarget(), D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.0f));
 	DrawSideMenu();
-//	DrawAoeMenu();
 	DrawSizeMenu();
+	pTurnCounter->Draw();
 	gfx->EndDraw(gfx->GetCompatibleTarget());
 
 	gfx->SwapBuffer();
@@ -611,6 +613,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 				bUpdateRotation = false;
 				pLastAttachedSpritePointer = nullptr;
 			}
+			if (pTurnCounter) if (pTurnCounter->PointInEllipse(*pMouseCoordinate)) pTurnCounter->Interact();
 			if (mSizeMenuType == MeasurementMenu::SizeMenuType::CreatureSize && pSizeMenu->Interact())
 			{
 				if (sptest) sptest->SetCreatureSize(pSizeMenu->GetSelectedCreatureSize());
@@ -1788,6 +1791,7 @@ const uint32_t BaseLevel::CalcSaveBufferSize()
 	uBufferSize += sizeof(float) * 4;					//store grid backbround color
 	uBufferSize += sizeof(float) * 2;					//gfx->GetCompatibleTargetSize()
 	uBufferSize += sizeof(uint32_t);					//store turn counter value
+	uBufferSize += sizeof(uint32_t);					//store position value for who is top of the round
 	uBufferSize += sizeof(uint32_t);					//store currently selected room number
 	uBufferSize += sizeof(uint32_t);					//store currently selected layer number
 	uBufferSize += sizeof(uint32_t);					//store on/off values for each room as boolean values
@@ -1883,6 +1887,10 @@ const char* BaseLevel::CreateSaveInformation()
 	memcpy(Buffer + pos, &uCounterValue, sizeof(uCounterValue));
 	pos += sizeof(uCounterValue);
 
+	uint32_t uTopOfTheRoundValue = pSideMenu->GetTopOfTheRoundPosition();
+	memcpy(Buffer + pos, &uTopOfTheRoundValue, sizeof(uTopOfTheRoundValue));
+	pos += sizeof(uTopOfTheRoundValue);
+
 	uint32_t uSelectedRoomNumber = pSideMenu->GetSelectedRoomNumber();
 	uint32_t uSelectedLayerNumber = pSideMenu->GetSelectedLayerNumber();
 	memcpy(Buffer + pos, &uSelectedRoomNumber, sizeof(uSelectedRoomNumber));
@@ -1965,6 +1973,8 @@ const bool BaseLevel::LoadSaveBuffer(const char* Buffer)
 	(bools & 64) ? pSideMenu->SetUseColors() : pSideMenu->UnsetUseColors();
 	(bools & 128) ? pSideMenu->SetAttachObject() : pSideMenu->UnsetAttachObject();
 	(bools & 256) ? pSideMenu->SetIsBuildMode() : pSideMenu->UnsetIsBuildMode();
+
+	if (bShowCounter) pTurnCounter->UnsetHidden();
 	
 	memcpy(&GridBackgroundColor.r, Buffer + pos, sizeof(GridBackgroundColor.r));
 	pos += sizeof(GridBackgroundColor.r);
@@ -1984,6 +1994,10 @@ const bool BaseLevel::LoadSaveBuffer(const char* Buffer)
 
 	memcpy(&uCounterValue, Buffer + pos, sizeof(uCounterValue));
 	pos += sizeof(uCounterValue);
+	
+	uint32_t uTopOfTheroundValue = 0;
+	memcpy(&uTopOfTheroundValue, Buffer + pos, sizeof(uTopOfTheroundValue));
+	pos += sizeof(uTopOfTheroundValue);
 
 	uint32_t uSelectedRoomNumber = 0;
 	uint32_t uSelectedLayerNumber = 0;
@@ -2085,6 +2099,9 @@ const bool BaseLevel::LoadSaveBuffer(const char* Buffer)
 	pSideMenu->pSelectWallRoomsandLayers = &pvWalls;
 
 	pSideMenu->RealignAddLayerButton();
+	pTurnCounter->Update();
+
+	pSideMenu->pFirstPieceW = pSideMenu->vInitativeList.at(uTopOfTheroundValue);
 
 	return true;
 }

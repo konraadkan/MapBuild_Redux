@@ -133,6 +133,7 @@
     <ClCompile Include="SliderBar.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="StringMod.cpp" />
+    <ClCompile Include="TurnCounter.cpp" />
     <ClCompile Include="walls.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>
@@ -159,6 +160,7 @@
     <ClInclude Include="SliderBar.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="StringMod.h" />
+    <ClInclude Include="TurnCounter.h" />
     <ClInclude Include="Walls.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>
