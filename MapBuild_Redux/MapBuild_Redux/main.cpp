@@ -15,7 +15,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevious, LPWSTR cmd, int iC
 	//int WindowHeight = 480;
 	POINT StartPoint = { static_cast<long>(monitor.dmPelsWidth * 0.5f - WindowWidth * 0.5f - 5), static_cast<long>(monitor.dmPelsHeight * 0.5f - WindowHeight * 0.5f - 5) };
 	//construct window
-	Window wnd(StartPoint, WindowWidth, WindowHeight, L"MapBuilder");
+	Window wnd(StartPoint, WindowWidth, WindowHeight, L"MapBuilder", cmd);
 
 	MSG msg = {};
 	

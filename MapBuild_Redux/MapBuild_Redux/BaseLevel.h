@@ -113,7 +113,7 @@ private:
 	void CreateLayer(size_t uRoomNumber);
 	int afps = 0;
 	bool bShowFPS = false;
-	void BuildObjects(const wchar_t* sFilePath);
+	const bool BuildObjects(const wchar_t* sFilePath);
 	void LoadSprites();
 	void LoadPortraits();
 	void LoadImages();

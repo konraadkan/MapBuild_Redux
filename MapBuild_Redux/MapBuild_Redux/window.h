@@ -57,8 +57,8 @@ private:
 		HINSTANCE hInstance = NULL;
 	};
 public:
-	Window(int width, int height, const wchar_t* name) noexcept;
-	Window(POINT p, int width, int height, const wchar_t* name) noexcept;
+	Window(int width, int height, const wchar_t* name, const wchar_t* wOpenFilePath) noexcept;
+	Window(POINT p, int width, int height, const wchar_t* name, const wchar_t* wOpenFilePath) noexcept;
 	~Window();
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;

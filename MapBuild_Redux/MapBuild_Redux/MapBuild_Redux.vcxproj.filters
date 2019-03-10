@@ -161,4 +161,18 @@
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="Destructive_Magic_32.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Destructive_Magic-64.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Destructive_Magic-128.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Destructive_Magic-256.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

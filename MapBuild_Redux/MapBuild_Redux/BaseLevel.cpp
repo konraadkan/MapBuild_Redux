@@ -39,9 +39,11 @@ BaseLevel::BaseLevel(const HWND hwnd, Graphics* const graphics, D2D1_POINT_2F* c
 	IObjects.push_back(pSideMenu);
 	CreateRoom();
 	
-	//BuildObjects(L"mainpcs-unicode.ini");	
-	//BuildObjects(L"mainpcs.ini");
-	BuildObjects(L"init.ini");
+	if (!BuildObjects(L"init.ini"))
+	{
+		bExit = true;
+		return;
+	}
 	while (vPieces.size())
 	{
 		PiecesW t(gfx, pTimer, &GridSquareSize);
@@ -1163,7 +1165,7 @@ void BaseLevel::LoadPortraits()
 	temp.join();
 }
 
-void BaseLevel::BuildObjects(const wchar_t* sFilePath)
+const bool BaseLevel::BuildObjects(const wchar_t* sFilePath)
 {
 	size_t BufferSize = 0;
 	FILE* file = nullptr;
@@ -1174,7 +1176,7 @@ void BaseLevel::BuildObjects(const wchar_t* sFilePath)
 		errmsg.append(sFilePath);
 		std::wstring errtopic = L"Error #" + std::to_wstring(static_cast<int>(err));
 		MessageBoxW(nullptr, errmsg.c_str(), errtopic.c_str(), MB_OK | MB_ICONERROR);
-		return;
+		return false;
 	}
 
 	fseek(file, 0, SEEK_END);
@@ -1229,6 +1231,7 @@ void BaseLevel::BuildObjects(const wchar_t* sFilePath)
 		SafeDeleteArray(&buffer);
 	}
 	if (file) fclose(file);
+	return true;
 }
 
 const std::wstring BaseLevel::GetLineW(wchar_t* const buffer, wchar_t*& pos)

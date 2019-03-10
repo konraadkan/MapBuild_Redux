@@ -167,6 +167,12 @@
   <ItemGroup>
     <ResourceCompile Include="MapBuild_Redux.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="Destructive_Magic-128.ico" />
+    <Image Include="Destructive_Magic-256.ico" />
+    <Image Include="Destructive_Magic-64.ico" />
+    <Image Include="Destructive_Magic_32.ico" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -9,8 +9,8 @@ Window::WindowClass::WindowClass() noexcept : hInstance(GetModuleHandle(NULL))
 	wndClass.cbSize = sizeof(wndClass);
 	wndClass.style = CS_OWNDC;
 	wndClass.hInstance = GetInstance();
-	wndClass.hIcon = (HICON)LoadIcon(NULL, IDI_APPLICATION);			//default application icon
-	wndClass.hIconSm = NULL;
+	wndClass.hIcon = (HICON)LoadIcon(GetInstance(), MAKEINTRESOURCE(IDI_ICON11));
+	wndClass.hIconSm = (HICON)LoadIcon(GetInstance(), MAKEINTRESOURCE(IDI_ICON9));
 	wndClass.hCursor = (HCURSOR)LoadCursor(NULL, IDC_ARROW);			//default arrow curosr
 	wndClass.hbrBackground = NULL;
 	wndClass.lpszMenuName = NULL;
@@ -34,7 +34,7 @@ HINSTANCE Window::WindowClass::GetInstance() noexcept
 	return wndClass.hInstance;
 }
 
-Window::Window(int Width, int Height, const wchar_t* name) noexcept : width(Width), height(Height)
+Window::Window(int Width, int Height, const wchar_t* name, const wchar_t* wOpenFilePath) noexcept : width(Width), height(Height)
 {
 	RECT wr = {};
 	wr.left = 100;
@@ -56,10 +56,34 @@ Window::Window(int Width, int Height, const wchar_t* name) noexcept : width(Widt
 	{
 		MessageBoxW(hWnd, L"Unable to Initialize Timer.", L"Error", MB_OK | MB_ICONERROR);
 	}
+
+	std::wstring wDirectoryPath(512, '\0');
+	GetModuleFileNameW(nullptr, &wDirectoryPath[0], 512);
+	auto endslashes = wDirectoryPath.find_last_of(L'\\', wDirectoryPath.size());
+	if (endslashes != std::string::npos)
+	{
+		std::wstring wShortDirectory = std::wstring(wDirectoryPath.begin(), wDirectoryPath.begin() + endslashes);
+		SetCurrentDirectoryW(wShortDirectory.c_str());
+	}
+
 	Controller::SwitchLevel(new BaseLevel(hWnd, gfx, &m_MouseCoordinates, width, height, pTimer));
+	
+	if (lstrlenW(wOpenFilePath))
+	{
+		if (wOpenFilePath[0] == L'\"')
+		{
+			std::wstring wPath(lstrlenW(wOpenFilePath), ' ');
+			std::copy(&wOpenFilePath[1], &wOpenFilePath[lstrlenW(wOpenFilePath) - 1], wPath.begin());
+			Controller::CurrentLevel->Open(wPath);
+		}
+		else
+		{
+			Controller::CurrentLevel->Open(wOpenFilePath);
+		}
+	}
 }
 
-Window::Window(POINT p, int Width, int Height, const wchar_t* name) noexcept : width(Width), height(Height)
+Window::Window(POINT p, int Width, int Height, const wchar_t* name, const wchar_t* wOpenFilePath) noexcept : width(Width), height(Height)
 {
 	RECT wr = {};
 	wr.left = 100;
@@ -82,7 +106,30 @@ Window::Window(POINT p, int Width, int Height, const wchar_t* name) noexcept : w
 		MessageBoxW(hWnd, L"Unable to Initialize Timer.", L"Error", MB_OK | MB_ICONERROR);
 	}
 
+	std::wstring wDirectoryPath(512, '\0');
+	GetModuleFileNameW(nullptr, &wDirectoryPath[0], 512);
+	auto endslashes = wDirectoryPath.find_last_of(L'\\', wDirectoryPath.size());
+	if (endslashes != std::string::npos)
+	{
+		std::wstring wShortDirectory = std::wstring(wDirectoryPath.begin(), wDirectoryPath.begin() + endslashes);
+		SetCurrentDirectoryW(wShortDirectory.c_str());
+	}
+
 	Controller::SwitchLevel(new BaseLevel(hWnd, gfx, &m_MouseCoordinates, width, height, pTimer));
+
+	if (lstrlenW(wOpenFilePath))
+	{
+		if (wOpenFilePath[0] == L'\"')
+		{
+			std::wstring wPath(lstrlenW(wOpenFilePath), ' ');
+			std::copy(&wOpenFilePath[1], &wOpenFilePath[lstrlenW(wOpenFilePath) - 1], wPath.begin());
+			Controller::CurrentLevel->Open(wPath);
+		}
+		else
+		{
+			Controller::CurrentLevel->Open(wOpenFilePath);
+		}
+	}
 }
 
 Window::~Window()
