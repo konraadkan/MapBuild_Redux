@@ -334,6 +334,16 @@ const CreatureSize PiecesW::StringToSize(const std::wstring wsize)
 		return CreatureSize::Gargantuan;
 	if (!_wcsicmp(wsize.c_str(), L"Colossal"))
 		return CreatureSize::Colossal;
+	if (!_wcsicmp(wsize.c_str(), L"1x"))
+		return CreatureSize::OneX;
+	if (!_wcsicmp(wsize.c_str(), L"2x"))
+		return CreatureSize::TwoX;
+	if (!_wcsicmp(wsize.c_str(), L"3x"))
+		return CreatureSize::ThreeX;
+	if (!_wcsicmp(wsize.c_str(), L"4x"))
+		return CreatureSize::FourX;
+	if (!_wcsicmp(wsize.c_str(), L"5x"))
+		return CreatureSize::FiveX;
 	return CreatureSize::Medium;
 }
 
@@ -357,6 +367,16 @@ const CreatureSize PiecesW::StringToSize(const std::string ssize)
 		return CreatureSize::Gargantuan;
 	if (!_stricmp(ssize.c_str(), "Colossal"))
 		return CreatureSize::Colossal;
+	if (!_stricmp(ssize.c_str(), "1x"))
+		return CreatureSize::OneX;
+	if (!_stricmp(ssize.c_str(), "2x"))
+		return CreatureSize::TwoX;
+	if (!_stricmp(ssize.c_str(), "3x"))
+		return CreatureSize::ThreeX;
+	if (!_stricmp(ssize.c_str(), "4x"))
+		return CreatureSize::FourX;
+	if (!_stricmp(ssize.c_str(), "5x"))
+		return CreatureSize::FiveX;
 	return CreatureSize::Medium;
 }
 
@@ -403,6 +423,16 @@ const CreatureSize Pieces::StringToSize(const std::string ssize)
 		return CreatureSize::Gargantuan;
 	if (!_stricmp(ssize.c_str(), "Colossal"))
 		return CreatureSize::Colossal;
+	if (!_stricmp(ssize.c_str(), "1x"))
+		return CreatureSize::OneX;
+	if (!_stricmp(ssize.c_str(), "2x"))
+		return CreatureSize::TwoX;
+	if (!_stricmp(ssize.c_str(), "3x"))
+		return CreatureSize::ThreeX;
+	if (!_stricmp(ssize.c_str(), "4x"))
+		return CreatureSize::FourX;
+	if (!_stricmp(ssize.c_str(), "5x"))
+		return CreatureSize::FiveX;
 	return CreatureSize::Medium;
 }
 
