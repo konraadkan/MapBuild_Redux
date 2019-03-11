@@ -316,10 +316,10 @@ public:
 	AoeSpritePointer(Graphics* const graphics, const AoeTypes type, D2D1_COLOR_F EdgeColor, D2D1_COLOR_F FillColor, PiecesW* const p, const Location loc, D2D1_SIZE_F* const GridSquareSize) : mEdgeColor(EdgeColor), mFillColor(FillColor), mType(type), SpritePointer(graphics, p, loc, GridSquareSize, false, false) {}
 	~AoeSpritePointer() { SafeRelease(&pAoeBitmap); }
 	const bool IsAoe() override { return true; }
-	void SetRadius(const float rad) { fRadius = rad; }
-	void SetWidth(const float width) { fWidth = width; }
+	void SetRadius(const int rad) { fRadius = static_cast<float>(rad); }
+	void SetWidth(const int width) { fWidth = static_cast<float>(width); }
 	void SetThickness(const float thickness) { fThickness = thickness; }
-	void SetLength(const float len) { fLength = len; }
+	void SetLength(const int len) { fLength = static_cast<float>(len); }
 	void SetFillColor(const D2D1_COLOR_F c) { mFillColor = c; }
 	void SetEdgeColor(const D2D1_COLOR_F c) { mEdgeColor = c; }	
 	void SetTranslation(const D2D1_SIZE_F dist) { TranslationMatrix = D2D1::Matrix3x2F::Translation(dist); }

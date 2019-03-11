@@ -1599,10 +1599,11 @@ void AoeSpritePointer::BuildCone()
 	ID2D1PathGeometry* pGeometry = nullptr;
 	ID2D1GeometrySink* pSink = nullptr;
 	float fAngle = PI * 0.15f;
-	mBitmapSize = D2D1::SizeF(fLength + fThickness, fLength + fThickness);
+	float appliedfLength = fLength * pGridSquareSize->height;
+	mBitmapSize = D2D1::SizeF(appliedfLength + fThickness, appliedfLength + fThickness);
 	mCenter = D2D1::Point2F(0.0f, mBitmapSize.height * 0.5f);
-	D2D1_POINT_2F p2 = D2D1::Point2F(fLength * cos(fAngle), mCenter.y + fLength * sin(fAngle));
-	D2D1_POINT_2F p1 = D2D1::Point2F(fLength * cos(fAngle), mCenter.y + fLength * -sin(fAngle));
+	D2D1_POINT_2F p2 = D2D1::Point2F(appliedfLength * cos(fAngle), mCenter.y + appliedfLength * sin(fAngle));
+	D2D1_POINT_2F p1 = D2D1::Point2F(appliedfLength * cos(fAngle), mCenter.y + appliedfLength * -sin(fAngle));
 	
 
 	if (FAILED(gfx->GetRenderTarget()->CreateCompatibleRenderTarget(mBitmapSize, &tcompatibletarget))) return;
@@ -1611,7 +1612,7 @@ void AoeSpritePointer::BuildCone()
 	
 	pSink->BeginFigure(mCenter, D2D1_FIGURE_BEGIN_FILLED);
 	pSink->AddLine(p1);
-	pSink->AddArc(D2D1::ArcSegment(p2, D2D1::SizeF(fLength, fLength), fAngle, D2D1_SWEEP_DIRECTION_CLOCKWISE, D2D1_ARC_SIZE_SMALL));
+	pSink->AddArc(D2D1::ArcSegment(p2, D2D1::SizeF(appliedfLength, appliedfLength), fAngle, D2D1_SWEEP_DIRECTION_CLOCKWISE, D2D1_ARC_SIZE_SMALL));
 	pSink->EndFigure(D2D1_FIGURE_END_CLOSED);
 	pSink->Close();
 
@@ -1641,17 +1642,18 @@ void AoeSpritePointer::BuildCone()
 void AoeSpritePointer::BuildSphere()
 {
 	ID2D1BitmapRenderTarget* tcompatibletarget = nullptr;
-	mBitmapSize = D2D1::SizeF(fRadius * 2.0f + fThickness, fRadius * 2.0f + fThickness);
-	mCenter = D2D1::Point2F(fRadius, fRadius);
+	float appliedfRadius = fRadius * pGridSquareSize->height;
+	mBitmapSize = D2D1::SizeF(appliedfRadius * 2.0f + fThickness, appliedfRadius * 2.0f + fThickness);
+	mCenter = D2D1::Point2F(appliedfRadius, appliedfRadius);
 	if (FAILED(gfx->GetRenderTarget()->CreateCompatibleRenderTarget(mBitmapSize, &tcompatibletarget))) return;
 
 	ID2D1SolidColorBrush* pBrush = nullptr;
 	tcompatibletarget->CreateSolidColorBrush(mFillColor, &pBrush);
 	tcompatibletarget->BeginDraw();
 	tcompatibletarget->Clear(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f));
-	tcompatibletarget->FillEllipse(D2D1::Ellipse(mCenter, fRadius, fRadius), pBrush);
+	tcompatibletarget->FillEllipse(D2D1::Ellipse(mCenter, appliedfRadius, appliedfRadius), pBrush);
 	pBrush->SetColor(mEdgeColor);
-	tcompatibletarget->DrawEllipse(D2D1::Ellipse(mCenter, fRadius, fRadius), pBrush, fThickness);
+	tcompatibletarget->DrawEllipse(D2D1::Ellipse(mCenter, appliedfRadius, appliedfRadius), pBrush, fThickness);
 	tcompatibletarget->EndDraw();
 
 	SafeRelease(&pAoeBitmap);
@@ -1665,17 +1667,19 @@ void AoeSpritePointer::BuildSphere()
 void AoeSpritePointer::BuildLine()
 {
 	ID2D1BitmapRenderTarget* tcompatibletarget = nullptr;
-	mBitmapSize = D2D1::SizeF(fLength + fThickness, fWidth + fThickness);
-	mCenter = D2D1::Point2F(0.0f, fWidth * 0.5f);
+	float appliedfLength = fLength * pGridSquareSize->height;
+	float appliedfWidth = fWidth * pGridSquareSize->width;
+	mBitmapSize = D2D1::SizeF(appliedfLength + fThickness, appliedfWidth + fThickness);
+	mCenter = D2D1::Point2F(0.0f, appliedfWidth * 0.5f);
 	if (FAILED(gfx->GetRenderTarget()->CreateCompatibleRenderTarget(mBitmapSize, &tcompatibletarget))) return;
 
 	ID2D1SolidColorBrush* pBrush = nullptr;
 	tcompatibletarget->CreateSolidColorBrush(mFillColor, &pBrush);
 	tcompatibletarget->BeginDraw();
 	tcompatibletarget->Clear(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f));
-	tcompatibletarget->FillRectangle(D2D1::RectF(0.0f, 0.0f, fLength, fWidth), pBrush);
+	tcompatibletarget->FillRectangle(D2D1::RectF(0.0f, 0.0f, appliedfLength, appliedfWidth), pBrush);
 	pBrush->SetColor(mEdgeColor);
-	tcompatibletarget->DrawRectangle(D2D1::RectF(0.0f, 0.0f, fLength, fWidth), pBrush, fThickness);
+	tcompatibletarget->DrawRectangle(D2D1::RectF(0.0f, 0.0f, appliedfLength, appliedfWidth), pBrush, fThickness);
 	tcompatibletarget->EndDraw();
 
 	SafeRelease(&pAoeBitmap);
@@ -1689,17 +1693,18 @@ void AoeSpritePointer::BuildLine()
 void AoeSpritePointer::BuildCube()
 {
 	ID2D1BitmapRenderTarget* tcompatibletarget = nullptr;
-	mBitmapSize = D2D1::SizeF(fLength + fThickness, fLength + fThickness);
-	mCenter = D2D1::Point2F(fLength * 0.5f, fLength * 0.5f);
+	float appliedfLength = fLength * pGridSquareSize->height;
+	mBitmapSize = D2D1::SizeF(appliedfLength + fThickness, appliedfLength + fThickness);
+	mCenter = D2D1::Point2F(appliedfLength * 0.5f, appliedfLength * 0.5f);
 	if (FAILED(gfx->GetRenderTarget()->CreateCompatibleRenderTarget(mBitmapSize, &tcompatibletarget))) return;
 
 	ID2D1SolidColorBrush* pBrush = nullptr;
 	tcompatibletarget->CreateSolidColorBrush(mFillColor, &pBrush);
 	tcompatibletarget->BeginDraw();
 	tcompatibletarget->Clear(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f));
-	tcompatibletarget->FillRectangle(D2D1::RectF(0.0f, 0.0f, fLength, fLength), pBrush);
+	tcompatibletarget->FillRectangle(D2D1::RectF(0.0f, 0.0f, appliedfLength, appliedfLength), pBrush);
 	pBrush->SetColor(mEdgeColor);
-	tcompatibletarget->DrawRectangle(D2D1::RectF(0.0f, 0.0f, fLength, fLength), pBrush, fThickness);
+	tcompatibletarget->DrawRectangle(D2D1::RectF(0.0f, 0.0f, appliedfLength, appliedfLength), pBrush, fThickness);
 	tcompatibletarget->EndDraw();
 
 	SafeRelease(&pAoeBitmap);

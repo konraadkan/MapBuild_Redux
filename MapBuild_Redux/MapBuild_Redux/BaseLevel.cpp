@@ -468,10 +468,10 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 									color_.a = pAoeSizeMenu->GetOpacity();
 									AoeSpritePointer* p = new AoeSpritePointer(gfx, pSideMenu->GetSelectedAoeType(), D2D1::ColorF(0, 0, 0), color_, nullptr, Location(), &GridSquareSize);
 									
-									p->SetLength(static_cast<int>(pAoeSizeMenu->GetLength()) * GridSquareSize.width);
-									p->SetRadius(static_cast<int>(pAoeSizeMenu->GetRadius()) * GridSquareSize.width);
+									p->SetLength(static_cast<int>(pAoeSizeMenu->GetLength()));
+									p->SetRadius(static_cast<int>(pAoeSizeMenu->GetRadius()));
 									p->SetThickness(3.0f);
-									p->SetWidth(static_cast<int>(pAoeSizeMenu->GetWidth()) * GridSquareSize.width);
+									p->SetWidth(static_cast<int>(pAoeSizeMenu->GetWidth()));
 									p->BuildShape();
 									p->SetStartPoint(D2D1::Point2F((sprite->GetDestSprite().right + sprite->GetDestSprite().left) * 0.5f, (sprite->GetDestSprite().bottom + sprite->GetDestSprite().top) * 0.5f));
 									sprite->AddAoeSpriteChild(p);
@@ -506,10 +506,10 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 					D2D1_COLOR_F fillcolor = pSideMenu->GetSelectedAoeColor();
 					fillcolor.a = pAoeSizeMenu->GetOpacity();
 					AoeSpritePointer* tSprite = new AoeSpritePointer(gfx, pSideMenu->GetSelectedAoeType(), D2D1::ColorF(0.0f, 0.0f, 0.0f), fillcolor, nullptr, Location(), &GridSquareSize);
-					tSprite->SetLength(static_cast<int>(pAoeSizeMenu->GetLength()) * GridSquareSize.width);
-					tSprite->SetRadius(static_cast<int>(pAoeSizeMenu->GetRadius()) * GridSquareSize.width);
+					tSprite->SetLength(static_cast<int>(pAoeSizeMenu->GetLength()));
+					tSprite->SetRadius(static_cast<int>(pAoeSizeMenu->GetRadius()));
 					tSprite->SetThickness(3.0f);
-					tSprite->SetWidth(static_cast<int>(pAoeSizeMenu->GetWidth()) * GridSquareSize.width);
+					tSprite->SetWidth(static_cast<int>(pAoeSizeMenu->GetWidth()));
 					tSprite->BuildShape();
 					tSprite->SetStartPoint(bLockToGrid ? mPreviewPoint : TranslatedCoordinates);
 					pSelectedLayer->push_back(tSprite);
@@ -1029,6 +1029,26 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 						child->UpdateRotationMatrix();
 						break;
 					}
+				}
+				break;
+			case VK_F4:
+				GridSquareSize.width--;
+				GridSquareSize.height--;
+				{
+					for (auto& room : vSprites)
+						for (auto& layer : room)
+							for (auto& sprite : layer)
+								if (sprite->IsAoe()) static_cast<AoeSpritePointer*>(sprite)->BuildShape();
+				}
+				break;
+			case VK_F5:
+				GridSquareSize.width++;
+				GridSquareSize.height++;
+				{
+					for (auto& room : vSprites)
+						for (auto& layer : room)
+							for (auto& sprite : layer)
+								if (sprite->IsAoe()) static_cast<AoeSpritePointer*>(sprite)->BuildShape();
 				}
 				break;
 			case 'F':
