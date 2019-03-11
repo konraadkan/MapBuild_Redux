@@ -138,6 +138,16 @@ const bool Checkbox::Interact()
 					}
 					static_cast<SideMenu*>(pParent->pParent->pParent)->pLayersMenu.at(i)->SetUnhidden();
 					static_cast<SideMenu*>(pParent->pParent->pParent)->RealignAddLayerButton(i);
+
+					for (size_t j = 0; j < static_cast<SideMenu*>(pParent->pParent->pParent)->pLayersMenu.at(i)->pChild.size(); j++)
+					{
+						if (static_cast<SideMenu*>(pParent->pParent->pParent)->pLayersMenu.at(i)->pChild.at(j)->pChild.back()->IsSelected())
+						{
+							pParent->pParent->pParent->SetLayer(j);
+							break;
+						}
+					}
+
 					break;
 				}
 			}
