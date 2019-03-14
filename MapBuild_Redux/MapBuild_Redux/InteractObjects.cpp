@@ -140,10 +140,6 @@ const bool InteractObjects::Interact(const D2D1_POINT_2F p)
 	{
 		if (child->PointInRect(p))
 		{
-			if (!_wcsicmp(child->GetLabel(), L"Toggle Initiative"))
-			{
-				if (child->pParent) child->pParent->ChangeMode();
-			}
 			if (!child->Interact(p)) return false;
 		}
 	}
@@ -156,10 +152,6 @@ const bool InteractObjects::Interact()
 	{
 		if (child->PointInRect())
 		{
-			if (!_wcsicmp(child->GetLabel(), L"Toggle Initiative"))
-			{
-				if (child->pParent) child->pParent->ChangeMode();
-			}
 			if (!child->Interact()) return false;
 		}
 	}
@@ -172,10 +164,7 @@ const bool InteractObjects::AlternateInteract(const D2D1_POINT_2F p)
 	{
 		if (child->PointInRect(p))
 		{
-			if (!_wcsicmp(child->GetLabel(), L"Toggle Initiative"))
-			{
-				if (child->pParent) child->pParent->ChangeMode();
-			}
+			UpdateLog(L"AlternateInteract(p)", L"InteractObjects.cpp", static_cast<uint32_t>(__LINE__));
 			if (!child->Interact(p)) return false;
 		}
 	}
@@ -188,10 +177,7 @@ const bool InteractObjects::AlternateInteract()
 	{
 		if (child->PointInRect())
 		{
-			if (!_wcsicmp(child->GetLabel(), L"Toggle Initiative"))
-			{
-				if (child->pParent) child->pParent->ChangeMode();
-			}
+			UpdateLog(L"AlternateInteract()", L"InteractObjects.cpp", static_cast<uint32_t>(__LINE__));
 			if (!child->Interact()) return false;
 		}
 	}

@@ -7,6 +7,7 @@
 #include "HPTimer.h"
 #include "CreatureSize.h"
 #include "SafeReleaseMemory.h"
+#include "Logging.h"
 
 class Pieces : public StringMod
 {
@@ -197,7 +198,7 @@ struct Location
 	unsigned long uRoom = 0;
 };
 
-class SpritePointer : public SafeReleaseMemory
+class SpritePointer : public SafeReleaseMemory, public Logging
 {
 protected:
 	const float PI = 3.141592658f;	

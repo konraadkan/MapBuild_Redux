@@ -556,15 +556,16 @@ void SpritePointer::DrawSprite(Graphics* const gfx, bool back)
 
 	if (wTag[0] != L'\0')
 	{
-		if (mSize < CreatureSize::Medium)
+		wTag[1] = L'\0';
+		if (back)
 		{
-			if (back) gfx->OutputTextSmall(gfx->GetCompatibleTarget(), wTag, GetDestTag());
-			else gfx->OutputTextSmall(gfx->GetRenderTarget(), wTag, GetDestTag());
+			gfx->FillRect(gfx->GetCompatibleTarget(), GetDestTag(), D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.65f));
+			gfx->OutputTextSmall(gfx->GetCompatibleTarget(), wTag, GetDestTag(), D2D1::ColorF(0,0,0), DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 		}
 		else
 		{
-			if (back) gfx->OutputText(gfx->GetCompatibleTarget(), wTag, GetDestTag());
-			else gfx->OutputText(gfx->GetRenderTarget(), wTag, GetDestTag());
+			gfx->FillRect(gfx->GetRenderTarget(), GetDestTag(), D2D1::ColorF(1.0f, 0.0f, 1.0f, 0.65f));
+			gfx->OutputTextSmall(gfx->GetRenderTarget(), wTag, GetDestTag(), D2D1::ColorF(0, 0, 0), DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 		}
 	}
 
@@ -617,6 +618,7 @@ void SpritePointer::BuildResizedDestSprite()
 
 void SpritePointer::SetDestPortrait(const D2D1_RECT_F d)
 {
+	UpdateLog(L"SpritePointer::SetDestPortrait(p)", L"Pieces.cpp", static_cast<uint32_t>(__LINE__));
 	if (!IsKeepAspectPortrait())
 	{
 		mLocation.mDestPortrait = d; 
@@ -629,9 +631,10 @@ void SpritePointer::SetDestPortrait(const D2D1_RECT_F d)
 
 void SpritePointer::SetDestSprite(const D2D1_RECT_F d, bool ApplyRebuild)
 {
+	UpdateLog(L"SpritePointer::SetDestSprite(p)", L"Pieces.cpp", static_cast<uint32_t>(__LINE__));
 	if (!IsKeepAspectSprite())
 	{
-		mLocation.mDestSprite = d;
+		mLocation.mDestSprite = D2D1::RectF(d.left - 1.0f, d.top - 1.0f, d.right + 1.0f, d.bottom + 1.0f);
 		if (ApplyRebuild) BuildResizedDestSprite();
 	}
 	else
@@ -727,6 +730,7 @@ const D2D1_RECT_F SpritePointer::RectToAspectPortrait(const D2D1_RECT_F d)
 
 void SpritePointer::MoveDestSprite(const D2D1_SIZE_F changes)
 {
+	UpdateLog(L"SpritePointer::MoveDestSprite(p)", L"Pieces.cpp", static_cast<uint32_t>(__LINE__));
 	mLocation.mDestSprite.left += changes.width;
 	mLocation.mDestSprite.right += changes.width;
 	mLocation.mDestSprite.top += changes.height;
@@ -736,6 +740,7 @@ void SpritePointer::MoveDestSprite(const D2D1_SIZE_F changes)
 
 void SpritePointer::MovePortraitSprite(const D2D1_SIZE_F changes)
 {
+	UpdateLog(L"SpritePointer::MovePortraitSprite(p)", L"Pieces.cpp", static_cast<uint32_t>(__LINE__));
 	mLocation.mDestPortrait.left += changes.width;
 	mLocation.mDestPortrait.right += changes.width;
 	mLocation.mDestPortrait.top += changes.height;
@@ -744,6 +749,7 @@ void SpritePointer::MovePortraitSprite(const D2D1_SIZE_F changes)
 
 void SpritePointer::MoveResizedDestSprite(const D2D1_SIZE_F changes)
 {
+	UpdateLog(L"SpritePointer::MoveResizedDestSprte(p)", L"Pieces.cpp", static_cast<uint32_t>(__LINE__));
 	mLocation.mResizedDestSprite.left += changes.width;
 	mLocation.mResizedDestSprite.right += changes.width;
 	mLocation.mResizedDestSprite.top += changes.height;
@@ -770,6 +776,7 @@ void SpritePointer::SetDestResizedSpritePosition(const D2D1_POINT_2F point)
 
 void SpritePointer::SetPortraitPosition(const D2D1_POINT_2F point)
 {
+	UpdateLog(L"SpritePointer::SetPortraitPosition(p)", L"Pieces.cpp", static_cast<uint32_t>(__LINE__));
 	mLocation.mDestPortrait.left = point.x;
 	mLocation.mDestPortrait.top = point.y;
 	mLocation.mDestPortrait.right = mLocation.mDestPortrait.left + GetPortraitFrameSize().width;
@@ -778,6 +785,7 @@ void SpritePointer::SetPortraitPosition(const D2D1_POINT_2F point)
 
 void SpritePointer::AddSpriteChild(PiecesW* const piece)
 {
+	UpdateLog(L"SpritePointer::AddSpriteChild(p)", L"Pieces.cpp", static_cast<uint32_t>(__LINE__));
 	vSpriteChild.push_back(new SpritePointer(gfx, piece, mLocation, pGridSquareSize, bKeepAspectRatioSprite, bKeepAspectRatioPortrait));
 	vSpriteChild.back()->SetCreatureSize(GetCreatureSize());
 	vSpriteChild.back()->SetOpacity(0.60f);
@@ -786,16 +794,19 @@ void SpritePointer::AddSpriteChild(PiecesW* const piece)
 void SpritePointer::AddAoeSpriteChild(SpritePointer* const p)
 {
 	if (!p) return;
+	UpdateLog(L"SpritePointer::AddAoeSpriteChild(p)", L"Pieces.cpp", static_cast<uint32_t>(__LINE__));
 	vSpriteChild.push_back(p);
 }
 
 void SpritePointer::AddPortraitChild(PiecesW* const piece)
 {
+	UpdateLog(L"SpritePointer::AddPortraitChild(p)", L"Pieces.cpp", static_cast<uint32_t>(__LINE__));
 	vPortraitChild.push_back(new SpritePointer(gfx, piece, mLocation, pGridSquareSize, bKeepAspectRatioSprite, bKeepAspectRatioPortrait));
 }
 
 void SpritePointer::RemoveChildren()
 {
+	UpdateLog(L"RemoveChildren()", L"Pieces.cpp", static_cast<int32_t>(__LINE__));
 	for (auto& sprite : vSpriteChild)
 	{
 		SafeDelete(&sprite);
@@ -810,6 +821,7 @@ void SpritePointer::RemoveChildren()
 
 void SpritePointer::AddTag(wchar_t w)
 {
+	UpdateLog(L"SpritePointer::AddTag()", L"Pieces.cpp", static_cast<int32_t>(__LINE__));
 	if (wTag[0] == w) wTag[0] = L'\0';
 	else wTag[0] = w;
 }
@@ -938,11 +950,19 @@ const D2D1_RECT_F SpritePointer::CalcDestTag()
 		rect.right = rect.left + size.width * 0.25f;
 		rect.bottom = rect.top + size.height * 0.25f;
 	}
+	float diff = rect.right - rect.left;
+	if (diff < pGridSquareSize->width * 0.25f)
+	{
+		diff = (pGridSquareSize->width * 0.25f - diff) * 0.5f;
+		rect.left -= diff;
+		rect.right += diff;
+	}
 	return rect;
 }
 
 void SpritePointer::IncreaseCreatureSize()
 {
+	UpdateLog(L"SpritePointer::IncreaseCreatureSize()", L"Pieces.cpp", static_cast<uint32_t>(__LINE__));
 	mSize = static_cast<CreatureSize>(static_cast<int>(mSize) + 1);
 	if (mSize > CreatureSize::Colossal)
 	{
@@ -953,6 +973,7 @@ void SpritePointer::IncreaseCreatureSize()
 
 void SpritePointer::ResizeSprite()
 {
+	UpdateLog(L"SpritePointer::ResizeSprite()", L"Pieces.cpp", static_cast<uint32_t>(__LINE__));
 	D2D1_RECT_F r = D2D1::RectF();
 	float sizemod = 1.0f;
 	if (mSize != CreatureSize::Medium)
@@ -1105,6 +1126,7 @@ const char* AoeSpritePointer::GetSaveInformation()
 
 const char* AoeSpritePointer::CreateSaveInformation()
 {
+	UpdateLog(L"AoeSpritePointer::CreateSaveInformation()", L"Pieces.cpp", static_cast<uint32_t>(__LINE__));
 	uint32_t uBufferSize = CalcSaveSize();
 	char* Buffer = new char[uBufferSize];
 	size_t pos = 0;
@@ -1177,6 +1199,7 @@ const char* AoeSpritePointer::CreateSaveInformation()
 
 const bool AoeSpritePointer::LoadSaveBuffer(const char* Buffer)
 {
+	UpdateLog(L"AoeSpritePointer::LoadSaveBuffer()", L"Pieces.cpp", static_cast<uint32_t>(__LINE__));
 	if (!Buffer) return false;
 	uint32_t uBufferSize = 0;
 	size_t pos = 0;

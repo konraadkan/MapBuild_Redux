@@ -9,8 +9,9 @@
 #include <vector>
 #include <atomic>
 #include "TurnCounter.h"
+#include "Logging.h"
 
-class BaseLevel : public Level
+class BaseLevel : public Level, Logging
 {
 private:
 	template<typename T> void SafeDelete(T** ppT)
@@ -30,7 +31,7 @@ private:
 		}
 	}
 private:
-	const float fVERSION_NUMBER = 0.23f;
+	const float fVERSION_NUMBER = 0.26f;
 	std::vector<InteractObjects*> IObjects;
 	D2D1_POINT_2F Center = D2D1::Point2F();
 	D2D1_SIZE_F GridSquareSize = D2D1::SizeF(64.0f, 64.0f);
@@ -147,4 +148,6 @@ public:
 	std::unique_ptr<Wall> wptest = nullptr;
 	SpritePointer* pSelectedObject = nullptr;
 	TurnCounter* pTurnCounter = nullptr;
+
+	FILE* pLogFile = nullptr;
 };

@@ -63,15 +63,7 @@ const bool SideMenu::AlternateInteract()
 	{
 		if (child->PointInRect())
 		{
-			if (!_wcsicmp(child->GetLabel(), L"ShowHide"))
-			{
-				if (child->PointInSector(Sector::West)) bHide ? SetUnhidden() : SetHidden();
-			}
-			else if (!_wcsicmp(child->GetLabel(), L"Toggle Initiative"))
-			{
-				ChangeMode();
-			}
-			else if (!child->Interact()) return false;
+			if (!child->AlternateInteract()) return false;
 		}
 	}
 	for (size_t i = 0; i < pMenuSections.size(); i++)
@@ -91,15 +83,7 @@ const bool SideMenu::AlternateInteract(const D2D1_POINT_2F p)
 	{
 		if (child->PointInRect(p))
 		{
-			if (!_wcsicmp(child->GetLabel(), L"ShowHide"))
-			{
-				if (child->PointInSector(Sector::West)) bHide ? SetUnhidden() : SetHidden();
-			}
-			else if (!_wcsicmp(child->GetLabel(), L"Toggle Initiative"))
-			{
-				ChangeMode();
-			}
-			else if (!child->Interact()) return false;
+			if (!child->AlternateInteract()) return false;
 		}
 	}
 	for (size_t i = 0; i < pMenuSections.size(); i++)
@@ -123,56 +107,26 @@ const bool SideMenu::Interact()
 			{
 				if (child->PointInSector(Sector::West)) bHide ? SetUnhidden() : SetHidden();
 			}
-			else if (!_wcsicmp(child->GetLabel(), L"Toggle Initiative"))
-			{
-				ChangeMode();
-			}
 			else if (!child->Interact()) return false;
 		}
 	}
-	for (size_t i = 0; i < pMenuSections.size(); i++)
+	if (bBuildMode)
 	{
-		if (pMenuSections.at(i)->PointInRect())
+		for (size_t i = 0; i < pMenuSections.size(); i++)
 		{
-			if (!_wcsicmp(pMenuSections.at(i)->GetLabel(), L"Options"))
+			if (pMenuSections.at(i)->PointInRect())
 			{
-				for (auto& child : pMenuSections.at(i)->pChild)
-				{
-					if (child->PointInRect())
-					{
-						if (!_wcsicmp(child->GetLabel(), L"Lock To Grid"))
-						{
-							if (pBaseLevel) static_cast<BaseLevel*>(pBaseLevel)->ToggleLockToGrid();
-						}
-						else if (!_wcsicmp(child->GetLabel(), L"Toggle Keep Aspect"))
-						{
-							if (pBaseLevel) static_cast<BaseLevel*>(pBaseLevel)->ToggleKeepAspect();
-						}
-						else if (!_wcsicmp(child->GetLabel(), L"Grid on Top"))
-						{
-							if (pBaseLevel) static_cast<BaseLevel*>(pBaseLevel)->ToggleGridOnTop();
-						}
-						else if (!_wcsicmp(child->GetLabel(), L"Toggle Initiative"))
-						{
-							ChangeMode();
-						}
-						else if (!_wcsicmp(child->GetLabel(), L"Toggle PC Colors"))
-						{
-							ToggleColors();
-						}
-					}
-				}
-			}
-			if (bBuildMode) { if (!pMenuSections.at(i)->Interact()) return false; }
-			else
-			{
-				if (!pOptionsMenu->Interact()) return false;
-				if (!pRoomsMenu->Interact()) return false;
-				if (!pLayersMenu.at(GetSelectedRoomNumber())->Interact()) return false;
-				if (!pAddRemoveRooms->Interact()) return false;
-				if (!pAddRemoveLayers->Interact()) return false;
+				if (bBuildMode) { if (!pMenuSections.at(i)->Interact()) return false; }
 			}
 		}
+	}
+	else
+	{
+		if (!pOptionsMenu->Interact()) return false;
+		if (!pRoomsMenu->Interact()) return false;
+		if (!pLayersMenu.at(GetSelectedRoomNumber())->Interact()) return false;
+		if (!pAddRemoveRooms->Interact()) return false;
+		if (!pAddRemoveLayers->Interact()) return false;
 	}
 	return true;
 }
@@ -229,40 +183,42 @@ void SideMenu::UpdateNextButtonRect(MenuItemType type)
 	}
 }
 
-SideMenu::SideMenu(bool* const showcounter, TurnCounter** const TurnCounter, const HWND hwnd, bool* const Exit, const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, std::vector< std::vector<SpritePointer*>>** const ppRoom, std::vector<SpritePointer*>** const ppLayer,
+SideMenu::SideMenu(bool* const showcounter, TurnCounter** const TurnCounter, const HWND hwnd, bool* const Exit, bool* const pLockToGrid, bool* const pGridOnTop, bool* const pKeepAspect, const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p, std::vector< std::vector<SpritePointer*>>** const ppRoom, std::vector<SpritePointer*>** const ppLayer,
 	std::vector< std::vector< std::vector<SpritePointer*>>>** const ppRL, std::vector<bool>* const VisibleRooms, std::vector< std::vector<bool>>* const VisibleLayers, SpritePointer** const ppsprite, std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>>** const ppW,
 	std::vector< std::vector<std::unique_ptr<Wall>>>** const ppSWR, std::vector<std::unique_ptr<Wall>>** const ppSWL) : pShowCounter(showcounter), ppTurnCounter(TurnCounter), hWnd(hwnd), ppSelectedWallRoom(ppSWR), ppSelectedWallLayer(ppSWL), pSelectedRoom(ppRoom), pSelectWallRoomsandLayers(ppW), pSelectedLayer(ppLayer), vSelectRoomsandLayers(ppRL), ppSelectedSprite(ppsprite), Buttons(graphics, Transform, area, p), pExit(Exit)
 {
+	SetLabel(L"SideMenu");
 	pVisibleLayers = VisibleLayers;
 	pVisibleRooms = VisibleRooms;
 
-	//Options Section
-	CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, targetDest.top + 5.0f));
-	FillRect(CategoryStartPoints.back(), OptionMenuSize);
-	//Main Category
-	CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + SeperationDistance));
-	FillRect(CategoryStartPoints.back(), MainMenuSize);
-	//Sub Category
-	CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + SeperationDistance));
-	FillRect(CategoryStartPoints.back(), SubMenuSize);
-	//Sizes
-	CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + SeperationDistance));
-	FillRect(CategoryStartPoints.back(), SizeMenuSize);
-	//Items
-	CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + SeperationDistance));
-	FillRect(CategoryStartPoints.back(), ItemMenuSize);
-	//Rooms
-	CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + SeperationDistance));
-	FillRect(CategoryStartPoints.back(), RoomMenuSize);
-	//Rooms Check Boxes
-	CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + 3.0f));
-	FillRect(CategoryStartPoints.back(), RoomCheckBoxMenuSize);
-	//Layers
-	CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + SeperationDistance));
-	FillRect(CategoryStartPoints.back(), LayerMenuSize);
-	//Layer Check Box
-	CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + 3.0f));
-	FillRect(CategoryStartPoints.back(), LayerCheckBoxMenuSize);
+	//don't think i ended up using this; leaving it commented out for now so it can be put back in easily if i am mistaken
+	////Options Section
+	//CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, targetDest.top + 5.0f));
+	//FillRect(CategoryStartPoints.back(), OptionMenuSize);
+	////Main Category
+	//CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + SeperationDistance));
+	//FillRect(CategoryStartPoints.back(), MainMenuSize);
+	////Sub Category
+	//CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + SeperationDistance));
+	//FillRect(CategoryStartPoints.back(), SubMenuSize);
+	////Sizes
+	//CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + SeperationDistance));
+	//FillRect(CategoryStartPoints.back(), SizeMenuSize);
+	////Items
+	//CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + SeperationDistance));
+	//FillRect(CategoryStartPoints.back(), ItemMenuSize);
+	////Rooms
+	//CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + SeperationDistance));
+	//FillRect(CategoryStartPoints.back(), RoomMenuSize);
+	////Rooms Check Boxes
+	//CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + 3.0f));
+	//FillRect(CategoryStartPoints.back(), RoomCheckBoxMenuSize);
+	////Layers
+	//CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + SeperationDistance));
+	//FillRect(CategoryStartPoints.back(), LayerMenuSize);
+	////Layer Check Box
+	//CategoryStartPoints.push_back(D2D1::RectF(targetDest.left + 0.2f, CategoryStartPoints.back().bottom + 3.0f));
+	//FillRect(CategoryStartPoints.back(), LayerCheckBoxMenuSize);
 
 	SetDest(targetDest);
 	SetColor(D2D1::ColorF(0.75f, 0.80f, 0.82f));
@@ -289,13 +245,13 @@ SideMenu::SideMenu(bool* const showcounter, TurnCounter** const TurnCounter, con
 	pMenuSections.back()->AddChild(new NewButtons(&bNew, gfx, Transform, area, pMouseCoordinates, L"New", D2D1::RectF()), OptionMenuSize);
 	pMenuSections.back()->AddChild(new SaveButtons(hWnd, gfx, Transform, area, pMouseCoordinates, L"Save", D2D1::RectF()), OptionMenuSize);
 	pMenuSections.back()->AddChild(new LoadButtons(hWnd, gfx, Transform, area, pMouseCoordinates, L"Load", D2D1::RectF()), OptionMenuSize);
-	pMenuSections.back()->AddChild(new ExitButtons(pExit, gfx, Transform, area, pMouseCoordinates, L"Exit", D2D1::RectF()), OptionMenuSize);
-	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Lock to Grid", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true, true), OptionMenuSize);
-	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Grid on Top", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
-	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle PC Colors", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
+	//pMenuSections.back()->AddChild(new ExitButtons(pExit, gfx, Transform, area, pMouseCoordinates, L"Exit", D2D1::RectF()), OptionMenuSize);
+	pMenuSections.back()->AddChild(new LockToGridButton(pLockToGrid, gfx, Transform, area, pMouseCoordinates, L"Lock to Grid", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true, true), OptionMenuSize);
+	pMenuSections.back()->AddChild(new LockToGridButton(pGridOnTop, gfx, Transform, area, pMouseCoordinates, L"Grid on Top", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
+	pMenuSections.back()->AddChild(new LockToGridButton(&bShowPieceColors, gfx, Transform, area, pMouseCoordinates, L"Toggle PC Colors", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
 	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Add Custom Colors", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), false), OptionMenuSize);
-	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Initiative", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), false), OptionMenuSize);
-	pMenuSections.back()->AddChild(new Buttons(gfx, Transform, area, pMouseCoordinates, L"Toggle Keep Aspect", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true, true), OptionMenuSize);
+	pMenuSections.back()->AddChild(new LockToGridButton(&bBuildMode, gfx, Transform, area, pMouseCoordinates, L"Toggle Initiative", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), false), OptionMenuSize);
+	pMenuSections.back()->AddChild(new LockToGridButton(pKeepAspect, gfx, Transform, area, pMouseCoordinates, L"Toggle Keep Aspect", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true, true), OptionMenuSize);
 	pMenuSections.back()->AddChild(new CounterButton(ppTurnCounter, &pFirstPieceW, &pShowCounter, gfx, Transform, area, pMouseCoordinates, L"Turn Counter", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true), OptionMenuSize);
 	pMenuSections.back()->AddChild(new AttachObjectButtons(&bAttachObject, gfx, Transform, area, pMouseCoordinates, L"Attach Object", D2D1::RectF(), D2D1::ColorF(0.0f, 0.0f, 0.0f), static_cast<InteractObjects*>(this), true, false), OptionMenuSize);
 	pMenuSections.back()->SetBorderStyle(BorderStyle::Solid);

@@ -147,6 +147,7 @@
     <ClInclude Include="InteractObjects.h" />
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="Level.h" />
+    <ClInclude Include="Logging.h" />
     <ClInclude Include="MenuSection.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Pieces.h" />

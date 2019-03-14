@@ -5,19 +5,14 @@
 const bool Buttons::Interact(const D2D1_POINT_2F p)
 {
 	if (IsHidden()) return true;
+	UpdateLog(L"Buttons::Interact(p)", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	for (auto& child : pChild)
 	{
 		if (child)
 		{
 			if (child->PointInRect(p))
 			{
-				if (!_wcsicmp(child->GetLabel(), L"Toggle Initiative"))
-				{
-					if (child->pParent) child->pParent->ChangeMode();
-				}
-				else
-					if (!child->Interact(p)) return false;
-				return true;
+				return (!child->Interact(p));
 			}
 		}
 	}
@@ -28,6 +23,7 @@ const bool Buttons::Interact(const D2D1_POINT_2F p)
 const bool Buttons::AlternateInteract(const D2D1_POINT_2F p)
 {
 	if (IsHidden()) return true;
+	UpdateLog(L"Buttons::AlternateInteract(p)", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	for (auto& child : pChild)
 	{
 		if (child)
@@ -46,6 +42,7 @@ const bool Buttons::Interact()
 {
 	if (IsHidden()) return true;
 	if (!Interact(*pMouseCoordinates)) return false;
+	UpdateLog(L"Buttons::Interact()", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	return true;
 }
 
@@ -53,13 +50,15 @@ const bool CounterButton::Interact()
 {
 	if (IsHidden()) return true;
 	if (!Interact(*pMouseCoordinates)) return false;
+	UpdateLog(L"CounterButton::Interact()", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	return true;
 }
 
 const bool CounterButton::Interact(const D2D1_POINT_2F p)
 {
 	if (IsHidden()) return true;
-	
+	UpdateLog(L"CounterButton::Interact(p)", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
+
 	if (!(*ppTurnCounter)->IsHidden())
 	{
 		if ((*ppTurnCounter)->GetTurnNumber() > 0)
@@ -89,6 +88,7 @@ const bool Buttons::AlternateInteract()
 {
 	if (IsHidden()) return true;
 	if (!AlternateInteract(*pMouseCoordinates)) return false;
+	UpdateLog(L"Buttons::AlternateInteract()", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	return true;
 }
 
@@ -125,6 +125,7 @@ const bool Checkbox::Interact()
 
 	if (bRoom)
 	{
+		UpdateLog(L"Buttons::Interact()[bRoom=true]", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 		for (uint32_t i = 0; i < pParent->pParent->pChild.size(); i++)
 		{
 			if (pParent) if (pParent->pParent) if (pParent->pParent->pChild.at(i)) if (pParent->pParent->pChild.at(i)->pChild.back())
@@ -155,6 +156,7 @@ const bool Checkbox::Interact()
 	}
 	else
 	{//if its not a room its a layer
+		UpdateLog(L"Buttons::Interact()[bRoom=false]", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 		for (uint32_t i = 0; i < pParent->pParent->pChild.size(); i++)
 		{
 			if (pParent) if (pParent->pParent) if (pParent->pParent->pChild.at(i)) if (pParent->pParent->pChild.at(i)->pChild.back())
@@ -175,6 +177,7 @@ const bool RoomLayerBox::Interact(const D2D1_POINT_2F p)
 {
 	if (IsHidden()) return true;
 	//toggle associated room or layer's visiblity to on / off
+	
 	for (auto& child : pChild)
 	{
 		if (child)
@@ -189,11 +192,13 @@ const bool RoomLayerBox::Interact(const D2D1_POINT_2F p)
 	bSelected ^= true;
 	if (bRoom)
 	{
+		UpdateLog(L"RoomLayerBox::Interact(p) [bRoom=true]", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 		if (uRoomNumber < pvVisibleRoom->size())
 			pvVisibleRoom->at(uRoomNumber) = bSelected;
 	}
 	else
 	{
+		UpdateLog(L"RoomLayerBox::Interact(p) [bRoom=false]", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 		if (pvVisibleLayer) if (uRoomNumber < pvVisibleLayer->size()) if (uLayerNumber < pvVisibleLayer->at(uRoomNumber).size())
 			pvVisibleLayer->at(uRoomNumber).at(uLayerNumber) = bSelected;
 	}
@@ -204,6 +209,7 @@ const bool RoomLayerBox::Interact()
 {
 	if (IsHidden()) return true;
 	if (!Interact(*pMouseCoordinates)) return false;
+	UpdateLog(L"RoomLayerBox::Interact()", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	return true;
 }
 
@@ -211,6 +217,7 @@ const bool AddItem::Interact(const D2D1_POINT_2F p)
 {
 	if (bRoom)
 	{
+		UpdateLog(L"AddItem::Interact(p) [bRoom=true]", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 		SideMenu* parent = (static_cast<SideMenu*>(pParent));
 		uint32_t roomnum = parent->GetSelectedRoomNumber();
 		uint32_t layernum = parent->GetSelectedLayerNumber(roomnum);
@@ -238,6 +245,7 @@ const bool AddItem::Interact(const D2D1_POINT_2F p)
 	}
 	else
 	{
+		UpdateLog(L"AddItem::Interact(p) [bRoom=false]", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 		//its a layer		
 		SideMenu* parent = static_cast<SideMenu*>(pParent);
 		if (!parent) return true;
@@ -265,7 +273,7 @@ const bool TypeButtons::Interact(const D2D1_POINT_2F p)
 {
 	if (IsHidden()) return true;
 	if (!pParent) return true;
-
+	UpdateLog(L"TypeButtons::Interact(p)", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	for (auto& child : pChild)
 	{
 		if (child)
@@ -303,7 +311,7 @@ const bool SubsectionButtons::Interact(const D2D1_POINT_2F p)
 {
 	if (IsHidden()) return true;
 	if (!pParent) return true;
-
+	UpdateLog(L"SubsectionButtons::Interact(p)", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	for (auto& child : pChild)
 	{
 		if (child)
@@ -340,7 +348,7 @@ const bool WallSubsectionButtons::Interact(const D2D1_POINT_2F p)
 {
 	if (IsHidden()) return true;
 	if (!pParent) return true;
-
+	UpdateLog(L"WallSubsectionButtons::Interact(p)", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	for (auto& child : pChild)
 	{
 		if (child)
@@ -378,7 +386,7 @@ const bool AoeSubsectionButtons::Interact(const D2D1_POINT_2F p)
 {
 	if (IsHidden()) return true;
 	if (!pParent) return true;
-
+	UpdateLog(L"AoeSubsectionButtons::Interact(p)", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	for (auto& child : pChild)
 	{
 		if (child)
@@ -416,7 +424,7 @@ const bool SpriteItemButtons::Interact(const D2D1_POINT_2F p)
 {
 	if (IsHidden()) return true;
 	if (!pParent) return true;
-
+	UpdateLog(L"SpriteItemButtons::Interact(p)", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	for (auto& child : pChild)
 	{
 		if (child)
@@ -454,7 +462,7 @@ const bool SpriteItemButtons::AlternateInteract(const D2D1_POINT_2F p)
 {
 	if (IsHidden()) return true;
 	if (!pParent) return true;
-
+	UpdateLog(L"SpriteItemButtons::AlternateInteract(p)", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	for (auto& child : pChild)
 	{
 		if (child)
@@ -477,6 +485,7 @@ const bool SpriteItemButtons::AlternateInteract()
 {
 	if (IsHidden()) return true;
 	if (!AlternateInteract(*pMouseCoordinates)) return false;
+	UpdateLog(L"SpriteItemButtons::AlternateInteract()", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	return true;
 }
 
@@ -522,7 +531,7 @@ const bool SizeMenuButtons::Interact()
 {
 	if (IsHidden()) return true;
 	if (!pSizeMenu) return true;
-
+	UpdateLog(L"SizeMenuButtons::Interact()", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	for (auto& child : pChild)
 	{
 		if (child)
@@ -560,7 +569,7 @@ void ColorButtons::Draw()
 const bool ColorButtons::Interact()
 {
 	if (IsHidden()) return true;
-	
+	UpdateLog(L"ColorButtons::Interact()", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	SafeDelete(&(*ppSelectedSprite));
 	if (bEnableSelection)
 	{
@@ -591,6 +600,7 @@ void InitiativeListButtons::Draw()
 const bool InitiativeListButtons::Interact()
 {
 	if (IsHidden()) return true;
+	UpdateLog(L"InitiativeListButtons::Interact()", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	bool wasselected = bSelected;
 
 	if (bEnableSelection)
@@ -610,7 +620,7 @@ const bool InitiativeListButtons::Interact()
 const bool InitiativeListButtons::AlternateInteract()
 {
 	if (IsHidden()) return true;
-
+	UpdateLog(L"InitiativeListButtons::AlternateInteract()", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	if (bEnableSelection)
 	{
 		for (auto& child : pParent->pChild)
@@ -631,7 +641,7 @@ void NextTurnButtons::Draw()
 const bool NextTurnButtons::Interact()
 {
 	if (IsHidden()) return true;
-
+	UpdateLog(L"NextTurnButtons::Interact()", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	if (PointInRect())
 		if (pSideMenu) static_cast<SideMenu*>(pSideMenu)->NextTurn();
 	return false;
@@ -651,7 +661,7 @@ void PreviousTurnButtons::Draw()
 const bool PreviousTurnButtons::Interact()
 {
 	if (IsHidden()) return true;
-
+	UpdateLog(L"PreviousTurnButtons::Interact()", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	if (PointInRect())
 	{
 		if (pSideMenu) static_cast<SideMenu*>(pSideMenu)->PreviousTurn();
@@ -664,7 +674,7 @@ const bool AttachObjectButtons::Interact()
 {
 	if (IsHidden()) return true;
 	if (!pAttachObject) return true;
-
+	UpdateLog(L"AttachObjectButtons::Interact()", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	if (PointInRect())
 	{
 		*pAttachObject ^= true;
@@ -736,7 +746,7 @@ void NextTurnButtons::BuildGeometry()
 const bool ExitButtons::Interact()
 {
 	if (IsHidden()) return true;
-
+	UpdateLog(L"ExitButtons::Interact()", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	if (PointInRect())
 	{
 		if (pExit) *pExit = true;
@@ -748,7 +758,7 @@ const bool ExitButtons::Interact()
 const bool NewButtons::Interact()
 {
 	if (IsHidden()) return true;
-
+	UpdateLog(L"NewButtons::Interact()", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	if (PointInRect())
 	{
 		if (pNew) *pNew = true;
@@ -760,7 +770,7 @@ const bool NewButtons::Interact()
 const bool SaveButtons::Interact()
 {
 	if (IsHidden()) return true;
-
+	UpdateLog(L"SaveButtons::Interact()", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	if (PointInRect())
 	{
 		WPARAM wParam = ID_SAVE_CMD;
@@ -773,12 +783,48 @@ const bool SaveButtons::Interact()
 const bool LoadButtons::Interact()
 {
 	if (IsHidden()) return true;
-
+	UpdateLog(L"LoadButtons::Interact()", L"Buttons.cpp", static_cast<int32_t>(__LINE__));
 	if (PointInRect())
 	{
 		WPARAM wParam = ID_OPEN_CMD;
 		LPARAM lParam = {};
 		SendMessage(hWnd, WM_COMMAND, wParam, lParam);
 	}
+	return true;
+}
+
+const bool LockToGridButton::Interact()
+{
+	if (IsHidden()) return true;
+	if (!Interact(*pMouseCoordinates)) return false;
+	return true;
+}
+
+const bool LockToGridButton::Interact(const D2D1_POINT_2F p)
+{
+	if (IsHidden()) return true;
+	UpdateLog(L"LockToGridButton::Interact()", L"Buttons.cpp", static_cast<uint32_t>(__LINE__));
+	for (auto& child : pChild)
+	{
+		if (child)
+		{
+			if (child->PointInRect(p))
+			{
+				return child->Interact(p);				
+			}
+		}
+	}
+	
+	if (*pLockToGrid)
+	{
+		*pLockToGrid = false;
+		bSelected = false;
+	}
+	else
+	{
+		*pLockToGrid = true;
+		bSelected = true;
+	}
+
 	return true;
 }

@@ -112,7 +112,7 @@ private:
 	bool bNew = false;
 	bool* const pExit;	
 public:
-	SideMenu(bool* const showcounter, TurnCounter** const TurnCounter, const HWND hwnd, bool* const Exit, const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p,
+	SideMenu(bool* const showcounter, TurnCounter** const TurnCounter, const HWND hwnd, bool* const Exit, bool* const pLockToGrid, bool* const pGridOnTop, bool* const pKeepAspect, const D2D1_RECT_F targetDest, Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p,
 		std::vector< std::vector<SpritePointer*>>** const ppRoom, std::vector<SpritePointer*>** const ppLayer, std::vector< std::vector< std::vector<SpritePointer*>>>** const ppRL,
 		std::vector<bool>* const VisibleRooms, std::vector< std::vector<bool>>* const VisibleLayers, SpritePointer** const ppsprite,
 		std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>>** const ppW, std::vector< std::vector<std::unique_ptr<Wall>>>** const ppSWR, std::vector<std::unique_ptr<Wall>>** const ppSWL);

@@ -33,7 +33,7 @@ BaseLevel::BaseLevel(const HWND hwnd, Graphics* const graphics, D2D1_POINT_2F* c
 	m_ClientWindow = D2D1::RectF(0.0f, 0.0f, WindowSize.width, WindowSize.height);
 	RotationCenter = D2D1::Point2F(WindowSize.width * 0.5f, WindowSize.height * 0.5f);
 
-	pSideMenu = new SideMenu(&bShowCounter, &pTurnCounter, hWnd, &bExit, D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow, &MenuCoordinates, &pSelectedRoom, &pSelectedLayer, &ppvSprites, &vVisibleRooms, &vVisibleLayers, &sptest, &pvWalls, &pSelectedRoomWall, &pSelectedLayerWall);
+	pSideMenu = new SideMenu(&bShowCounter, &pTurnCounter, hWnd, &bExit, &bLockToGrid, &bGridOnTop, &bKeepAspect, D2D1::RectF(WindowSize.width * 0.75f, 0.0f, WindowSize.width, WindowSize.height), graphics, &Transforms, &m_ClientWindow, &MenuCoordinates, &pSelectedRoom, &pSelectedLayer, &ppvSprites, &vVisibleRooms, &vVisibleLayers, &sptest, &pvWalls, &pSelectedRoomWall, &pSelectedLayerWall);
 	pSideMenu->pBaseLevel = this;
 	pSideMenu->SetMousePointer(&MenuCoordinates);
 	IObjects.push_back(pSideMenu);
@@ -121,13 +121,13 @@ void BaseLevel::Load(Keyboard* const keyboard, Mouse* const mouse)
 void BaseLevel::Unload()
 {
 	//cleanup as necessary
-	SafeDelete(&sptest);
-	SafeDelete(&pSideMenu);
-	SafeDelete(&pSizeMenu);
-	SafeDelete(&pAoeSizeMenu);
-	SafeDelete(&pRuler);
-	SafeDelete(&pTurnCounter);
-	wptest.reset();
+	SafeDelete(&sptest);	UpdateLog(L"SafeDelete(sptest)", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
+	SafeDelete(&pSideMenu);	UpdateLog(L"SafeDelete(sidemenu)", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
+	SafeDelete(&pSizeMenu);	UpdateLog(L"SafeDelete(sizemenu)", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
+	SafeDelete(&pAoeSizeMenu);	UpdateLog(L"SafeDelete(AoesizeMenu)", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
+	SafeDelete(&pRuler);	UpdateLog(L"SafeDelete(pRuler)", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
+	SafeDelete(&pTurnCounter);	UpdateLog(L"SafeDelete(pTurnCounter)", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
+	wptest.reset();	UpdateLog(L"wptest.reset()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 
 	while (vPieces.size())
 	{
@@ -204,11 +204,6 @@ void BaseLevel::Render()
 			}
 		}
 	}
-
-	if (pSelectedObject)
-	{
-		if (!pSelectedObject->IsAoe()) gfx->DrawRect(gfx->GetCompatibleTarget(), pSelectedObject->GetDestSprite(), D2D1::ColorF(1.0f, 0.0f, 1.0f), 3.0f);
-	}
 		
 	if (sptest && !pSideMenu->WallSelected() && !pSideMenu->AoeSelected())
 	{
@@ -255,7 +250,7 @@ void BaseLevel::Render()
 	gfx->EndDraw(gfx->GetCompatibleTarget());
 
 	gfx->SwapBuffer();
-	if (bShowFPS) gfx->OutputText(gfx->GetRenderTarget(), std::to_wstring(afps).c_str(), D2D1::RectF(0, 500, 500, 564));			//remove comment to display avg. FPS
+	if (bShowFPS) gfx->OutputText(gfx->GetRenderTarget(), std::to_wstring(afps).c_str(), D2D1::RectF(0, 500, 500, 564));
 	if (pRuler) pRuler->DrawDistance();
 	gfx->EndDraw(gfx->GetRenderTarget());
 }
@@ -451,6 +446,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			break;
 		}
 		case Mouse::Event::Type::LPress:
+			UpdateLog(L"Mouse::Event::LPress", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 			if (pSelectedLayer && !pSideMenu->IsInRealRect() && !pSizeMenu->IsInRealRect() && pSideMenu->IsBuildMode())
 			{
 				if (!pSideMenu->WallSelected())
@@ -461,6 +457,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 						{
 							if (sprite->PointInSprite(TranslatedCoordinates))
 							{
+								UpdateLog(L"Attach Selected to Sprite", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 								if (pSideMenu->AoeSelected())
 								{
 									//for aoe sprites
@@ -485,6 +482,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 					}
 					else if (sptest)
 					{
+						UpdateLog(L"Update pSelectedLayer with sptest", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 						pSelectedLayer->push_back(new SpritePointer(gfx, sptest->GetPieces(), Location(), &GridSquareSize));
 						pSelectedLayer->back()->SetCreatureSize(sptest->GetCreatureSize());
 						bKeepAspect ? pSelectedLayer->back()->SetKeepAspectSprite() : pSelectedLayer->back()->UnsetKeepAspectSprite();
@@ -503,6 +501,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 				}
 				if (pSideMenu->AoeSelected() && !pSideMenu->IsAttachObject())
 				{
+					UpdateLog(L"pSideMenu->AoeSelected() !IsAttachObject()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 					D2D1_COLOR_F fillcolor = pSideMenu->GetSelectedAoeColor();
 					fillcolor.a = pAoeSizeMenu->GetOpacity();
 					AoeSpritePointer* tSprite = new AoeSpritePointer(gfx, pSideMenu->GetSelectedAoeType(), D2D1::ColorF(0.0f, 0.0f, 0.0f), fillcolor, nullptr, Location(), &GridSquareSize);
@@ -519,15 +518,17 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			else if (pSideMenu->IsInRealRect())
 			{
 				if (mSizeMenuType == MeasurementMenu::SizeMenuType::ThicknessSize)
-				{
+				{					
 					if (!pThicknessMenu->IsHidden())
 					{
 						if (pThicknessMenu->PointInSlider())
 						{
+							UpdateLog(L"MeasuremenuMenu::SizeMenuType::ThicknessSize", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 							pThicknessMenu->SetSelected();
 						}
 						else if (pThicknessMenu->PointOnSlideLine())
 						{
+							UpdateLog(L"MeasuremenuMenu::SizeMenuType::ThicknessSize", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 							pThicknessMenu->JumpPosition();
 							pThicknessMenu->SetPreviewRadius(pThicknessMenu->CalcRadius());
 							wptest->SetThickness(pThicknessMenu->GetSelectedThickness());
@@ -538,6 +539,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 				{
 					if (!pAoeSizeMenu->IsHidden())
 					{
+						UpdateLog(L"MeasuremenuMenu::SizeMenuType::AoeSize", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 						if (pAoeSizeMenu->PointInOpacitySlider())
 						{
 							pAoeSizeMenu->SetOpacitySelected();
@@ -584,22 +586,26 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 						{
 							if (!pSelectedObject)
 							{
+								UpdateLog(L"pSelectedObject = c", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 								pSelectedObject = c;
 								if (!pSelectedObject->IsAoe())
 								if (!pRuler) pRuler = new Ruler(gfx, GridSquareSize, D2D1::Point2F(pSelectedObject->GetDestSprite().left + (pSelectedObject->GetDestSprite().right - pSelectedObject->GetDestSprite().left) * 0.5f,
 									pSelectedObject->GetDestSprite().top + (pSelectedObject->GetDestSprite().bottom - pSelectedObject->GetDestSprite().top) * 0.5f), mRulerDest);
-							}
-							move = false;
+								move = false;
+								mPreviewDest = GetPreviewRect(pSelectedObject, TranslatedCoordinates);
+							}							
 						}
 					}
 					if (pSelectedObject && move)
 					{
+						UpdateLog(L"pSelectedObject && move", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 						pSelectedObject->SetDestSprite(GetPreviewRect(pSelectedObject, TranslatedCoordinates));
+						pSelectedObject->UpdateRotationMatrix();
 						for (auto& child : pSelectedObject->vSpriteChild)
 						{
 							if (child)
 							{
-								child->SetDestSprite(pSelectedObject->GetDestSprite());
+								child->SetDestSprite(pSelectedObject->GetDestSprite());								
 							}
 						}
 						pSelectedObject = nullptr;
@@ -610,6 +616,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			break;
 		case Mouse::Event::Type::LRelease:
 		{
+			UpdateLog(L"Mouse::Event::LRelease", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 			if (bUpdateRotation)
 			{
 				bUpdateRotation = false;
@@ -618,10 +625,12 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			if (pTurnCounter) if (pTurnCounter->PointInEllipse(*pMouseCoordinate)) pTurnCounter->Interact();
 			if (mSizeMenuType == MeasurementMenu::SizeMenuType::CreatureSize && pSizeMenu->Interact())
 			{
+				UpdateLog(L"pSideMenu->Interact() [true]", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 				if (sptest) sptest->SetCreatureSize(pSizeMenu->GetSelectedCreatureSize());
 			}
 			else if (mSizeMenuType == MeasurementMenu::SizeMenuType::ThicknessSize && pThicknessMenu->Interact())
 			{
+				UpdateLog(L"pThicknessMenu->Interact() [true]", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 				if (pThicknessMenu->IsSelected())
 				{
 					pThicknessMenu->UnsetSelected();					
@@ -629,6 +638,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			}
 			else if (mSizeMenuType == MeasurementMenu::SizeMenuType::AoeSize && pAoeSizeMenu->Interact())
 			{
+				UpdateLog(L"pAoeSizeMenu->Interact() [true]", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 				if (pAoeSizeMenu->OpacitySelected())
 				{
 					pAoeSizeMenu->UnsetOpacitySelected();
@@ -653,6 +663,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 					if (io->PointInRect())
 					{
 						io->Interact();
+						UpdateLog(std::wstring(io->GetLabel()) + L"->Interact()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 					}
 				}
 				if (!pSideMenu->IsBuildMode())
@@ -686,10 +697,13 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 		}
 		break;
 		case Mouse::Event::Type::RPress:
-			if (pSideMenu->WallSelected()) if (wptest) wptest->RemoveLastPoint();
+			UpdateLog(L"Mouse::Event::RPress", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
+			if (pSelectedObject) { pSelectedObject = nullptr; SafeDelete(&pRuler); }
+			else if (pSideMenu->WallSelected()) if (wptest) wptest->RemoveLastPoint();
 			break;
 		case Mouse::Event::Type::RRelease:
 		{
+			UpdateLog(L"Mouse::Event::RRelease", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 			if (pSideMenu->IsInRealRect() && pSideMenu->IsBuildMode())
 			{
 				uint32_t uInitativeListSize = pSideMenu->GetInitativeListSize();
@@ -725,13 +739,16 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			break;
 		}
 		case Mouse::Event::Type::X1Press:
+			UpdateLog(L"Mouse::Event::X1Press", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 			if (!pSideMenu->PointInRect(*pMouseCoordinate) || pSideMenu->IsHidden())
 				PushMouseCoordinate = e.GetPos();
 			break;
 		case Mouse::Event::Type::X1Release:
+			UpdateLog(L"Mouse::Event::X1Release", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 			PushMouseCoordinate = D2D1::Point2F();
 			break;
 		case Mouse::Event::Type::MPress:
+			UpdateLog(L"Mouse::Event::MPress", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 			if (!pSideMenu->IsInRealRect())
 			{
 				if (pSelectedLayer)
@@ -747,7 +764,8 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 				}
 			}
 			break;
-		case Mouse::Event::Type::MRelease:			
+		case Mouse::Event::Type::MRelease:
+			UpdateLog(L"Mouse::Event::MRelease", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 			if (pSideMenu->IsInRealRect() && !pSideMenu->IsBuildMode())
 			{
 				int selectedid = -1;
@@ -784,6 +802,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			break;
 		case Mouse::Event::Type::WheelUp:
 		{
+			UpdateLog(L"Mouse::Event::WheelUp", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 			for (auto& io : IObjects)
 			{
 				if (io->PointInRect())
@@ -832,6 +851,7 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 			break;
 		case Mouse::Event::Type::WheelDown:
 		{
+			UpdateLog(L"Mouse::Event::WheelDown", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 			for (auto& io : IObjects)
 			{
 				if (io->PointInRect())
@@ -906,6 +926,7 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 			break;
 		case L'+':
 		{
+			UpdateLog(L"gfx->ResizeCompatibleRenderTarget()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 			D2D1_SIZE_F temp = gfx->GetCompatibleTargetSize();
 			temp.height += GridSquareSize.height;
 			temp.width += GridSquareSize.width;
@@ -914,6 +935,7 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 		}
 		case L'-':
 		{
+			UpdateLog(L"gfx->ResizeCompatibleRenderTarget()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 			D2D1_SIZE_F temp = gfx->GetCompatibleTargetSize();
 			temp.height -= GridSquareSize.height;
 			temp.width -= GridSquareSize.width;
@@ -924,6 +946,7 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 		{
 			if (!pSideMenu->IsBuildMode())
 			{
+				UpdateLog(L"NextTurn()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 				pSideMenu->NextTurn();
 			}
 			break;
@@ -932,6 +955,7 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 		{
 			if (!pSideMenu->IsBuildMode())
 			{
+				UpdateLog(L"PreviousTurn()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 				pSideMenu->PreviousTurn();
 			}
 			break;
@@ -943,6 +967,7 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 		keyEvents = pKeyboard->ReadKey();
 		if (keyEvents.IsPress())
 		{
+			UpdateLog(L"keyEvents.IsPress() [" + std::to_wstring(keyEvents.GetCode()) + L"]", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 			switch (keyEvents.GetCode())
 			{			
 			case VK_UP:
@@ -1032,8 +1057,8 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 				}
 				break;
 			case VK_F4:
-				GridSquareSize.width--;
-				GridSquareSize.height--;
+				GridSquareSize.width--; if (GridSquareSize.width < 5.0f) GridSquareSize.width = 5.0f;
+				GridSquareSize.height--; if (GridSquareSize.height < 5.0f) GridSquareSize.height = 5.0f;
 				{
 					for (auto& room : vSprites)
 						for (auto& layer : room)
@@ -1068,28 +1093,26 @@ void BaseLevel::ProcessKeyboardEvents(double dDelta)
 		}
 		if (keyEvents.IsRelease())
 		{
+			UpdateLog(L"keyEvents.IsRelease() [" + std::to_wstring(keyEvents.GetCode()) + L"]", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 			std::queue<Move::Direction> direction;
 			switch (keyEvents.GetCode())
 			{
 			case VK_UP:
-			case 'W':
 				direction.push(Move::Direction::Up);
 				break;
 			case VK_DOWN:
-			case 'S':
 				direction.push(Move::Direction::Down);
 				break;
 			case VK_LEFT:
-			case 'A':
 				direction.push(Move::Direction::Left);
 				direction.push(Move::Direction::RotateNegative);
 				break;
 			case VK_RIGHT:
-			case 'D':
 				direction.push(Move::Direction::Right);
 				direction.push(Move::Direction::RotatePositive);
 				break;
 			case VK_SHIFT:
+				UpdateLog(L"SafeDelete(pRuler)", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 				SafeDelete(&pRuler);
 				break;
 			}
@@ -1138,6 +1161,7 @@ void BaseLevel::OutputImageLoadingStatusM(std::atomic<uint32_t>& numloaded, uint
 
 void BaseLevel::LoadSprites()
 {
+	UpdateLog(L"LoadSprites()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 	uint32_t totalnumbersprites = static_cast<uint32_t>(vPieces.size() + vPiecesW.size());
 	std::atomic<uint32_t> numberfinished = 0;
 	std::vector<std::thread> tthreads;
@@ -1165,6 +1189,7 @@ void BaseLevel::LoadImages()
 
 void BaseLevel::LoadPortraits()
 {
+	UpdateLog(L"LoadPortraits()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 	uint32_t totalnumbersprites = static_cast<uint32_t>(vPieces.size() + vPiecesW.size());
 	uint32_t spritesloaded = 0;
 	std::atomic<uint32_t> numberfinished = 0;
@@ -1187,6 +1212,7 @@ void BaseLevel::LoadPortraits()
 
 const bool BaseLevel::BuildObjects(const wchar_t* sFilePath)
 {
+	UpdateLog(L"BuildObjects(" + std::wstring(sFilePath) + L")", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 	size_t BufferSize = 0;
 	FILE* file = nullptr;
 	errno_t err = _wfopen_s(&file, sFilePath, L"rb");
@@ -1292,6 +1318,7 @@ const std::wstring BaseLevel::GetLineW(char* const buffer, char*& pos)
 
 void BaseLevel::CreateRoom()
 {
+	UpdateLog(L"CreateRoom()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 	vSprites.push_back(std::vector< std::vector<SpritePointer*>>());
 	vWalls.push_back(std::vector< std::vector<std::unique_ptr<Wall>>>());
 	vVisibleRooms.push_back(true);
@@ -1307,6 +1334,7 @@ void BaseLevel::CreateRoom()
 
 void BaseLevel::CreateLayer(size_t uRoomNumber)
 {
+	UpdateLog(L"CreateLayer(" + std::to_wstring(uRoomNumber) + L")", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 	vSprites[uRoomNumber].push_back(std::vector<SpritePointer*>());
 	vWalls[uRoomNumber].push_back(std::vector<std::unique_ptr<Wall>>());
 	vVisibleLayers[uRoomNumber].push_back(true);
@@ -1399,6 +1427,7 @@ const bool SaveMapSpriteList();
 
 const bool BaseLevel::LoadMapSpriteList(const char* Buffer)
 {
+	UpdateLog(L"LoadMapSpriteList", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 	if (!Buffer) return false;
 	vSprites = std::vector< std::vector< std::vector<SpritePointer*>>>();
 	vWalls = std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>>();
@@ -1496,6 +1525,7 @@ PiecesW* const BaseLevel::FindPiece(const char* Buffer)
 
 const char* BaseLevel::BuildMapSpriteListSaveBuffer()
 {
+	UpdateLog(L"BuildMapSpriteListSaveBuffer()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 	uint32_t uBufferSize = CalcMapSpriteListBufferSize();
 	char* Buffer = new char[uBufferSize];
 	size_t pos = 0;
@@ -1570,6 +1600,7 @@ const uint32_t BaseLevel::CalcMapWallListBufferSize()
 
 const char* BaseLevel::BuildMapWallListSaveBuffer()
 {
+	UpdateLog(L"BuildMapWallListSaveBuffer()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 	uint32_t uBufferSize = CalcMapWallListBufferSize();
 	char* Buffer = new char[uBufferSize];
 	size_t pos = 0;
@@ -1604,6 +1635,7 @@ const char* BaseLevel::BuildMapWallListSaveBuffer()
 
 const bool BaseLevel::LoadMapWallList(const char* Buffer)
 {
+	UpdateLog(L"LoadMapWallList()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 	if (!Buffer) return false;
 	//this function assumes LoadMapSpriteList was already called. If not called inthe correct order there will be issues
 	uint32_t uBufferSize = 0;
@@ -1659,6 +1691,7 @@ const uint32_t BaseLevel::CalcInitativeSaveBufferSize()
 
 const char* BaseLevel::BuildInitiativeListSaveBuffer()
 {
+	UpdateLog(L"BuildInitiativeListSaveBuffer", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 	uint32_t uBufferSize = CalcInitativeSaveBufferSize();
 	size_t pos = 0;
 	char* Buffer = new char[uBufferSize];
@@ -1680,6 +1713,7 @@ const char* BaseLevel::BuildInitiativeListSaveBuffer()
 
 const bool BaseLevel::LoadInitiativeSaveBuffer(const char* Buffer)
 {
+	UpdateLog(L"LoadInitiativeSaveBuffer()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 	if (!Buffer) return false;
 	pSideMenu->vInitativeList = std::vector<PiecesW*>();
 
@@ -1704,6 +1738,7 @@ const bool BaseLevel::LoadInitiativeSaveBuffer(const char* Buffer)
 
 const bool BaseLevel::Save(const std::wstring wFilePath)
 {
+	UpdateLog(L"Save(" + wFilePath + L")", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 	if (wFilePath.empty()) return false;
 
 	uint32_t buffersize = CalcSaveBufferSize();
@@ -1725,6 +1760,7 @@ const bool BaseLevel::Save(const std::wstring wFilePath)
 
 void BaseLevel::ResetVectors()
 {
+	UpdateLog(L"ResetVectors()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 	for (size_t i = 0; i < pSideMenu->pRoomsMenu->pChild.size(); i++)
 	{
 		SafeDelete(&pSideMenu->pRoomsMenu->pChild.at(i));
@@ -1750,6 +1786,7 @@ void BaseLevel::ResetVectors()
 
 const bool BaseLevel::Open(const std::wstring wFilePath)
 {
+	UpdateLog(L"Open(" + wFilePath + L")", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 	if (wFilePath.empty()) return false;	
 
 	FILE* file = nullptr;
@@ -1851,6 +1888,7 @@ const uint32_t BaseLevel::GetLayersStates(const uint32_t uRoom)
 
 const char* BaseLevel::CreateSaveInformation()
 {
+	UpdateLog(L"CreateSaveInformation()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 	uint32_t uBufferSize = CalcSaveBufferSize();
 	char* Buffer = new char[uBufferSize];
 	size_t pos = 0;
@@ -1953,6 +1991,7 @@ const char* BaseLevel::CreateSaveInformation()
 
 const bool BaseLevel::LoadSaveBuffer(const char* Buffer)
 {
+	UpdateLog(L"LoadSaveBuffer()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 	if (!Buffer) return false;
 
 	uint32_t uBufferSize = 0;
@@ -2128,3 +2167,4 @@ const bool BaseLevel::LoadSaveBuffer(const char* Buffer)
 
 	return true;
 }
+

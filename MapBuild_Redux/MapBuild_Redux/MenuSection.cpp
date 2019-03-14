@@ -92,7 +92,7 @@ void MenuSection::Unload()
 	}
 }
 
-void MenuSection::WheelUp()
+void MenuSection::WheelDown()
 {
 	if (!bIsScrollable) return;
 	if (Transforms.TransformPoint(D2D1::Point2F(pChild.back()->GetRect().left, pChild.back()->GetRect().top)).y > m_Dest.top)
@@ -112,7 +112,7 @@ void MenuSection::WheelUp()
 	}
 }
 
-void MenuSection::WheelDown()
+void MenuSection::WheelUp()
 {
 	if (!bIsScrollable) return;
 	if (Transforms.TransformPoint(D2D1::Point2F()).y < 0.0f)

@@ -1,6 +1,7 @@
 #pragma once
 #include "Graphics.h"
 #include "SafeReleaseMemory.h"
+#include "Logging.h"
 #include <vector>
 #include <string>
 
@@ -76,7 +77,7 @@
 //	InteractableObjects* pParent = nullptr;
 //};
 
-class InteractObjects : public SafeReleaseMemory
+class InteractObjects : public SafeReleaseMemory, public Logging
 {
 public:
 	D2D1::Matrix3x2F* pTransforms = nullptr;

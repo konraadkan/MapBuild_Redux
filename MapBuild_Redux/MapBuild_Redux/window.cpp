@@ -212,9 +212,9 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 			else
 			{
 				Controller::m_Mouse.OnMouseLeave();
-				Controller::m_Mouse.OnLeftReleased(m_MouseCoordinates.x, m_MouseCoordinates.y);
+				/*Controller::m_Mouse.OnLeftReleased(m_MouseCoordinates.x, m_MouseCoordinates.y);
 				Controller::m_Mouse.OnRightReleased(m_MouseCoordinates.x, m_MouseCoordinates.y);
-				Controller::m_Mouse.OnMiddleReleased(m_MouseCoordinates.x, m_MouseCoordinates.y);
+				Controller::m_Mouse.OnMiddleReleased(m_MouseCoordinates.x, m_MouseCoordinates.y);*/
 			}
 		}
 		break;
