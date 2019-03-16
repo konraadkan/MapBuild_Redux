@@ -1,4 +1,5 @@
 #include "window.h"
+#include "Logging.h"
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevious, LPWSTR cmd, int iCmdShow)
 {
@@ -25,6 +26,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevious, LPWSTR cmd, int iC
 		wnd.Update();
 		wnd.Render();
 	}
+
+	Logging logg;
+	logg.TrimFile();
 
 	return static_cast<int>(msg.wParam);
 }

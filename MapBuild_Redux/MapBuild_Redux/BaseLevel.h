@@ -148,6 +148,4 @@ public:
 	std::unique_ptr<Wall> wptest = nullptr;
 	SpritePointer* pSelectedObject = nullptr;
 	TurnCounter* pTurnCounter = nullptr;
-
-	FILE* pLogFile = nullptr;
 };

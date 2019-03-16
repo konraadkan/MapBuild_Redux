@@ -828,3 +828,32 @@ const bool LockToGridButton::Interact(const D2D1_POINT_2F p)
 
 	return true;
 }
+
+const bool ToggleInitiativeButton::Interact(const D2D1_POINT_2F p)
+{
+	if (IsHidden()) return true;
+	UpdateLog(L"ToggleInitiativeButton::Interact(p)", L"Buttons.cpp", static_cast<uint32_t>(__LINE__));
+	for (auto& child : pChild)
+	{
+		if (child)
+		{
+			if (child->PointInRect(p))
+			{
+				return child->Interact(p);
+			}
+		}
+	}
+
+	if (*pLockToGrid)
+	{
+		*pLockToGrid = false;
+		bSelected = true;
+	}
+	else
+	{
+		*pLockToGrid = true;
+		bSelected = false;
+	}
+
+	return true;
+}
