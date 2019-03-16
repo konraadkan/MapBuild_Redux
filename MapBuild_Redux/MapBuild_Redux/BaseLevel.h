@@ -31,7 +31,7 @@ private:
 		}
 	}
 private:
-	const float fVERSION_NUMBER = 0.26f;
+	const float fVERSION_NUMBER = 0.27f;
 	std::vector<InteractObjects*> IObjects;
 	D2D1_POINT_2F Center = D2D1::Point2F();
 	D2D1_SIZE_F GridSquareSize = D2D1::SizeF(64.0f, 64.0f);

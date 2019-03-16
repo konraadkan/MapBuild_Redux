@@ -10,7 +10,7 @@ class Logging
 protected:
 	bool bLog;
 	const uint32_t uMaxSize = 1000000u;
-	const uint32_t uMaxTries = 1000;
+	const uint32_t uMaxTries = 1000u;
 	FILE* pLogFile = nullptr;
 	std::mutex m;
 	std::vector<std::thread> vThreads;
@@ -50,7 +50,6 @@ public:
 		}
 		fseek(pLogFile, 0, SEEK_END);
 		fwrite(&wBuffer[0], wBuffer.size() * sizeof(wchar_t), 1, pLogFile);
-		fflush(pLogFile);
 		err = fclose(pLogFile);
 		while (err)
 		{
