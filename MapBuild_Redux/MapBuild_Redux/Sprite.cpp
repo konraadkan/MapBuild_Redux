@@ -365,8 +365,9 @@ void Sprite::SendErrorMessage(HRESULT hr, int iLineNumber)
 	_com_error err(hr);
 	std::string sErrMsg = err.ErrorMessage();
 	std::wstring sErrMsgW(sErrMsg.begin(), sErrMsg.end());
-	sErrMsgW = L"Error on Line " + std::to_wstring(iLineNumber) + std::wstring(L".\n") + sErrMsgW;
-	MessageBoxW(nullptr, sErrMsgW.c_str(), L"Error", MB_OK | MB_ICONERROR);
+	//sErrMsgW = L"Error on Line " + std::to_wstring(iLineNumber) + std::wstring(L".\n") + sErrMsgW;
+	//MessageBoxW(nullptr, sErrMsgW.c_str(), L"Error", MB_OK | MB_ICONERROR);
+	UpdateLog(sErrMsgW, L"Sprite.cpp", static_cast<uint32_t>(iLineNumber));
 }
 
 void Sprite::SendErrorMessage(std::wstring filename, HRESULT hr, int iLineNumber)
@@ -376,8 +377,9 @@ void Sprite::SendErrorMessage(std::wstring filename, HRESULT hr, int iLineNumber
 	std::wstring sErrMsgW = L"Unable to open " + filename;
 	sErrMsgW.append(L".\n");
 	sErrMsgW.append(std::wstring(sErrMsg.begin(), sErrMsg.end()));
-	sErrMsgW = L"Error on Line " + std::to_wstring(iLineNumber) + std::wstring(L".\n") + sErrMsgW;
-	MessageBoxW(nullptr, sErrMsgW.c_str(), L"Error", MB_OK | MB_ICONERROR);
+	//sErrMsgW = L"Error on Line " + std::to_wstring(iLineNumber) + std::wstring(L".\n") + sErrMsgW;
+	//MessageBoxW(nullptr, sErrMsgW.c_str(), L"Error", MB_OK | MB_ICONERROR);
+	UpdateLog(sErrMsgW, L"Sprite.cpp", static_cast<uint32_t>(iLineNumber));
 }
 
 char* Sprite::GetStreamBuffer(const wchar_t* FilePath, size_t& BufferLen)

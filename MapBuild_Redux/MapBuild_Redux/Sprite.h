@@ -2,10 +2,11 @@
 #include "Graphics.h"
 #include "StringMod.h"
 #include "HPTimer.h"
+#include "Logging.h"
 #include <vector>
 #include <wincodec.h>
 
-class Sprite : public StringMod
+class Sprite : public StringMod, public Logging
 {
 private:
 	template<typename T> void SafeDelete(T** ppT)

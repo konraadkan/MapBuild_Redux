@@ -205,7 +205,11 @@ void BaseLevel::Render()
 		}
 	}
 		
-	if (sptest && !pSideMenu->WallSelected() && !pSideMenu->AoeSelected())
+	if (pSelectedObject)
+	{
+		gfx->DrawRect(gfx->GetCompatibleTarget(), mPreviewDest, D2D1::ColorF(1.0f, 0.1f, 0.05f, 1.0f), 5.0f);
+	}
+	else if (sptest && !pSideMenu->WallSelected() && !pSideMenu->AoeSelected())
 	{
 		if (pSideMenu->IsBuildMode() || pSelectedObject) gfx->DrawRect(gfx->GetCompatibleTarget(), mPreviewDest, D2D1::ColorF(1.0f, 0.1f, 0.05f, 1.0f), 5.0f);
 	}
@@ -215,7 +219,7 @@ void BaseLevel::Render()
 		else wptest->DrawPreview();
 		if (bLockToGrid) gfx->FillCircle(gfx->GetCompatibleTarget(), mPreviewPoint, 3.0f, D2D1::ColorF(1.0f, 0.0f, 0.0f));
 	}
-	else if (pSideMenu->AoeSelected())
+	else if (pSideMenu->AoeSelected() && pSideMenu->IsBuildMode())
 	{
 		if (bLockToGrid) gfx->FillCircle(gfx->GetCompatibleTarget(), mPreviewPoint, 3.0f, D2D1::ColorF(1.0f, 0.0f, 0.0f, 0.85f));
 		else gfx->FillCircle(gfx->GetCompatibleTarget(), TranslatedCoordinates, 3.0f, D2D1::ColorF(1.0f, 0.0f, 0.0f, 0.85f));
@@ -424,6 +428,10 @@ void BaseLevel::ProcessMouseEvents(double dDelta)
 				sptest->SetDestResizedSpritePosition(TranslatedCoordinates);
 
 				mPreviewDest = GetPreviewRect(pSelectedObject ? pSelectedObject : sptest, TranslatedCoordinates);
+			}
+			else if (pSelectedObject)
+			{
+				mPreviewDest = GetPreviewRect(pSelectedObject, TranslatedCoordinates);
 			}
 			if (wptest)
 			{
@@ -1894,7 +1902,7 @@ const char* BaseLevel::CreateSaveInformation()
 	size_t pos = 0;
 	memcpy(Buffer, &uBufferSize, sizeof(uBufferSize));
 	pos += sizeof(uBufferSize);
-	memcpy(Buffer, &fVERSION_NUMBER, sizeof(fVERSION_NUMBER));
+	memcpy(Buffer + pos, &fVERSION_NUMBER, sizeof(fVERSION_NUMBER));
 	pos += sizeof(fVERSION_NUMBER);
 	memcpy(Buffer + pos, &GridSquareSize.width, sizeof(GridSquareSize.width));
 	pos += sizeof(GridSquareSize.width);

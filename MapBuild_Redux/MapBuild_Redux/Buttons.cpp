@@ -613,6 +613,7 @@ const bool InitiativeListButtons::Interact()
 			}*/
 		}
 		if (!wasselected) SetIsSelected();
+		else UnsetIsSelected();
 	}
 	return true;
 }

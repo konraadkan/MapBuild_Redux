@@ -1,6 +1,8 @@
 #include "window.h"
 #include "Logging.h"
 
+//GUID {F03402A5-B87B-4A8B-82FE-14B9C6B7DF1C}
+
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevious, LPWSTR cmd, int iCmdShow)
 {
 	setlocale(LC_ALL, "");
@@ -19,7 +21,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevious, LPWSTR cmd, int iC
 	Window wnd(StartPoint, WindowWidth, WindowHeight, L"MapBuilder", cmd);
 
 	MSG msg = {};
-	
+
 	//main loop
 	while (wnd.ProcessMessage())
 	{
