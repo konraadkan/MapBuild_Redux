@@ -120,6 +120,8 @@ const bool ReceiveData::GetWstring(std::wstring& data)
 
 	uint32_t uStringSize = 0;
 	GetData(uStringSize);
+	if (!uStringSize) return false;
+
 	data.resize(static_cast<size_t>(uStringSize * 0.5));
 	memcpy(&data.at(0), &vBuffer.at(uCurrentPosition), uStringSize);
 	data.shrink_to_fit();

@@ -74,11 +74,11 @@ Window::Window(int Width, int Height, const wchar_t* name, const wchar_t* wOpenF
 		{
 			std::wstring wPath(lstrlenW(wOpenFilePath), ' ');
 			std::copy(&wOpenFilePath[1], &wOpenFilePath[lstrlenW(wOpenFilePath) - 1], wPath.begin());
-			Controller::CurrentLevel->Open(wPath);
+			Controller::CurrentLevel->OpenTest(wPath);
 		}
 		else
 		{
-			Controller::CurrentLevel->Open(wOpenFilePath);
+			Controller::CurrentLevel->OpenTest(wOpenFilePath);
 		}
 	}
 }
