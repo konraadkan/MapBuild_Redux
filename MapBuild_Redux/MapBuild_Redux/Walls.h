@@ -45,8 +45,11 @@ public:
 	const bool PointsEmpty() { return vPoints.empty(); }
 	const uint32_t CalcSaveSize();
 	const char* GetSaveInformation() { return CreateSaveInformation(); }
+	const std::vector<char> GetSaveInformationV() { return CreateSaveInformationV(); }
 	const char* CreateSaveInformation();
+	const std::vector<char> CreateSaveInformationV();
 	const bool LoadSaveBuffer(const char* Buffer);
+	const bool LoadSaveBuffer(ReceiveData& rd);
 private:
 	void SetTexture(ID2D1Bitmap* const bitmap);
 };

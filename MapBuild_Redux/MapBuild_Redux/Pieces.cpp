@@ -831,6 +831,68 @@ const char* SpritePointer::GetSaveInformation()
 	return CreateSaveInformation();
 }
 
+const std::vector<char> SpritePointer::GetSaveInformationV()
+{
+	return CreateSaveInformationV();
+}
+
+const std::vector<char> SpritePointer::CreateSaveInformationV()
+{
+	StoreData sd;
+
+	uint32_t uSpritePointerType = 0;
+	sd.AddEntry(uSpritePointerType);
+	sd.AddEntry(fRotation);
+
+	uint32_t uLen = static_cast<uint32_t>(vSpriteChild.size());
+	sd.AddEntry(uLen);
+	for (auto& child : vSpriteChild)
+	{
+		std::vector<char> vTemp = child->GetSaveInformationV();
+		sd.CombineBuffer(vTemp);
+	}
+	uLen = static_cast<uint32_t>(vPortraitChild.size());
+	sd.AddEntry(uLen);
+	for (auto& child : vPortraitChild)
+	{
+		std::vector<char> vTemp = child->GetSaveInformationV();
+		sd.CombineBuffer(vTemp);
+	}
+	sd.AddEntry(wTag[0]);
+	sd.AddEntry(mLocation.mDestSprite.left);
+	sd.AddEntry(mLocation.mDestSprite.top);
+	sd.AddEntry(mLocation.mDestSprite.right);
+	sd.AddEntry(mLocation.mDestSprite.bottom);
+	sd.AddEntry(mLocation.mDestTag.left);
+	sd.AddEntry(mLocation.mDestTag.top);
+	sd.AddEntry(mLocation.mDestTag.right);
+	sd.AddEntry(mLocation.mDestTag.bottom);
+	sd.AddEntry(mLocation.mDestPortrait.left);
+	sd.AddEntry(mLocation.mDestPortrait.top);
+	sd.AddEntry(mLocation.mDestPortrait.right);
+	sd.AddEntry(mLocation.mDestPortrait.bottom);
+	sd.AddEntry(mLocation.mResizedDestSprite.left);
+	sd.AddEntry(mLocation.mResizedDestSprite.top);
+	sd.AddEntry(mLocation.mResizedDestSprite.right);
+	sd.AddEntry(mLocation.mResizedDestSprite.bottom);
+	sd.AddEntry(mLocation.uLayer);
+	sd.AddEntry(mLocation.uRoom);
+	unsigned char bools = 0;
+	if (bSelected) bools |= 1;
+	if (bKeepAspectRatioSprite) bools |= 2;
+	if (bKeepAspectRatioPortrait) bools |= 4;
+	sd.AddEntry(bools);
+	sd.AddEntry(fOpacity);
+	uint32_t uCreatureSize = static_cast<uint32_t>(mSize);
+	sd.AddEntry(mSize);
+	std::vector<char> vTemp = pPiece->GetSaveBufferV();
+	sd.CombineBuffer(vTemp);
+
+	sd.UpdateBufferSize();
+	return sd.GetBuffer();
+}
+
+
 const char* SpritePointer::CreateSaveInformation()
 {
 	uint32_t uBufferSize = CalcSaveSize();											//get size of buffer
@@ -991,6 +1053,97 @@ void SpritePointer::ResizeSprite()
 	r.bottom = r.top + pGridSquareSize->height * sizemod;
 	mLocation.mDestSprite = r;
 	mLocation.mDestTag = CalcDestTag();
+}
+
+const bool SpritePointer::LoadSaveBuffer(ReceiveData& rd)
+{
+	uint32_t uBufferSize = 0;
+	rd.GetData(uBufferSize);
+	uint32_t uSpritePointerType = 0;
+	rd.GetData(uSpritePointerType);
+	rd.GetData(fRotation);
+
+	uint32_t uLen = 0;
+	rd.GetData(uLen);
+	if (uLen)
+	{
+		for (uint32_t i = 0; i < uLen; i++)
+		{
+			uint32_t iLen = 0;
+			rd.GetData(iLen);
+			uint32_t uType = 0;
+			rd.GetData(uType);
+			rd.MoveCurrentPosition(-1 * static_cast<int32_t>((sizeof(iLen) + sizeof(uType))));
+			if (uType == 0)
+			{
+				vSpriteChild.push_back(new SpritePointer(gfx, nullptr, mLocation, pGridSquareSize));
+				vSpriteChild.back()->LoadSaveBuffer(rd);
+			}
+			else if (uType == 1)
+			{
+				vSpriteChild.push_back(new AoeSpritePointer(gfx, AoeSpritePointer::AoeTypes::Invalid, D2D1::ColorF(0, 0, 0), D2D1::ColorF(0, 0, 0), nullptr, Location(), pGridSquareSize));
+				vSpriteChild.back()->LoadSaveBuffer(rd);
+			}
+		}
+	}
+	rd.GetData(uLen);
+	if (uLen)
+	{
+		for (uint32_t i = 0; i < uLen; i++)
+		{
+			uint32_t iLen = 0;
+			rd.GetData(iLen);
+			uint32_t uType = 0;
+			rd.GetData(uType);
+			rd.MoveCurrentPosition(-1 * static_cast<int32_t>((sizeof(iLen) + sizeof(uType))));
+			if (uType == 0)
+			{
+				vPortraitChild.push_back(new SpritePointer(gfx, nullptr, mLocation, pGridSquareSize));
+				vPortraitChild.back()->LoadSaveBuffer(rd);
+			}
+			else if (uType == 1)
+			{
+				vPortraitChild.push_back(new AoeSpritePointer(gfx, AoeSpritePointer::AoeTypes::Invalid, D2D1::ColorF(0, 0, 0), D2D1::ColorF(0, 0, 0), nullptr, Location(), pGridSquareSize));
+				vPortraitChild.back()->LoadSaveBuffer(rd);
+			}
+		}
+	}
+	rd.GetData(wTag[0]);
+	rd.GetData(mLocation.mDestSprite.left);
+	rd.GetData(mLocation.mDestSprite.top);
+	rd.GetData(mLocation.mDestSprite.right);
+	rd.GetData(mLocation.mDestSprite.bottom);
+	rd.GetData(mLocation.mDestTag.left);
+	rd.GetData(mLocation.mDestTag.top);
+	rd.GetData(mLocation.mDestTag.right);
+	rd.GetData(mLocation.mDestTag.bottom);
+	rd.GetData(mLocation.mDestPortrait.left);
+	rd.GetData(mLocation.mDestPortrait.top);
+	rd.GetData(mLocation.mDestPortrait.right);
+	rd.GetData(mLocation.mDestPortrait.bottom);
+	rd.GetData(mLocation.mResizedDestSprite.left);
+	rd.GetData(mLocation.mResizedDestSprite.top);
+	rd.GetData(mLocation.mResizedDestSprite.right);
+	rd.GetData(mLocation.mResizedDestSprite.bottom);
+	rd.GetData(mLocation.uLayer);
+	rd.GetData(mLocation.uRoom);
+
+	unsigned char bools = 0;
+	rd.GetData(bools);
+	bSelected = (bools & 1);
+	bKeepAspectRatioSprite = (bools & 2);
+	bKeepAspectRatioPortrait = (bools & 4);
+
+	rd.GetData(fOpacity);
+	uint32_t uCreatureSize = 0;
+	rd.GetData(uCreatureSize);
+	mSize = static_cast<CreatureSize>(uCreatureSize);
+
+	uint32_t iLen = 0;
+	rd.GetData(iLen, false);
+	rd.GetDataBuffer(vLoadedPiece, iLen);
+	UpdateRotationMatrix();
+	return true;
 }
 
 const bool SpritePointer::LoadSaveBuffer(const char* Buffer)
@@ -1353,6 +1506,31 @@ const uint32_t PiecesW::CalcSaveSize()
 	return uBufferSize;
 }
 
+const std::vector<char> PiecesW::BuildSaveBufferV()
+{
+	StoreData sd;
+
+	uint32_t uCreatureSize = static_cast<uint32_t>(mSize);
+	sd.AddEntry(uCreatureSize);
+	sd.AddWstring(sType);
+	sd.AddWstring(sName);
+	sd.AddWstring(sIconPath);
+	sd.AddWstring(sSpritePath);
+	sd.AddWstring(sSubMenu);
+	unsigned char bools = 0;
+	if (bDetaultInitOrder) bools |= 1;
+	if (bKeepAspect) bools |= 2;
+	if (bKeepIconAspect) bools |= 4;
+	sd.AddEntry(bools);
+	sd.AddEntry(BackgroundColor.r);
+	sd.AddEntry(BackgroundColor.g);
+	sd.AddEntry(BackgroundColor.b);
+	sd.AddEntry(BackgroundColor.a);
+
+	sd.UpdateBufferSize();
+	return sd.GetBuffer();
+}
+
 const char* PiecesW::BuildSaveBuffer()
 {
 	uint32_t uBufferSize = CalcSaveSize();
@@ -1430,6 +1608,33 @@ const char* PiecesW::BuildSaveBuffer()
 	return Buffer;
 }
 
+const bool PiecesW::LoadSaveBuffer(ReceiveData& rd)
+{
+	uint32_t uLen = 0;
+	rd.GetData(uLen);
+	uint32_t uCreatureSize = 0;
+	rd.GetData(uCreatureSize);
+	mSize = static_cast<CreatureSize>(uCreatureSize);
+	rd.GetWstring(sType);
+	rd.GetWstring(sName);
+	rd.GetWstring(sIconPath);
+	rd.GetWstring(sSpritePath);
+	rd.GetWstring(sSubMenu);
+
+	unsigned char bools = 0;
+	rd.GetData(bools);
+	bDetaultInitOrder = (bools & 1);
+	bKeepAspect = (bools & 2);
+	bKeepIconAspect = (bools & 4);
+
+	rd.GetData(BackgroundColor.r);
+	rd.GetData(BackgroundColor.g);
+	rd.GetData(BackgroundColor.b);
+	rd.GetData(BackgroundColor.a);
+
+	return true;
+}
+
 const bool PiecesW::LoadSaveBuffer(const char* Buffer)
 {
 	if (!Buffer) return false;
@@ -1451,8 +1656,8 @@ const bool PiecesW::LoadSaveBuffer(const char* Buffer)
 	sType = std::wstring(uLen, L'\0');
 	if (uLen)
 	{
-		memcpy(&sType.at(0), Buffer + pos, sizeof(wchar_t) * uLen);
-		pos += sizeof(wchar_t) * uLen;
+		memcpy(&sType.at(0), Buffer + pos, uLen);
+		pos += uLen;
 	}
 
 	memcpy(&uLen, Buffer + pos, sizeof(uLen));
@@ -1460,8 +1665,8 @@ const bool PiecesW::LoadSaveBuffer(const char* Buffer)
 	sName = std::wstring(uLen, L'\0');
 	if (uLen)
 	{
-		memcpy(&sName.at(0), Buffer + pos, sizeof(wchar_t) * uLen);
-		pos += sizeof(wchar_t) * uLen;
+		memcpy(&sName.at(0), Buffer + pos, uLen);
+		pos += uLen;
 	}
 
 	memcpy(&uLen, Buffer + pos, sizeof(uLen));
@@ -1469,8 +1674,8 @@ const bool PiecesW::LoadSaveBuffer(const char* Buffer)
 	sIconPath = std::wstring(uLen, L'\0');
 	if (uLen)
 	{
-		memcpy(&sIconPath.at(0), Buffer + pos, sizeof(wchar_t) * uLen);
-		pos += sizeof(wchar_t) * uLen;
+		memcpy(&sIconPath.at(0), Buffer + pos, uLen);
+		pos += uLen;
 	}
 
 	memcpy(&uLen, Buffer + pos, sizeof(uLen));
@@ -1478,8 +1683,8 @@ const bool PiecesW::LoadSaveBuffer(const char* Buffer)
 	sSpritePath = std::wstring(uLen, L'\0');
 	if (uLen)
 	{
-		memcpy(&sSpritePath.at(0), Buffer + pos, sizeof(wchar_t) * uLen);
-		pos += sizeof(wchar_t) * uLen;
+		memcpy(&sSpritePath.at(0), Buffer + pos, uLen);
+		pos += uLen;
 	}
 
 	memcpy(&uLen, Buffer + pos, sizeof(uLen));
@@ -1487,8 +1692,8 @@ const bool PiecesW::LoadSaveBuffer(const char* Buffer)
 	sSubMenu = std::wstring(uLen, L'\0');
 	if (uLen)
 	{
-		memcpy(&sSubMenu.at(0), Buffer + pos, sizeof(wchar_t) * uLen);
-		pos += sizeof(wchar_t) * uLen;
+		memcpy(&sSubMenu.at(0), Buffer + pos, uLen);
+		pos += uLen;
 	}
 
 	unsigned char bools = 0;

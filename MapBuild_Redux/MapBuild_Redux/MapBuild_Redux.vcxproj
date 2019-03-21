@@ -126,12 +126,14 @@
     <ClCompile Include="MenuSection.cpp" />
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="Pieces.cpp" />
+    <ClCompile Include="ReceiveData.cpp" />
     <ClCompile Include="ruler.cpp" />
     <ClCompile Include="Shapes.cpp" />
     <ClCompile Include="SideMenu.cpp" />
     <ClCompile Include="SizeMenu.cpp" />
     <ClCompile Include="SliderBar.cpp" />
     <ClCompile Include="Sprite.cpp" />
+    <ClCompile Include="StoreData.cpp" />
     <ClCompile Include="StringMod.cpp" />
     <ClCompile Include="TurnCounter.cpp" />
     <ClCompile Include="walls.cpp" />
@@ -151,6 +153,7 @@
     <ClInclude Include="MenuSection.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Pieces.h" />
+    <ClInclude Include="ReceiveData.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ruler.h" />
     <ClInclude Include="SafeReleaseMemory.h" />
@@ -160,6 +163,7 @@
     <ClInclude Include="SizeMenu.h" />
     <ClInclude Include="SliderBar.h" />
     <ClInclude Include="Sprite.h" />
+    <ClInclude Include="StoreData.h" />
     <ClInclude Include="StringMod.h" />
     <ClInclude Include="TurnCounter.h" />
     <ClInclude Include="Walls.h" />

@@ -176,6 +176,7 @@ void BaseLevel::Unload()
 		IObjects.back() = nullptr;
 		IObjects.pop_back();
 	}
+	ForceThreadJoin();
 }
 
 void BaseLevel::Render()
@@ -1433,6 +1434,70 @@ const D2D1_POINT_2F BaseLevel::GetNearestCorner()
 const bool SaveMapSpriteList();
 	void LoadMapSpriteList(const char* Buffer);*/
 
+const bool BaseLevel::LoadMapSpriteList(ReceiveData& rd)
+{
+	UpdateLog(L"LoadMapSpriteList", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
+	vSprites = std::vector< std::vector< std::vector<SpritePointer*>>>();
+	vWalls = std::vector< std::vector< std::vector<std::unique_ptr<Wall>>>>();
+	vVisibleRooms = std::vector<bool>();
+	vVisibleLayers = std::vector< std::vector< bool>>();
+
+	uint32_t uBufferSize = 0u;
+	rd.GetData(uBufferSize);
+	uint32_t uLen = 0u;
+	rd.GetData(uLen);
+	for (uint32_t i = 0u; i < uLen; i++)
+	{
+		CreateRoom();
+		uint32_t uLayers = 0u;
+		rd.GetData(uLayers);
+		for (uint32_t j = 0u; j < uLayers; j++)
+		{
+			if (j) CreateLayer(i);
+			uint32_t uSpritePointers = 0u;
+			rd.GetData(uSpritePointers);
+			for (uint32_t w = 0u; w < uSpritePointers; w++)
+			{
+				uint32_t uSpriteSize = 0u;
+				uint32_t uSpriteType = 0u;
+				rd.GetData(uSpriteSize);
+				rd.GetData(uSpriteType);
+				rd.MoveCurrentPosition(-1 * static_cast<int32_t>((sizeof(uSpriteSize) + sizeof(uSpriteType))));
+				if (uSpriteType == 0)
+				{
+					SpritePointer* p = new SpritePointer(gfx, nullptr, Location(), &GridSquareSize);
+					p->LoadSaveBuffer(rd);
+					p->SetPiecePointer(FindPiece(p->GetPieceBufferV()));
+					for (auto c : p->vSpriteChild)
+					{
+						c->SetPiecePointer(FindPiece(c->GetPieceBufferV()));
+					}
+					for (auto c : p->vPortraitChild)
+					{
+						c->SetPiecePointer(FindPiece(c->GetPieceBufferV()));
+					}
+					vSprites.back().back().push_back(p);
+				}
+				else if (uSpriteType == 1)
+				{
+					SpritePointer* p = new AoeSpritePointer(gfx, AoeSpritePointer::AoeTypes::Invalid, D2D1::ColorF(0, 0, 0), D2D1::ColorF(0, 0, 0), nullptr, Location(), &GridSquareSize);
+					p->LoadSaveBuffer(rd);
+					for (auto c : p->vSpriteChild)
+					{
+						c->SetPiecePointer(FindPiece(c->GetPieceBufferV()));
+					}
+					for (auto c : p->vPortraitChild)
+					{
+						c->SetPiecePointer(FindPiece(c->GetPieceBufferV()));
+					}
+					vSprites.back().back().push_back(p);
+				}
+			}
+		}
+	}
+	return true;
+}
+
 const bool BaseLevel::LoadMapSpriteList(const char* Buffer)
 {
 	UpdateLog(L"LoadMapSpriteList", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
@@ -1507,6 +1572,54 @@ const bool BaseLevel::LoadMapSpriteList(const char* Buffer)
 	return true;
 }
 
+PiecesW* const BaseLevel::FindPiece(ReceiveData& rd)
+{
+	PiecesW temp(gfx, pTimer, &GridSquareSize);
+	temp.LoadSaveBuffer(rd);
+
+	for (auto& t : vPiecesW)
+	{
+		if (!_wcsicmp(t.GetName().c_str(), temp.GetName().c_str()))
+		{
+			if (!_wcsicmp(t.GetType().c_str(), temp.GetType().c_str()))
+			{
+				if (!_wcsicmp(t.GetSubMenu().c_str(), temp.GetSubMenu().c_str()))
+				{
+					return &t;
+				}
+			}
+		}
+	}
+	vPiecesW.push_back(temp);
+	return &vPiecesW.back();
+}
+
+PiecesW* const BaseLevel::FindPiece(const std::vector<char>& vBuffer)
+{
+	if (vBuffer.empty()) return nullptr;
+	PiecesW temp(gfx, pTimer, &GridSquareSize);
+	ReceiveData rd;
+	rd.SetVBuffer(vBuffer);
+	temp.LoadSaveBuffer(rd);
+
+	for (auto& t : vPiecesW)
+	{
+		if (!_wcsicmp(t.GetName().c_str(), temp.GetName().c_str()))
+		{
+			if (!_wcsicmp(t.GetType().c_str(), temp.GetType().c_str()))
+			{
+				if (!_wcsicmp(t.GetSubMenu().c_str(), temp.GetSubMenu().c_str()))
+				{
+					return &t;
+				}
+			}
+		}
+	}
+
+	vPiecesW.push_back(temp);
+	return &vPiecesW.back();
+}
+
 PiecesW* const BaseLevel::FindPiece(const char* Buffer)
 {
 	if (!Buffer) return nullptr;
@@ -1529,6 +1642,32 @@ PiecesW* const BaseLevel::FindPiece(const char* Buffer)
 	//if it was not found, the PiecesW does not exists, therefore: create it
 	vPiecesW.push_back(temp);
 	return &vPiecesW.back();
+}
+
+const std::vector<char> BaseLevel::BuildMapSpriteListSaveBufferV()
+{
+	UpdateLog(L"BuildMapSpriteListSaveBufferV()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
+	StoreData sd;
+	uint32_t uLen = static_cast<uint32_t>(vSprites.size());
+	sd.AddEntry(uLen);
+	for (auto& room : vSprites)
+	{
+		uLen = static_cast<uint32_t>(room.size());
+		sd.AddEntry(uLen);
+		for (auto& layer : room)
+		{
+			uLen = static_cast<uint32_t>(layer.size());
+			sd.AddEntry(uLen);
+			for (auto& sp : layer)
+			{
+				std::vector<char> Vtemp = sp->GetSaveInformationV();
+				sd.CombineBuffer(Vtemp);
+			}
+		}
+	}
+
+	sd.UpdateBufferSize();
+	return sd.GetBuffer();
 }
 
 const char* BaseLevel::BuildMapSpriteListSaveBuffer()
@@ -1606,6 +1745,32 @@ const uint32_t BaseLevel::CalcMapWallListBufferSize()
 	return uBufferSize;
 }
 
+const std::vector<char> BaseLevel::BuildMapWallListSaveBufferV()
+{
+	UpdateLog(L"BuildMapWallListSaveBufferV()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
+	StoreData sd;
+	uint32_t uNumRooms = static_cast<uint32_t>(vWalls.size());
+	sd.AddEntry(uNumRooms);
+
+	for (auto& room : vWalls)
+	{
+		uint32_t uNumLayers = static_cast<uint32_t>(room.size());
+		sd.AddEntry(uNumLayers);
+		for (auto& layer : room)
+		{
+			uint32_t uNumWalls = static_cast<uint32_t>(layer.size());
+			sd.AddEntry(uNumWalls);
+			for (auto& wall : layer)
+			{
+				std::vector<char> Vtemp = wall->GetSaveInformationV();
+				sd.CombineBuffer(Vtemp);
+			}
+		}
+	}
+	sd.UpdateBufferSize();
+	return sd.GetBuffer();
+}
+
 const char* BaseLevel::BuildMapWallListSaveBuffer()
 {
 	UpdateLog(L"BuildMapWallListSaveBuffer()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
@@ -1639,6 +1804,34 @@ const char* BaseLevel::BuildMapWallListSaveBuffer()
 		}
 	}
 	return Buffer;
+}
+
+const bool BaseLevel::LoadMapWallList(ReceiveData& rd)
+{
+	UpdateLog(L"LoadMapWallList()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
+	uint32_t uBufferSize = 0;
+	rd.GetData(uBufferSize);
+	uint32_t uNumRooms = 0;
+	rd.GetData(uNumRooms);
+
+	for (uint32_t i = 0; i < uNumRooms; i++)
+	{
+		uint32_t uNumLayers = 0;
+		rd.GetData(uNumLayers);
+		for (uint32_t j = 0; j < uNumLayers; j++)
+		{
+			uint32_t uNumWalls = 0;
+			rd.GetData(uNumWalls);
+			for (uint32_t w = 0; w < uNumWalls; w++)
+			{
+				std::unique_ptr<Wall> twall = std::make_unique<Wall>(this, &GridSquareSize, gfx, pMouseCoordinate, false);
+				twall->LoadSaveBuffer(rd);
+				vWalls[i][j].push_back(std::unique_ptr<Wall>(twall.get()));
+				twall.release();
+			}
+		}
+	}
+	return true;
 }
 
 const bool BaseLevel::LoadMapWallList(const char* Buffer)
@@ -1697,6 +1890,23 @@ const uint32_t BaseLevel::CalcInitativeSaveBufferSize()
 	return uBufferSize;
 }
 
+const std::vector<char> BaseLevel::BuildInitiativeListSaveBufferV()
+{
+	UpdateLog(L"BuildInitiativeListSaveBufferV", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
+	StoreData sd;
+
+	uint32_t uNumEntries = static_cast<uint32_t>(pSideMenu->vInitativeList.size());
+	sd.AddEntry(uNumEntries);
+	for (auto& entry : pSideMenu->vInitativeList)
+	{
+		std::vector<char> Vtemp = entry->GetSaveBufferV();
+		sd.CombineBuffer(Vtemp);
+	}
+
+	sd.UpdateBufferSize();
+	return sd.GetBuffer();
+}
+
 const char* BaseLevel::BuildInitiativeListSaveBuffer()
 {
 	UpdateLog(L"BuildInitiativeListSaveBuffer", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
@@ -1717,6 +1927,28 @@ const char* BaseLevel::BuildInitiativeListSaveBuffer()
 		SafeDeleteArray(&tbuff);
 	}
 	return Buffer;
+}
+
+const bool BaseLevel::LoadInitiativeSaveBuffer(ReceiveData& rd)
+{
+	UpdateLog(L"LoadInitiativeSaveBuffer()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
+	pSideMenu->vInitativeList = std::vector<PiecesW*>();
+
+	uint32_t uBufferSize = 0;
+	rd.GetData(uBufferSize);
+	uint32_t uNumEntries = 0;
+	rd.GetData(uNumEntries);
+	for (uint32_t i = 0; i < uNumEntries; i++)
+	{
+		uint32_t uSize = 0;
+		rd.GetData(uSize, false);
+		std::vector<char> vTemp;
+		rd.GetDataBuffer(vTemp, uSize);
+		PiecesW* p = FindPiece(vTemp);
+		if (p) pSideMenu->vInitativeList.push_back(p);
+	}
+	pSideMenu->BuildInitativeList();
+	return true;
 }
 
 const bool BaseLevel::LoadInitiativeSaveBuffer(const char* Buffer)
@@ -1749,6 +1981,12 @@ const bool BaseLevel::Save(const std::wstring wFilePath)
 	UpdateLog(L"Save(" + wFilePath + L")", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 	if (wFilePath.empty()) return false;
 
+	StoreData Buffer = CreateSaveInformationV();
+
+	Buffer.WriteBuffer(wFilePath, L"wb");
+	
+	/*if (wFilePath.empty()) return false;
+
 	uint32_t buffersize = CalcSaveBufferSize();
 	const char* Buffer = GetSaveInformation();
 
@@ -1761,7 +1999,7 @@ const bool BaseLevel::Save(const std::wstring wFilePath)
 	}
 	fwrite(Buffer, buffersize, 1, file);
 	fclose(file);
-	SafeDeleteArray(&Buffer);
+	SafeDeleteArray(&Buffer);*/
 	
 	return true;
 }
@@ -1790,6 +2028,24 @@ void BaseLevel::ResetVectors()
 		SafeDelete(&l);
 	}
 	while (pSideMenu->pLayersMenu.size()) pSideMenu->pLayersMenu.pop_back();
+}
+
+const bool BaseLevel::OpenTest(const std::wstring wFilePath)
+{
+	UpdateLog(L"OpenTest(" + wFilePath + L")", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
+	if (wFilePath.empty()) return false;
+
+	ReceiveData rd;
+	if (!rd.FillBufferFromFile(wFilePath)) return false;
+
+	this->ResetVectors();
+	LoadSaveBuffer(rd);
+	wptest.reset();
+	wptest = std::make_unique<Wall>(this, &GridSquareSize, gfx, &TranslatedCoordinates, bUseTexture);
+	wptest->SetThickness(pThicknessMenu->GetSelectedThickness());
+	pSideMenu->RealignAddLayerButton();
+
+	return true;
 }
 
 const bool BaseLevel::Open(const std::wstring wFilePath)
@@ -1894,6 +2150,68 @@ const uint32_t BaseLevel::GetLayersStates(const uint32_t uRoom)
 	return bools;
 }
 
+const StoreData BaseLevel::CreateSaveInformationV()
+{
+	UpdateLog(L"CreateSaveInformationV()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
+	uint32_t uBufferSize = 0;	//this is no longer needed, StoreData automatically does this portion before saving
+	StoreData sd;
+	sd.AddEntry(fVERSION_NUMBER);
+	sd.AddEntry(GridSquareSize.width);
+	sd.AddEntry(GridSquareSize.height);
+	sd.AddEntry(Scale.width);
+	sd.AddEntry(Scale.height);
+	sd.AddEntry(ScaleSpeed.width);
+	sd.AddEntry(ScaleSpeed.height);
+	sd.AddEntry(Offset.width);
+	sd.AddEntry(Offset.height);
+	sd.AddEntry(RotationAngle);
+	sd.AddEntry(RotationSpeed);
+	sd.AddEntry(MovementSpeed);
+	uint32_t bools = 0u;
+	if (bGridOnTop) bools |= 1;
+	if (bLockToGrid) bools |= 2;
+	if (bKeepAspect) bools |= 4;
+	if (bUseTexture) bools |= 8;
+	if (bShowSideMenu) bools |= 16;
+	if (bShowCounter) bools |= 32;
+	if (pSideMenu->ShowPieceColors()) bools |= 64;
+	if (pSideMenu->IsAttachObject()) bools |= 128;
+	if (pSideMenu->IsBuildMode()) bools |= 256;
+	sd.AddEntry(bools);
+	sd.AddEntry(GridBackgroundColor.r);
+	sd.AddEntry(GridBackgroundColor.g);
+	sd.AddEntry(GridBackgroundColor.b);
+	sd.AddEntry(GridBackgroundColor.a);
+	
+	D2D1_SIZE_F size = gfx->GetCompatibleTargetSize();
+	sd.AddEntry(size.width);
+	sd.AddEntry(size.height);
+	sd.AddEntry(uCounterValue);
+	uint32_t uTopOfTheRoundValue = pSideMenu->GetTopOfTheRoundPosition();
+	sd.AddEntry(uTopOfTheRoundValue);
+	uint32_t uSelectedRoomNumber = pSideMenu->GetSelectedRoomNumber();
+	uint32_t uSelectedLayerNumber = pSideMenu->GetSelectedLayerNumber();
+	sd.AddEntry(uSelectedRoomNumber);
+	sd.AddEntry(uSelectedLayerNumber);
+	uint32_t uRoomsStates = GetRoomsStates();
+	sd.AddEntry(uRoomsStates);
+	uint32_t uNumberRooms = static_cast<uint32_t>(vVisibleRooms.size());
+	sd.AddEntry(uNumberRooms);
+	for (size_t i = 0; i < vVisibleRooms.size(); i++)
+	{
+		uint32_t uLayerStates = GetLayersStates(static_cast<uint32_t>(i));
+		sd.AddEntry(uLayerStates);
+	}
+	std::vector<char> Vtemp = GetMapSpriteListSaveBufferV();
+	sd.CombineBuffer(Vtemp);
+	Vtemp = GetMapWallListSaveBufferV();
+	sd.CombineBuffer(Vtemp);
+	Vtemp = GetInitiativeListSaveBufferV();
+	sd.CombineBuffer(Vtemp);
+	
+	return sd;
+}
+
 const char* BaseLevel::CreateSaveInformation()
 {
 	UpdateLog(L"CreateSaveInformation()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
@@ -1995,6 +2313,150 @@ const char* BaseLevel::CreateSaveInformation()
 	SafeDeleteArray(&t);
 
 	return Buffer;
+}
+
+const bool BaseLevel::LoadSaveBuffer(ReceiveData& rd)
+{
+	UpdateLog(L"LoadSaveBuffer()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
+
+	uint32_t uBufferSize = 0u;
+	rd.GetData(uBufferSize);
+	float fVersion = 0.0f;
+	rd.GetData(fVersion);
+	rd.GetData(GridSquareSize.width);
+	rd.GetData(GridSquareSize.height);
+	rd.GetData(Scale.width);
+	rd.GetData(Scale.height);
+	rd.GetData(ScaleSpeed.width);
+	rd.GetData(ScaleSpeed.height);
+	rd.GetData(Offset.width);
+	rd.GetData(Offset.height);
+	rd.GetData(RotationAngle);
+	rd.GetData(RotationSpeed);
+	rd.GetData(MovementSpeed);
+
+	uint32_t bools = 0u;
+	rd.GetData(bools);
+	bGridOnTop = (bools & 1);
+	bLockToGrid = (bools & 2);
+	bKeepAspect = (bools & 4);
+	bUseTexture = (bools & 8);
+	bShowSideMenu = (bools & 16);
+	bShowCounter = (bools & 32);
+	(bools & 64) ? pSideMenu->SetUseColors() : pSideMenu->UnsetUseColors();
+	(bools & 128) ? pSideMenu->SetAttachObject() : pSideMenu->UnsetAttachObject();
+	(bools & 256) ? pSideMenu->SetIsBuildMode() : pSideMenu->UnsetIsBuildMode();
+	if (bShowCounter) pTurnCounter->UnsetHidden();
+	
+	rd.GetData(GridBackgroundColor.r);
+	rd.GetData(GridBackgroundColor.g);
+	rd.GetData(GridBackgroundColor.b);
+	rd.GetData(GridBackgroundColor.a);
+
+	D2D1_SIZE_F size = D2D1::SizeF();
+	rd.GetData(size.width);
+	rd.GetData(size.height);
+	gfx->ResizeCompatibleRenderTarget(size);
+
+	rd.GetData(uCounterValue);
+
+	uint32_t uTopOfTheroundValue = 0;
+	rd.GetData(uTopOfTheroundValue);
+
+	uint32_t uSelectedRoomNumber = 0u;
+	uint32_t uSelectedLayerNumber = 0u;
+	uint32_t uRoomsStates = 0u;
+	uint32_t uNumberRooms = 0u;
+	rd.GetData(uSelectedRoomNumber);
+	rd.GetData(uSelectedLayerNumber);
+	rd.GetData(uRoomsStates);
+	rd.GetData(uNumberRooms);
+	std::vector<uint32_t> vLayersStates;
+	for (size_t i = 0; i < uNumberRooms; i++)
+	{
+		uint32_t uLayerStates = 0;
+		rd.GetData(uLayerStates);
+		vLayersStates.push_back(uLayerStates);
+	}
+
+	uint32_t uLen = 0;
+	LoadMapSpriteList(rd);
+	LoadMapWallList(rd);
+	LoadInitiativeSaveBuffer(rd);
+
+	for (size_t i = 0; i < vVisibleRooms.size(); i++)
+	{
+		vVisibleRooms.at(i) = (uRoomsStates & (1 << i));
+		for (size_t j = 0; j < vVisibleLayers.at(i).size(); j++)
+		{
+			vVisibleLayers.at(i).at(j) = (vLayersStates.at(i) & (1 << j));
+		}
+	}
+
+	for (auto& button : pSideMenu->pOptionsMenu->pChild)
+	{
+		bool setselected = false;
+		if (!_wcsicmp(button->GetLabel(), L"Grid On Top"))
+		{
+			setselected = bGridOnTop;
+		}
+		else if (!_wcsicmp(button->GetLabel(), L"Lock To Grid"))
+		{
+			setselected = bLockToGrid;
+		}
+		else if (!_wcsicmp(button->GetLabel(), L"Toggle Keep Aspect"))
+		{
+			setselected = bKeepAspect;
+		}
+		else if (!_wcsicmp(button->GetLabel(), L"Show Counter"))
+		{
+			setselected = bShowCounter;
+		}
+		else if (!_wcsicmp(button->GetLabel(), L"Toggle PC Colors"))
+		{
+			setselected = pSideMenu->ShowPieceColors();
+		}
+		else if (!_wcsicmp(button->GetLabel(), L"Attach Object"))
+		{
+			setselected = pSideMenu->IsAttachObject();
+		}
+		else if (!_wcsicmp(button->GetLabel(), L"Turn Counter"))
+		{
+			setselected = bShowCounter;
+		}
+		setselected ? button->SetIsSelected() : button->UnsetIsSelected();
+	}
+
+	for (size_t i = 0; i < pSideMenu->pRoomsMenu->pChild.size(); i++)
+	{
+		vVisibleRooms.at(i) ? pSideMenu->pRoomsMenu->pChild.at(i)->SetIsSelected() : pSideMenu->pRoomsMenu->pChild.at(i)->UnsetIsSelected();
+		pSideMenu->pRoomsMenu->pChild.at(i)->pChild.front()->UnsetIsSelected();
+		for (size_t j = 0; j < pSideMenu->pLayersMenu.at(i)->pChild.size(); j++)
+		{			
+			vVisibleLayers.at(i).at(j) ? pSideMenu->pLayersMenu.at(i)->pChild.at(j)->SetIsSelected() : pSideMenu->pLayersMenu.at(i)->pChild.at(j)->UnsetIsSelected();
+			pSideMenu->pLayersMenu.at(i)->SetHidden();
+			if (i == uSelectedRoomNumber)
+			{
+				pSideMenu->pLayersMenu.at(i)->pChild.at(j)->pChild.front()->UnsetIsSelected();
+				pSideMenu->pLayersMenu.at(i)->SetUnhidden();
+			}
+		}
+	}
+	pSideMenu->pRoomsMenu->pChild.at(uSelectedRoomNumber)->pChild.front()->SetIsSelected();
+	pSideMenu->pLayersMenu.at(uSelectedRoomNumber)->pChild.at(uSelectedLayerNumber)->pChild.front()->SetIsSelected();
+
+	pSelectedRoom = &vSprites.at(uSelectedRoomNumber);
+	pSelectedLayer = &vSprites.at(uSelectedRoomNumber).at(uSelectedLayerNumber);
+	pSelectedRoomWall = &vWalls.at(uSelectedRoomNumber);
+	pSelectedLayerWall = &vWalls.at(uSelectedRoomNumber).at(uSelectedLayerNumber);
+	pSideMenu->pSelectWallRoomsandLayers = &pvWalls;
+
+	pSideMenu->RealignAddLayerButton();
+	pTurnCounter->Update();
+
+	pSideMenu->pFirstPieceW = pSideMenu->vInitativeList.at(uTopOfTheroundValue);
+
+	return true;
 }
 
 const bool BaseLevel::LoadSaveBuffer(const char* Buffer)

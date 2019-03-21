@@ -16,8 +16,19 @@ protected:
 	std::vector<std::thread> vThreads;
 public:
 	Logging(const bool Log = true) : bLog(Log) {}
-	~Logging() {
-		for (auto& thread : vThreads) thread.join();
+	~Logging() 
+	{
+		for (auto& thread : vThreads)
+		{
+			if (thread.joinable()) thread.join();
+		}
+	}
+	void ForceThreadJoin()
+	{
+		for (auto& thread : vThreads)
+		{
+			if (thread.joinable()) thread.join();
+		}
 	}
 	virtual void WriteFile(const std::wstring wBuffer)
 	{		

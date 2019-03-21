@@ -40,6 +40,7 @@ public:
 	virtual void Update(double dDelta) = 0;
 	virtual void ProcessEvents(double dDelta) = 0;
 	virtual const bool Open(const std::wstring sFilePath) = 0;
+	virtual const bool OpenTest(const std::wstring wFilePath) = 0;
 	virtual const bool Save(const std::wstring wFilePath) = 0;
 	virtual void SetGridOnTop() { bGridOnTop = true; }
 	virtual void UnsetGridOnTop() { bGridOnTop = false; }

@@ -150,6 +150,41 @@ const uint32_t Wall::CalcSaveSize()
 	return uSize;
 }
 
+const std::vector<char> Wall::CreateSaveInformationV()
+{
+	StoreData sd;
+
+	sd.AddEntry(fThickness);
+	sd.AddEntry(fRadius);
+	sd.AddEntry(mColor.r);
+	sd.AddEntry(mColor.g);
+	sd.AddEntry(mColor.b);
+	sd.AddEntry(mColor.a);
+	uint32_t uLen = static_cast<uint32_t>(vPoints.size());
+	sd.AddEntry(uLen);
+	for (size_t i = 0; i < vPoints.size(); i++)
+	{
+		sd.AddEntry(vPoints.at(i).x);
+		sd.AddEntry(vPoints.at(i).y);
+	}
+	unsigned char bools = 0;
+	if (bUseTexture) bools |= 1;
+	if (bIsClosed) bools |= 2;
+	sd.AddEntry(bools);
+
+	if (!pTexture)
+	{
+		sd.UpdateBufferSize();
+		return sd.GetBuffer();
+	}
+
+	std::vector<char> Vtemp = pTexture->GetSaveInformationV();
+	sd.CombineBuffer(Vtemp);
+
+	sd.UpdateBufferSize();
+	return sd.GetBuffer();
+}
+
 const char* Wall::CreateSaveInformation()
 {
 	uint32_t uSize = CalcSaveSize();
@@ -194,6 +229,49 @@ const char* Wall::CreateSaveInformation()
 	SafeDeleteArray(&t);
 
 	return Buffer;
+}
+
+const bool Wall::LoadSaveBuffer(ReceiveData& rd)
+{
+	vPoints = std::vector<D2D1_POINT_2F>();
+	uint32_t uLen = 0;
+	uint32_t uConfirmPosition = 0;
+	uConfirmPosition += rd.GetData(uLen);
+	uConfirmPosition += rd.GetData(fThickness);
+	uConfirmPosition += rd.GetData(fRadius);
+	uConfirmPosition += rd.GetData(mColor.r);
+	uConfirmPosition += rd.GetData(mColor.g);
+	uConfirmPosition += rd.GetData(mColor.b);
+	uConfirmPosition += rd.GetData(mColor.a);
+
+	uint32_t uNumberPoints = 0;
+	uConfirmPosition += rd.GetData(uNumberPoints);
+	for (uint32_t i = 0; i < uNumberPoints; i++)
+	{
+		D2D1_POINT_2F p = D2D1::Point2F();
+		uConfirmPosition += rd.GetData(p.x);
+		uConfirmPosition += rd.GetData(p.y);
+		vPoints.push_back(p);
+	}
+	unsigned char bools = 0;
+	uConfirmPosition += rd.GetData(bools);
+	bUseTexture = (bools & 1);
+	bIsClosed = (bools & 2);
+	
+	if (uConfirmPosition < uLen)
+	{
+		SafeDelete(&pTexture);
+		SpritePointer* tempP = new SpritePointer(gfx, nullptr, Location(), pGridSquareSize);
+		tempP->LoadSaveBuffer(rd);
+		tempP->SetPiecePointer(static_cast<BaseLevel*>(pBaseLevel)->FindPiece(tempP->GetPieceBufferV()));
+		SetTexture(tempP);
+		SafeDelete(&tempP);
+	}
+
+	BuildGeometry(bIsClosed);
+	SetGeometry(bIsClosed);
+
+	return true;
 }
 
 const bool Wall::LoadSaveBuffer(const char* Buffer)

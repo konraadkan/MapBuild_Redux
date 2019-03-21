@@ -176,7 +176,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 			PostQuitMessage(0);
 		if (Controller::CurrentLevel->CreateNew())
 		{
-			Controller::CurrentLevel->Unload();
+			Controller::CurrentLevel->Unload();			
 			Controller::SwitchLevel(new BaseLevel(hWnd, gfx, &m_MouseCoordinates, width, height, pTimer));
 		}
 	}
@@ -294,7 +294,8 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 			const std::wstring t = GetOpenFilePath();
 			if (t.size())
 			{
-				Controller::CurrentLevel->Open(t);
+				//Controller::CurrentLevel->Open(t);
+				Controller::CurrentLevel->OpenTest(t);
 			}
 		}
 			break;

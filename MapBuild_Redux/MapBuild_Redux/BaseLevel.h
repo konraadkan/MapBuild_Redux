@@ -10,6 +10,8 @@
 #include <atomic>
 #include "TurnCounter.h"
 #include "Logging.h"
+#include "ReceiveData.h"
+#include "StoreData.h"
 
 class BaseLevel : public Level, Logging
 {
@@ -31,7 +33,7 @@ private:
 		}
 	}
 private:
-	const float fVERSION_NUMBER = 0.28f;
+	const float fVERSION_NUMBER = 0.29f;
 	std::vector<InteractObjects*> IObjects;
 	D2D1_POINT_2F Center = D2D1::Point2F();
 	D2D1_SIZE_F GridSquareSize = D2D1::SizeF(64.0f, 64.0f);
@@ -87,23 +89,36 @@ public:
 	void OutputImageLoadingStatusM(std::atomic<uint32_t>& numloaded, uint32_t total, const std::wstring imagetype);	
 	const bool CreateNew() override;
 	const char* GetMapSpriteListSaveBuffer() { return BuildMapSpriteListSaveBuffer(); }
+	const std::vector<char> GetMapSpriteListSaveBufferV() { return BuildMapSpriteListSaveBufferV(); }
 	const char* BuildMapSpriteListSaveBuffer();
+	const std::vector<char> BuildMapSpriteListSaveBufferV();
 	const char* GetMapWallListSaveBuffer() { return BuildMapWallListSaveBuffer(); }
+	const std::vector<char> GetMapWallListSaveBufferV() { return BuildMapWallListSaveBufferV(); }
 	const char* BuildMapWallListSaveBuffer();
+	const std::vector<char> BuildMapWallListSaveBufferV();
 	const uint32_t CalcMapSpriteListBufferSize();
 	const uint32_t CalcMapWallListBufferSize();
 	const bool LoadMapSpriteList(const char* Buffer);
+	const bool LoadMapSpriteList(ReceiveData& rd);
 	const bool LoadMapWallList(const char* Buffer);
+	const bool LoadMapWallList(ReceiveData& rd);
 	PiecesW* const FindPiece(const char* Buffer);
+	PiecesW* const FindPiece(const std::vector<char>& vBuffer);
+	PiecesW* const FindPiece(ReceiveData& rd);
 	D2D1_SIZE_F* const GetGridSquareSizePtr() { return &GridSquareSize; }
 	const bool Save(const std::wstring wFilePath) override;
 	const bool Open(const std::wstring sFilePath) override;
+	const bool OpenTest(const std::wstring wFilePath) override;
 	const char* GetSaveInformation() { return CreateSaveInformation(); }
 	const bool LoadSaveBuffer(const char* Buffer);
+	const bool LoadSaveBuffer(ReceiveData& rd);
 	const uint32_t CalcInitativeSaveBufferSize();
 	const char* BuildInitiativeListSaveBuffer();
+	const std::vector<char> BuildInitiativeListSaveBufferV();
 	const char* GetInitiativeListSaveBuffer() { return BuildInitiativeListSaveBuffer(); }
+	const std::vector<char> GetInitiativeListSaveBufferV() { return BuildInitiativeListSaveBufferV(); }
 	const bool LoadInitiativeSaveBuffer(const char* Buffer);
+	const bool LoadInitiativeSaveBuffer(ReceiveData& rd);
 private:	
 	void ResetVectors();
 	void DrawSideMenu();
@@ -126,6 +141,7 @@ private:
 	void SendErrorMessage(std::wstring filname, HRESULT hr, int iLineNumber);
 	const uint32_t CalcSaveBufferSize();
 	const char* CreateSaveInformation();
+	const StoreData CreateSaveInformationV();
 	const uint32_t GetRoomsStates();
 	const uint32_t GetLayersStates(const uint32_t uRoom);	
 public:

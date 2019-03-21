@@ -8,6 +8,8 @@
 #include "CreatureSize.h"
 #include "SafeReleaseMemory.h"
 #include "Logging.h"
+#include "ReceiveData.h"
+#include "StoreData.h"
 
 class Pieces : public StringMod
 {
@@ -185,7 +187,10 @@ public:
 	const uint32_t CalcSaveSize();
 	const char* GetSaveBuffer() { return BuildSaveBuffer(); }
 	const char* BuildSaveBuffer();
+	const std::vector<char> GetSaveBufferV() { return BuildSaveBufferV(); }
+	const std::vector<char> BuildSaveBufferV();
 	const bool LoadSaveBuffer(const char* Buffer);
+	const bool LoadSaveBuffer(ReceiveData& rd);
 };
 
 struct Location
@@ -208,6 +213,7 @@ protected:
 	Location mLocation;
 	PiecesW* pPiece = nullptr;
 	char* LoadedPiece = nullptr;
+	std::vector<char> vLoadedPiece;
 	bool bSelected = false;
 	float fOpacity = 1.0f;
 	CreatureSize mSize = CreatureSize::Medium;
@@ -222,6 +228,7 @@ public:
 	SpritePointer(const SpritePointer&) = delete;
 	SpritePointer& operator=(const SpritePointer&) = delete;
 public:
+	const std::vector<char> GetPieceBufferV() { return vLoadedPiece; }
 	const char* GetPieceBuffer() { return LoadedPiece; }
 	void SetPiecePointer(PiecesW* const ptr) { pPiece = ptr; }
 	void MoveDestSprite(const D2D1_SIZE_F changes);
@@ -259,9 +266,12 @@ public:
 	void RemoveChildren();
 	void AddTag(wchar_t w);
 	virtual const char* GetSaveInformation();
+	virtual const std::vector<char> GetSaveInformationV();
+	virtual const std::vector<char> CreateSaveInformationV();
 	virtual const char* CreateSaveInformation();
 	virtual const uint32_t CalcSaveSize();
 	virtual const bool LoadSaveBuffer(const char* Buffer);
+	const bool LoadSaveBuffer(ReceiveData& rd);
 	const D2D1_RECT_F CalcDestTag();
 	virtual void UpdateRotationMatrix();
 public:
