@@ -68,7 +68,12 @@ public:
 	D2D1_POINT_2F GetMousePosition() { return m_MouseCoordinates; }
 	Graphics* const GetGraphics() { return gfx; }
 	void Render()
-	{ 		
+	{
+		if (GetActiveWindow() != hWnd)
+		{
+			Sleep(50);
+			return;
+		}
 		Controller::Render();		
 	}
 	void Update()

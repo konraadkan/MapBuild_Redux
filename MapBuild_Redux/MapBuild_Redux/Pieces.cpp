@@ -1610,6 +1610,7 @@ const char* PiecesW::BuildSaveBuffer()
 
 const bool PiecesW::LoadSaveBuffer(ReceiveData& rd)
 {
+	//unless there is a specific reason not to, use this method over LoadSaveBuffer(const char*)
 	uint32_t uLen = 0;
 	rd.GetData(uLen);
 	uint32_t uCreatureSize = 0;

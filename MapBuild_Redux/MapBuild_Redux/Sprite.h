@@ -3,6 +3,7 @@
 #include "StringMod.h"
 #include "HPTimer.h"
 #include "Logging.h"
+#include "ReceiveData.h"
 #include <vector>
 #include <wincodec.h>
 

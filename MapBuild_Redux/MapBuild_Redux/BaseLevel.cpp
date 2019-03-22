@@ -1978,6 +1978,10 @@ const bool BaseLevel::LoadInitiativeSaveBuffer(const char* Buffer)
 
 const bool BaseLevel::Save(const std::wstring wFilePath)
 {
+	gfx->BeginDraw(gfx->GetRenderTarget());
+	gfx->ClearScreen(gfx->GetRenderTarget());
+	gfx->OutputText(gfx->GetRenderTarget(), L"Saving...", D2D1::RectF(0.0f, 0.0f, ScreenSize.width, ScreenSize.height), D2D1::ColorF(0.0f, 0.0f, 0.0f), DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+	gfx->EndDraw(gfx->GetRenderTarget());
 	UpdateLog(L"Save(" + wFilePath + L")", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 	if (wFilePath.empty()) return false;
 
@@ -2103,7 +2107,7 @@ const uint32_t BaseLevel::CalcSaveBufferSize()
 {
 	uint32_t uBufferSize = 0;
 	uBufferSize += sizeof(uBufferSize);					//store total size
-	uBufferSize += sizeof(fVERSION_NUMBER);				//store the version number of the program when the map was created
+	uBufferSize += sizeof(dVERSION_NUMBER);				//store the version number of the program when the map was created
 	uBufferSize += sizeof(float) * 2;					//store GrdiSquareSize
 	uBufferSize += sizeof(float) * 2;					//store scaling
 	uBufferSize += sizeof(float) * 2;					//store scaling speed
@@ -2155,7 +2159,12 @@ const StoreData BaseLevel::CreateSaveInformationV()
 	UpdateLog(L"CreateSaveInformationV()", L"BaseLevel.cpp", static_cast<uint32_t>(__LINE__));
 	uint32_t uBufferSize = 0;	//this is no longer needed, StoreData automatically does this portion before saving
 	StoreData sd;
-	sd.AddEntry(fVERSION_NUMBER);
+	char cStartID[2];
+	cStartID[0] = (char)(0xBA);
+	cStartID[1] = (char)(0xDD);
+	sd.AddEntry(cStartID[0]);
+	sd.AddEntry(cStartID[1]);
+	sd.AddEntry(dVERSION_NUMBER);
 	sd.AddEntry(GridSquareSize.width);
 	sd.AddEntry(GridSquareSize.height);
 	sd.AddEntry(Scale.width);
@@ -2220,8 +2229,8 @@ const char* BaseLevel::CreateSaveInformation()
 	size_t pos = 0;
 	memcpy(Buffer, &uBufferSize, sizeof(uBufferSize));
 	pos += sizeof(uBufferSize);
-	memcpy(Buffer + pos, &fVERSION_NUMBER, sizeof(fVERSION_NUMBER));
-	pos += sizeof(fVERSION_NUMBER);
+	memcpy(Buffer + pos, &dVERSION_NUMBER, sizeof(dVERSION_NUMBER));
+	pos += sizeof(dVERSION_NUMBER);
 	memcpy(Buffer + pos, &GridSquareSize.width, sizeof(GridSquareSize.width));
 	pos += sizeof(GridSquareSize.width);
 	memcpy(Buffer + pos, &GridSquareSize.height, sizeof(GridSquareSize.height));
@@ -2321,8 +2330,26 @@ const bool BaseLevel::LoadSaveBuffer(ReceiveData& rd)
 
 	uint32_t uBufferSize = 0u;
 	rd.GetData(uBufferSize);
+
+	char cStartID[2];
+	rd.GetData(cStartID[0]);
+	rd.GetData(cStartID[1]);
+
 	float fVersion = 0.0f;
-	rd.GetData(fVersion);
+	double dVersion = 0.0;
+
+	//this was added to detect whether it should pull a float or a double to determine version.
+	//early versions were using float; later changed to double for better precision.
+	if (cStartID[0] != (char)0xBA || cStartID[1] != (char)0xDD)
+	{
+		rd.MoveCurrentPosition(-1 * static_cast<int32_t>(sizeof(char) * 2));
+		rd.GetData(fVersion);
+	}
+	else
+	{
+		rd.GetData(dVersion);
+	}
+
 	rd.GetData(GridSquareSize.width);
 	rd.GetData(GridSquareSize.height);
 	rd.GetData(Scale.width);
