@@ -170,6 +170,12 @@
     <ClInclude Include="ReceiveData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SafeFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ErrorMessages.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MapBuild_Redux.rc">

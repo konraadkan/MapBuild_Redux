@@ -118,7 +118,7 @@ protected:
 	};
 public:
 	InteractObjects(Graphics* const graphics, D2D1::Matrix3x2F* const Transform, D2D1_RECT_F* const area, D2D1_POINT_2F* const p) : gfx(graphics), pTransforms(Transform), pClientRect(area), pMouseCoordinates(p) {}
-	~InteractObjects();
+	virtual ~InteractObjects();
 	InteractObjects(const InteractObjects&) = delete;
 	InteractObjects& operator=(const InteractObjects&) = delete;
 	virtual const bool Interact(const D2D1_POINT_2F p);
@@ -167,7 +167,7 @@ public:
 	virtual const DWRITE_TEXT_ALIGNMENT GetTextAlignment() { return m_Alignment; }
 	virtual void MouseOver() {}
 	virtual void AddChild(InteractObjects* const Iobject) {}
-	virtual void AddChild(InteractObjects* const Iobjects, D2D1_SIZE_F size, float seperation = 0.0f) {}
+	virtual void AddChild(InteractObjects* const Iobjects, D2D1_SIZE_F size, float seperation = 0.0f) {}	
 	virtual void ChangeMode() {}
 	virtual const bool IsSelected() { return false; }
 	virtual void SetIsSelected() { }

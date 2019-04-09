@@ -144,6 +144,7 @@
     <ClInclude Include="Buttons.h" />
     <ClInclude Include="Controller.h" />
     <ClInclude Include="CreatureSize.h" />
+    <ClInclude Include="ErrorMessages.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="HPTimer.h" />
     <ClInclude Include="InteractObjects.h" />
@@ -156,6 +157,7 @@
     <ClInclude Include="ReceiveData.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ruler.h" />
+    <ClInclude Include="SafeFile.h" />
     <ClInclude Include="SafeReleaseMemory.h" />
     <ClInclude Include="ShapeList.h" />
     <ClInclude Include="Shapes.h" />
